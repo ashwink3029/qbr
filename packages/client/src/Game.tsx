@@ -27,6 +27,7 @@ import {
   type RngState,
 } from '@qbr/shared';
 import { CardFace } from './CardFace.js';
+import * as feedback from './feedback.js';
 import { SCREEN_COLS, SCREEN_ROWS, fromScreen } from './layout.js';
 import { TipBubble } from './Mascot.js';
 import { loadSeenTips, markTipSeen, pickTip } from './tips.js';
@@ -163,10 +164,12 @@ export function Game({
   const pickCard = (id: string) => {
     setPending(null);
     if (!legal.some((a) => a.card === id)) {
+      feedback.cardDenied();
       setSelected(null);
       setExplain(explain === id ? null : id);
       return;
     }
+    feedback.cardTapped();
     setExplain(null);
     setSelected(selected === id ? null : id);
   };
@@ -182,8 +185,13 @@ export function Game({
 
   const tapCell = (i: number) => {
     if (!humanTurn || selected === null || !legalCells.has(i)) return;
-    if (pending === i) act({ type: 'play', card: selected, cell: i });
-    else setPending(i);
+    if (pending === i) {
+      feedback.cardConfirmed();
+      act({ type: 'play', card: selected, cell: i });
+    } else {
+      feedback.cardPlaced();
+      setPending(i);
+    }
   };
 
   const finishYear = () => onYearEnd?.(match.winner, match.results);

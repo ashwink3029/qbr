@@ -315,6 +315,20 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    owned cards cheapest-first with copy counts, specials highlighted gold, and
    locked specials as silhouettes with how to unlock and what they replace.
    Card faces are shared (`CardFace.tsx`) by the hand, deck view and unlocks.
+7. ~~Sound + haptics for tap / place / confirm~~ **DONE.** `client/src/feedback.ts`:
+   WebAudio synthesis (no asset files), primed on the first touch anywhere
+   (`main.tsx`), plus native haptics via `@capacitor/haptics` (NOT
+   `navigator.vibrate`, which iOS WebKit ignores — rushie's approach does nothing
+   on iPhone; cubes' plugin approach is the one that works). Cues: tap a card =
+   light impact + paper flick; tap an unaffordable card = warning + low buzz;
+   first tap on a cell (place/preview) = selection tick + cell click; second tap
+   (confirm) = medium impact + rubber-stamp thunk + two-note "approved" ding.
+   The plugin is registered in `ios/App/CapApp-SPM/Package.swift` (path into
+   `node_modules/.pnpm`, resolved on Xcode Cloud because `ci_post_clone.sh` runs
+   `pnpm install` first) — **after adding any Capacitor plugin, run `cap sync
+   ios` and COMMIT Package.swift**, since CI only runs `cap copy`. Only
+   verifiable on a real device: the Simulator has no haptics. Web audio is
+   subject to the iPhone's silent switch.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
