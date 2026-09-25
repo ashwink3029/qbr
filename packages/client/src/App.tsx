@@ -128,6 +128,22 @@ export function App({ seed }: { seed?: number } = {}) {
           </span>
         </div>
 
+        <div className={`opponent ${game.toMove === 1 && !game.over ? 'live' : ''}`} data-opponent>
+          <span className="avatar" aria-hidden>
+            FIN
+          </span>
+          <span className="who">
+            <b>Finance</b>
+            <small>{game.toMove === 1 && !game.over ? 'is typing…' : 'on mute'}</small>
+          </span>
+          <span className="backs" aria-label={`${game.hands[1].length} cards in hand`}>
+            {game.hands[1].map((_, k) => (
+              <i key={k} />
+            ))}
+          </span>
+          <span className="odeck">Deck {game.decks[1].length}</span>
+        </div>
+
         <div className="formula">
           <span className="fx">fx</span>
           <span data-status>{status}</span>
@@ -184,7 +200,9 @@ export function App({ seed }: { seed?: number } = {}) {
             ];
           })}
           <div className="rev">
-            Revenue <b data-mine>{mine}</b> you · <b>{theirs}</b> them
+            <span>
+              Revenue <b data-mine>{mine}</b> you · <b>{theirs}</b> them
+            </span>
           </div>
         </div>
 
@@ -215,7 +233,7 @@ export function App({ seed }: { seed?: number } = {}) {
               Defer to next quarter
             </button>
           )}
-          <span className="deck">Deck {game.decks[HUMAN].length}</span>
+          <span className="deck">Your deck {game.decks[HUMAN].length}</span>
         </div>
       </div>
     </div>

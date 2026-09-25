@@ -56,6 +56,28 @@ next, one at a time against the same harness: a 6th column; a
 "replace your own card" play (overwrite for an upgrade); spreads that can push
 into enemy cells holding weaker cards. Do not move the pre-registered bars.
 
+## Phone layout (2026-09-25) — decisions, do not regress
+- **Window anchored to the BOTTOM of a teal desktop, only as tall as its content.**
+  Board, hand and pass button always sit in the thumb zone. On tall phones the
+  slack is visible desktop ABOVE the window — reserved for the joker tray (desk
+  objects on the desktop). An earlier full-height version stretched cells to
+  58x184 on a 17 Pro and read as a ledger, not a board.
+- Board is a CSS grid, rows `minmax(56px, 112px)` and the sheet is a shrinkable
+  flex item, so on an iPhone SE rows drop to ~95px instead of pushing the pass
+  button off-screen. Verified at 375x667 / 402x874 / 440x956 via CDP device
+  emulation, plus the real Simulator.
+- **Touch placement = tap card -> tap cell to preview the spread -> tap the same
+  cell again to commit.** Touch has no hover; a spatial game needs the preview.
+- Long single-word card names carry soft hyphens (`Stake\u00ADholder`).
+- Opponent strip at the top ("Finance", hand as card backs, deck count) is the
+  future boss video-call tile.
+
+## Known rules issue surfaced by play
+- **An opening hand can have no legal move** (all cards cost $$+, home cells hold
+  $). Seen live on a random seed; it is the "all cards too expensive" 4.8% from
+  Phase 0. Fix candidates: guarantee a $-cost card in the opening hand, or a
+  mulligan. Measure through `pnpm measure`, like the starvation fix.
+
 ## Roadmap (not yet built)
 1. Fix territory starvation (above) until bar 4 passes; recheck bars 1-3.
 2. **Gwent layer:** best-of-3 quarters with passing as a real decision (currently

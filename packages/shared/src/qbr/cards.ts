@@ -10,6 +10,8 @@ export type Offset = readonly [dRow: number, dCol: number];
 
 export interface CardDef {
   readonly id: string;
+  /** May carry soft hyphens (U+00AD) so a long single word breaks cleanly on a
+   *  phone-width card instead of overflowing; invisible when it fits. */
   readonly name: string;
   /** Budget the target cell must hold before this card may be placed on it. */
   readonly cost: 1 | 2 | 3;
@@ -31,9 +33,9 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   synergy: { id: 'synergy', name: 'Synergy', cost: 2, value: 3, spread: [up, down, fwd, back] },
   offsite: { id: 'offsite', name: 'Offsite', cost: 2, value: 2, spread: [[-1, -1], [-1, 1], [1, -1], [1, 1]] },
   reorg: { id: 'reorg', name: 'Reorg', cost: 2, value: 4, spread: [fwd, [0, 2]] },
-  stakeholder: { id: 'stakeholder', name: 'Stakeholder', cost: 2, value: 3, spread: [[-1, 1], fwd, [1, 1]] },
+  stakeholder: { id: 'stakeholder', name: 'Stake\u00ADholder', cost: 2, value: 3, spread: [[-1, 1], fwd, [1, 1]] },
   slidedeck: { id: 'slidedeck', name: 'Slide Deck', cost: 3, value: 6, spread: [fwd] },
-  headcount: { id: 'headcount', name: 'Headcount', cost: 3, value: 7, spread: [] },
+  headcount: { id: 'headcount', name: 'Head\u00ADcount', cost: 3, value: 7, spread: [] },
   vision: {
     id: 'vision',
     name: 'Vision Statement',

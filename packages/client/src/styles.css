@@ -17,14 +17,17 @@
 
 * { box-sizing: border-box; }
 
-/* Phone-first: the window IS the screen. It runs from under the notch to the
-   home indicator, the board stretches to take the slack height, and the hand +
-   pass button sit in the thumb zone at the bottom. On a wide screen (desktop dev)
-   it stays a phone-shaped column, centred. */
+/* Phone-first. The window is only as tall as its content and sits at the
+   BOTTOM of a teal desktop, so the board, hand and pass button are always in
+   the thumb zone. On a tall phone the slack shows as desktop above the window —
+   reserved for the joker tray later (desk objects on the desktop). On a short
+   phone the board rows shrink (grid minmax) so nothing is pushed off-screen. */
 .app {
   height: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   padding: calc(env(safe-area-inset-top) + 4px) 6px calc(env(safe-area-inset-bottom) + 4px);
   background: var(--desk);
 }
@@ -33,9 +36,8 @@
   width: 100%;
   min-width: 0;
   max-width: 480px;
-  max-height: 960px;
-  align-self: center;
-  height: 100%;
+  max-height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--panel);
@@ -67,6 +69,38 @@
   line-height: 13px;
 }
 
+.opponent {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 4px 0;
+  padding: 6px;
+  background: #1d1d1d;
+  color: #eee;
+  border: 1px solid;
+  border-color: var(--lo) var(--hi) var(--hi) var(--lo);
+}
+.opponent.live { box-shadow: inset 0 0 0 2px #5ad15a; }
+.avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theirs-ink);
+  color: #fff;
+  font-family: ui-monospace, Menlo, monospace;
+  font-weight: 700;
+  font-size: 12px;
+}
+.who { display: flex; flex-direction: column; line-height: 1.2; }
+.who small { color: #9a9a9a; font-size: 11px; }
+.backs { display: flex; gap: 2px; margin-left: auto; }
+.backs i { width: 11px; height: 16px; background: var(--theirs); border: 1px solid var(--theirs-ink); }
+.odeck { color: #9a9a9a; font-size: 11px; }
+
 .formula {
   flex: 0 0 auto;
   display: flex;
@@ -82,12 +116,14 @@
 .fx { font-style: italic; color: var(--lo); }
 
 .sheet {
-  flex: 1 1 auto;
+  /* Shrinkable flex item: on a short screen it gives up height and the grid's
+     row tracks fall back toward their 56px minimum. */
+  flex: 0 1 auto;
   min-height: 0;
   margin: 0 4px;
   display: grid;
   grid-template-columns: 40px repeat(5, minmax(0, 1fr)) 46px;
-  grid-template-rows: 24px repeat(3, minmax(64px, 1fr)) 32px;
+  grid-template-rows: 24px repeat(3, minmax(56px, 112px)) 32px;
   background: #fff;
   border: 1px solid var(--lo);
 }
@@ -173,7 +209,7 @@
 .card:disabled { opacity: 0.45; cursor: default; }
 .cost { align-self: flex-start; padding-left: 3px; font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #2d6a00; }
 .cname {
-  font-size: 11px;
+  font-size: clamp(10px, 2.8vw, 12px);
   font-weight: 700;
   text-align: center;
   line-height: 1.1;
