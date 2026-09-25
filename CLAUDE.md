@@ -232,6 +232,43 @@ advantage" in marketing until this moves.
    side of the board, away from your hand. Bindy also greets you on Home.
    Respects `prefers-reduced-motion`.
 
+## Backlog from TestFlight feedback (user, 2026-09-25) — prioritized
+Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
+1. **Filled cells must never take a card — VERIFY on current build.** The rule
+   (`MATCH_RULES.pasteOver: false`) landed in `fd39b29`; builds from `6d3bcf7`
+   to `58a4af8` deliberately allowed pasting over your own card, so the report is
+   most likely an old build. Covered end-to-end now by a client test that plays
+   real turns and checks every highlighted target is empty ("never offers a
+   filled cell"). If it still happens on a build >= `fd39b29`, get a screenshot:
+   the likely confusion would be a takeover FLIP (the card changes owner in
+   place), which is not a placement — then make flips read as such.
+2. **Explain greyed-out cards.** At the start most of the hand is grey because
+   those cards cost $$ / $$$ and your home row only holds $. Nothing says so.
+   Ideas: tapping a grey card explains ("Needs a $$ cell. Spread cards add $ to
+   the cells they reach."), a small "needs $$" tag on the card, and a Bindy
+   one-time tip the first time a card is unaffordable.
+3. **App icon in the in-game style.** 90s spreadsheet vibe: teal desktop, a grid
+   cell with yellow highlight, Bindy or the QBR logo tile. Needs the full
+   `AppIcon` set in `ios/App/App/Assets.xcassets` (1024 master; no alpha). Keep
+   it original (no Excel green X / Office look — see IP guardrails).
+4. **Runs climb the org chart.** Keep one-off matches (Quick year). A full run
+   becomes a ladder of named opponents the player can anticipate, e.g. **Intern
+   -> Manager -> Finance -> VP -> (CEO / The Board)**, each a best-of-3 meeting
+   of rising strength with its own personality/boss rule. Show an **org-chart
+   screen before the run starts and after every round**: where you are, who's
+   next, who's above. Replaces today's fixed 3-meeting calendar (`run.ts`
+   MEETINGS) — re-run `runbars` for the new ladder (R1 clear rate etc.).
+5. **Unlockable special cards for beating runs** — and an inventory to iterate
+   on. Beating a run (or a rung of the ladder) unlocks new cards that join your
+   deck/pool; persistence alongside `record.ts`. Every new card goes through the
+   sim (does it help without breaking bars?). Needs a real card-design pass —
+   the current 11-card pool is small.
+6. **Deck view from Home.** Show the deck you have and the cards not yet
+   unlocked (silhouettes / "locked" with the unlock condition). Depends on 5's
+   unlock model.
+Items 4-6 are one progression system (ladder -> unlocks -> collection); design
+them together, build in that order.
+
 ## Next up (not yet built)
 - Balatro depth: helpers (keycap consumables Ctrl+C/V/X/Z, sticky notes), more
   jokers (Paste Special = paste over your own card, Pivot Table, Newton's

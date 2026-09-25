@@ -99,6 +99,34 @@ describe('the app', () => {
     }
   });
 
+  it('never offers a filled cell as a target, across real turns with Finance replying', () => {
+    vi.useFakeTimers();
+    try {
+      render(<Game seed={11} />);
+      for (let turn = 0; turn < 8; turn++) {
+        const playable = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).filter((b) => !b.disabled);
+        if (playable.length === 0) break;
+        for (const b of playable) {
+          fireEvent.click(b);
+          for (const c of cells().filter((x) => x.classList.contains('legal'))) {
+            expect(c.querySelector('.placed'), `card offered onto filled cell ${c.dataset.cell}`).toBeNull();
+          }
+          fireEvent.click(b);
+        }
+        fireEvent.click(playable[0]!);
+        const target = cells().find((c) => c.classList.contains('legal'))!;
+        fireEvent.click(target);
+        fireEvent.click(target);
+        act(() => {
+          vi.advanceTimersByTime(AI_DELAY_MS + 10);
+        });
+      }
+      expect(cells().filter((c) => c.querySelector('.placed')).length).toBeGreaterThan(4);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('a boss meeting shows the boss rule, hatches its locked cells, and never offers them', () => {
     render(<Game seed={5} mods={{ jokers: ['mug'], boss: 'micromanager' }} meetingName="Quarterly Review" />);
     expect(document.querySelector('[data-title]')!.textContent).toMatch(/Quarterly Review/);
