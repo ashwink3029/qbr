@@ -14,18 +14,18 @@ export interface HomeProps {
 
 /**
  * The Home Screen: the teal desktop with one small start window on it — the
- * same 90s-office frame as the game, so leaving a run feels like closing a
+ * same 90s-office frame as the game, so leaving a career feels like closing a
  * spreadsheet, not changing apps.
  */
 export function Home({ record, inProgress, onStartRun, onStartQuick, onResume }: HomeProps) {
   const years = record.wins + record.losses + record.draws;
   const last =
     record.lastOutcome === 'win'
-      ? 'Last quick year: promoted'
+      ? 'Last year: promoted'
       : record.lastOutcome === 'loss'
-        ? 'Last quick year: performance review'
+        ? 'Last year: performance review'
         : record.lastOutcome === 'draw'
-          ? 'Last quick year: flat'
+          ? 'Last year: flat'
           : null;
   const furthest = record.bestMeetings >= MEETINGS.length ? 'promoted' : MEETINGS[record.bestMeetings]?.name;
 
@@ -58,14 +58,14 @@ export function Home({ record, inProgress, onStartRun, onStartQuick, onResume }:
 
           {inProgress && (
             <button className="btn primary" data-resume onClick={onResume}>
-              {inProgress === 'run' ? 'Resume run' : 'Resume quick year'}
+              {inProgress === 'run' ? 'Resume career' : 'Resume year'}
             </button>
           )}
           <button className={`btn ${inProgress ? '' : 'primary'}`} data-start-run onClick={onStartRun}>
-            {inProgress === 'run' ? 'Start a new run' : 'Start run'}
+            {inProgress === 'run' ? 'Start a new career' : 'Start career'}
           </button>
           <button className="btn" data-start onClick={onStartQuick}>
-            Quick year vs Finance
+            Play one year
           </button>
 
           <div className="home-clip" data-home-clip>
@@ -80,13 +80,13 @@ export function Home({ record, inProgress, onStartRun, onStartQuick, onResume }:
               <>
                 {record.runs > 0 && (
                   <span data-run-record>
-                    Runs <b>{record.runs}</b> · promoted <b>{record.promotions}</b>
+                    Careers <b>{record.runs}</b> · promoted <b>{record.promotions}</b>
                     {furthest ? ` · best: ${furthest}` : ''}
                   </span>
                 )}
                 {years > 0 && (
                   <span>
-                    Quick years <b>{record.wins}</b>W · <b>{record.losses}</b>L{record.draws ? ` · ${record.draws}D` : ''}
+                    Years <b>{record.wins}</b>W · <b>{record.losses}</b>L{record.draws ? ` · ${record.draws}D` : ''}
                   </span>
                 )}
                 {last && (

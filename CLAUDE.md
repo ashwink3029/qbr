@@ -232,6 +232,13 @@ advantage" in marketing until this moves.
    side of the board, away from your hand. Bindy also greets you on Home.
    Respects `prefers-reduced-motion`.
 
+## Terminology (user decision 2026-09-25)
+Player-facing words: a full run is a **career** ("Start career", "Resume career",
+"Careers N · promoted N"); a one-off match is **one year** ("Play one year",
+"Resume year", "Years NW · NL"). Code keeps the older names — `run.ts`,
+`RunState`, `Run.tsx`, `record.runs`, session kind `'run'` / `'quick'` — so a
+"run" in code is a "career" on screen, and a "quick year" in code is "one year".
+
 ## Backlog from TestFlight feedback (user, 2026-09-25) — prioritized
 Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
 1. **Filled cells must never take a card — VERIFY on current build.** The rule
@@ -242,11 +249,14 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    filled cell"). If it still happens on a build >= `fd39b29`, get a screenshot:
    the likely confusion would be a takeover FLIP (the card changes owner in
    place), which is not a placement — then make flips read as such.
-2. **Explain greyed-out cards.** At the start most of the hand is grey because
-   those cards cost $$ / $$$ and your home row only holds $. Nothing says so.
-   Ideas: tapping a grey card explains ("Needs a $$ cell. Spread cards add $ to
-   the cells they reach."), a small "needs $$" tag on the card, and a Bindy
-   one-time tip the first time a card is unaffordable.
+2. ~~Explain greyed-out cards~~ **DONE (`fcaad5e`).** On your turn an
+   unaffordable card shows a red "needs $$" tag and stays tappable: tapping it
+   puts the reason in the formula bar ("Slide Deck needs a $$$ cell; your best
+   open cell has $. Spreads add $ to the cells they reach."). Off-turn cards
+   stay `disabled`. Bindy has a one-time `cost` tip after the placement tip.
+   Tests find playable cards by `data-playable="true"`, not `:not(:disabled)`.
+2b. ~~Terminology: run -> career, quick round -> one year~~ **DONE** (see
+   "Terminology").
 3. **App icon in the in-game style.** 90s spreadsheet vibe: teal desktop, a grid
    cell with yellow highlight, Bindy or the QBR logo tile. Needs the full
    `AppIcon` set in `ios/App/App/Assets.xcassets` (1024 master; no alpha). Keep

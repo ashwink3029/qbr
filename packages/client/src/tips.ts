@@ -93,7 +93,7 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
 
 /** Bindy's line on the Home Screen. */
 export function homeLine(runs: number, promotions: number): string {
-  if (runs === 0) return 'New here? Start a run. I’ll point things out as we go.';
+  if (runs === 0) return 'New here? Start a career. I’ll point things out as we go.';
   if (promotions === 0) return 'Finance again. Save a card or two for Q3.';
   return 'Back for another promotion? Coffee Mug never hurts.';
 }

@@ -76,7 +76,7 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
             <p className="pitch">
               {won
                 ? 'You survived the Quarterly Review. Corner office secured.'
-                : `Your run ended at the ${reached}.`}
+                : `Your career ended at the ${reached}.`}
             </p>
             <Calendar run={run} />
             <button

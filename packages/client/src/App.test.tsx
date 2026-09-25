@@ -36,8 +36,8 @@ describe('home screen', () => {
   it('is what the app opens to, with no board mounted', () => {
     render(<App seed={5} />);
     expect(home()).toBeTruthy();
-    expect(q('[data-start-run]')!.textContent).toMatch(/Start run/);
-    expect(q('[data-start]')!.textContent).toMatch(/Quick year/);
+    expect(q('[data-start-run]')!.textContent).toMatch(/Start career/);
+    expect(q('[data-start]')!.textContent).toMatch(/Play one year/);
     expect(q('[data-resume]')).toBeNull();
     expect(board()).toHaveLength(0);
     expect(q('[data-record]')!.textContent).toMatch(/No years/);
@@ -114,7 +114,7 @@ describe('a run', () => {
       expect(q('[data-boss]')).toBeNull(); // no boss before the review
 
       fireEvent.click(q('[data-exit]')!);
-      expect(q('[data-resume]')!.textContent).toMatch(/Resume run/);
+      expect(q('[data-resume]')!.textContent).toMatch(/Resume career/);
       fireEvent.click(q('[data-resume]')!);
       expect(q('[data-title]')!.textContent).toMatch(/Quick sync/);
 
@@ -137,7 +137,7 @@ describe('a run', () => {
 
       expect(home()).toBeTruthy();
       expect(q('[data-resume]')).toBeNull();
-      expect(q('[data-run-record]')!.textContent).toMatch(/Runs 1 · promoted 0 · best: Quick sync/);
+      expect(q('[data-run-record]')!.textContent).toMatch(/Careers 1 · promoted 0 · best: Quick sync/);
       expect(JSON.parse(localStorage.getItem('qbr.record.v1')!)).toMatchObject({ runs: 1, promotions: 0 });
     } finally {
       vi.useRealTimers();
