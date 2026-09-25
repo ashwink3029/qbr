@@ -1,7 +1,7 @@
 // The Phase 0 pre-registered bars as a reusable computation, so `measure` (one
 // rule set, full report) and `sweep` (every rule set, one line each) read from
 // the same code and can never disagree about what "pass" means.
-import { POLICIES, STARTER_DECK, playout, type PolicyName, type Rules } from '@qbr/shared';
+import { DEFAULT_RULES, POLICIES, STARTER_DECK, playout, type PolicyName, type Rules } from '@qbr/shared';
 
 export interface Tally {
   w: number;
@@ -90,11 +90,10 @@ export function parseRules(arg: string | undefined): Rules {
   for (const k of on) {
     if (!['pasteOver', 'takeover', 'cheapOpener'].includes(k)) throw new Error(`unknown rule: ${k}`);
   }
-  return { pasteOver: on.has('pasteOver'), takeover: on.has('takeover'), cheapOpener: on.has('cheapOpener') };
+  return { ...DEFAULT_RULES, pasteOver: on.has('pasteOver'), takeover: on.has('takeover'), cheapOpener: on.has('cheapOpener') };
 }
 
 export const describeRules = (r: Rules): string =>
-  Object.entries(r)
-    .filter(([, v]) => v)
-    .map(([k]) => k)
+  (['pasteOver', 'takeover', 'cheapOpener'] as const)
+    .filter((k) => r[k])
     .join('+') || 'baseline';

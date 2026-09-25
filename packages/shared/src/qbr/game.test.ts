@@ -168,7 +168,7 @@ describe('rule variants', () => {
 
   it('defaults to the adopted rules: all three on', () => {
     expect(newGame(1, STARTER_DECK).rules).toEqual(DEFAULT_RULES);
-    expect(DEFAULT_RULES).toEqual({ pasteOver: true, takeover: true, cheapOpener: true });
+    expect(DEFAULT_RULES).toMatchObject({ pasteOver: true, takeover: true, cheapOpener: true, lockingPass: false });
   });
 
   it('spreadEffects previews exactly what the reducer does', () => {

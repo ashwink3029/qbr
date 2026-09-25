@@ -9,7 +9,8 @@
 //
 // A row is won by whoever has more card value in it, and the winner banks that
 // row's value as revenue. Ties bank nothing. The quarter ends when both players
-// pass back to back.
+// pass back to back (or, under `lockingPass`, once both have passed). A
+// best-of-3 match of quarters is layered on top in match.ts.
 import { card } from './cards.js';
 import { nextRng, shuffle, type RngState } from './rng.js';
 
@@ -32,16 +33,32 @@ export interface Rules {
   readonly takeover: boolean;
   /** Each opening hand is guaranteed at least one $-cost card. */
   readonly cheapOpener: boolean;
+  /** Opening hand size. */
+  readonly handSize: number;
+  /** The incoming player draws a card each turn (single-quarter play). In a
+   *  best-of-3 match hands persist and draws come only between quarters. */
+  readonly drawPerTurn: boolean;
+  /** Gwent-style pass: once you pass you are out for the rest of the quarter and
+   *  the opponent plays on alone until they pass. Otherwise two consecutive
+   *  passes end the quarter and a pass costs nothing. */
+  readonly lockingPass: boolean;
 }
 
 /** The rules Phase 0 was first measured on (2/4 bars). Kept for reproducibility. */
-export const BASELINE_RULES: Rules = { pasteOver: false, takeover: false, cheapOpener: false };
+export const BASELINE_RULES: Rules = {
+  pasteOver: false,
+  takeover: false,
+  cheapOpener: false,
+  handSize: HAND_SIZE,
+  drawPerTurn: true,
+  lockingPass: false,
+};
 
 /** Adopted 2026-09-25 after `pnpm sweep`: all three pass 4/4 pre-registered bars
  *  (2000 seeds: seat 48.8%, floor 90.7%, headroom 83.6%, median 10 plays, 14.4%
  *  thin). pasteOver alone passes; takeover adds headroom 75% -> 83%; cheapOpener
  *  moves no bar but removes the "no legal first move" opening. */
-export const DEFAULT_RULES: Rules = { pasteOver: true, takeover: true, cheapOpener: true };
+export const DEFAULT_RULES: Rules = { ...BASELINE_RULES, pasteOver: true, takeover: true, cheapOpener: true };
 
 export interface Cell {
   readonly owner: Player | null;
@@ -55,8 +72,10 @@ export interface GameState {
   readonly hands: readonly [readonly string[], readonly string[]];
   readonly decks: readonly [readonly string[], readonly string[]];
   readonly toMove: Player;
-  /** Consecutive passes; two ends the quarter. */
+  /** Consecutive passes; two ends the quarter (non-locking pass). */
   readonly passes: number;
+  /** Who has passed this quarter (locking pass). */
+  readonly passed: readonly [boolean, boolean];
   readonly turn: number;
   readonly over: boolean;
   readonly rngState: RngState;
@@ -78,22 +97,17 @@ export function newGame(seed: number, deck: readonly string[], rules: Rules = DE
   [rng, d0] = shuffle(rng, deck);
   [rng, d1] = shuffle(rng, deck);
   if (rules.cheapOpener) {
-    d0 = withCheapOpener(d0);
-    d1 = withCheapOpener(d1);
+    d0 = withCheapOpener(d0, rules.handSize);
+    d1 = withCheapOpener(d1, rules.handSize);
   }
-  const cells: Cell[] = [];
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const owner: Player | null = c === 0 ? 0 : c === COLS - 1 ? 1 : null;
-      cells.push({ owner, budget: owner === null ? 0 : 1, card: null });
-    }
-  }
+  const n = rules.handSize;
   return {
-    cells,
-    hands: [d0.slice(0, HAND_SIZE), d1.slice(0, HAND_SIZE)],
-    decks: [d0.slice(HAND_SIZE), d1.slice(HAND_SIZE)],
+    cells: freshBoard(),
+    hands: [d0.slice(0, n), d1.slice(0, n)],
+    decks: [d0.slice(n), d1.slice(n)],
     toMove: 0,
     passes: 0,
+    passed: [false, false],
     turn: 0,
     over: false,
     // Advance once so the reducer's stream is decorrelated from the shuffle.
@@ -102,14 +116,26 @@ export function newGame(seed: number, deck: readonly string[], rules: Rules = DE
   };
 }
 
-/** If the top HAND_SIZE cards hold no $-cost card, swap the first one found
- *  deeper in the deck with the last card of the hand. Deterministic. */
-function withCheapOpener(deck: string[]): string[] {
-  if (deck.slice(0, HAND_SIZE).some((id) => card(id).cost === 1)) return deck;
-  const j = deck.findIndex((id, k) => k >= HAND_SIZE && card(id).cost === 1);
+/** Home columns owned at budget 1, everything else neutral and empty. */
+export function freshBoard(): Cell[] {
+  const cells: Cell[] = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const owner: Player | null = c === 0 ? 0 : c === COLS - 1 ? 1 : null;
+      cells.push({ owner, budget: owner === null ? 0 : 1, card: null });
+    }
+  }
+  return cells;
+}
+
+/** If the top `n` cards hold no $-cost card, swap the first one found deeper
+ *  in the deck with the last card of the hand. Deterministic. */
+function withCheapOpener(deck: string[], n: number): string[] {
+  if (deck.slice(0, n).some((id) => card(id).cost === 1)) return deck;
+  const j = deck.findIndex((id, k) => k >= n && card(id).cost === 1);
   if (j < 0) return deck;
   const out = deck.slice();
-  [out[HAND_SIZE - 1], out[j]] = [out[j]!, out[HAND_SIZE - 1]!];
+  [out[n - 1], out[j]] = [out[j]!, out[n - 1]!];
   return out;
 }
 
@@ -203,19 +229,31 @@ export function reducer(state: GameState, action: Action): GameState {
     passes = 0;
   }
 
-  const over = passes >= 2;
-  const toMove: Player = p === 0 ? 1 : 0;
+  const other: Player = p === 0 ? 1 : 0;
+  let passed = state.passed;
+  let over: boolean;
+  let toMove: Player;
+  if (state.rules.lockingPass) {
+    if (action.type === 'pass') passed = p === 0 ? [true, passed[1]] : [passed[0], true];
+    over = passed[0] && passed[1];
+    // Whoever has not passed keeps the turn; alternate while both are in.
+    toMove = passed[other] ? p : other;
+  } else {
+    over = passes >= 2;
+    toMove = other;
+  }
+
   // The incoming player draws one, as in most lane card games. Nobody draws on
   // the very first two turns — opening hands are the whole first decision.
   let decks = state.decks;
-  if (!over && state.turn >= 1 && decks[toMove].length > 0) {
+  if (state.rules.drawPerTurn && !over && state.turn >= 1 && decks[toMove].length > 0) {
     const [top, ...rest] = decks[toMove];
     const hand = [...hands[toMove], top!];
     hands = toMove === 0 ? [hand, hands[1]] : [hands[0], hand];
     decks = toMove === 0 ? [rest, decks[1]] : [decks[0], rest];
   }
 
-  return { ...state, cells, hands, decks, toMove, passes, turn: state.turn + 1, over };
+  return { ...state, cells, hands, decks, toMove, passes, passed, turn: state.turn + 1, over };
 }
 
 export interface RowResult {
