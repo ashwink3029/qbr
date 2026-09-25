@@ -172,14 +172,38 @@ advantage" in marketing until this moves.
    also returns Home **without** ending the year: `App.tsx` keeps the `Game`
    mounted but hidden and `paused` (Finance cannot move), and Home offers
    "Resume year". The desktop space is reserved for the run map / joker tray.
-5. **Balatro layer:** run of meetings as blinds — "Quick sync" / "Standup" /
-   "Quarterly Review" boss — with boss rule-breakers (Micromanager locks a cell,
-   Reply-All floods junk, Auditor halves your best row, Legacy System has
-   unclaimable cells, final boss "The Board"). Jokers as desk objects (Coffee Mug,
-   APPROVED stamp, Pivot Table rotates a shape, Newton's Cradle, Circular
-   Reference wraps edges) — the teal desktop above the window is their tray.
-   Helpers as keycaps (Ctrl+C/V/X/Z) and sticky notes. Rushie's Cascade Forge is
-   the reference for the joker/blind plumbing.
+4c. ~~No placing on filled cells (user request 2026-09-25)~~ **DONE.** Matches
+   (`MATCH_RULES`) now have `pasteOver: false`: a card can only go on an EMPTY
+   cell you own. Measured before switching (`tsx src/nopaste.ts`): match bars
+   stay 4/4 (2000 seeds: seat 47.0%, passing 62.9%, headroom 61.1%, 21 turns) —
+   in a match the fixed hand, not board space, is the binding constraint, so the
+   single-quarter starvation that paste-over fixed does not recur. Single-quarter
+   `DEFAULT_RULES` keep pasteOver only so Phase 0 stays reproducible; the app
+   never uses them. **Paste-over is reserved for a future joker ("Paste
+   Special": you may paste over your own card).**
+5. **Balatro layer — engine + run DONE, screens IN PROGRESS.**
+   `shared/src/qbr/mods.ts` (jokers for seat 0, boss for seat 1, all effects read
+   through `cellValue` / `blockedCells` / `bonusDraw` / wrap in `spreadEffects`)
+   and `run.ts` (3 meetings: Quick sync vs greedy, Standup vs lookahead,
+   Quarterly Review vs lookahead + boss; draft 1 of 3 jokers before each; lose a
+   meeting and the run ends; boss known from the start). Jokers: Coffee Mug (+1
+   card each quarter), APPROVED Stamp ($$+ cards +1), Conditional Formatting (+1
+   to your cards in lanes you lead), Circular Reference (spreads wrap lanes).
+   Bosses: Micromanager (locks the cells in front of your Sales + Ops homes),
+   Legacy System (Finance's Ops home starts at $$), Auditor (your best card counts
+   half), Reply-All (Finance +2 cards each quarter).
+   **Pre-registered bars (`sim/src/runbars.ts`), final at 2000 seeds, no
+   paste-over: 4/4** — J1 weakest joker 54.0% (>=53), J2 strongest 69.5% (<=70),
+   B1 smallest boss drop 7.6pp (>=5), R1 random-draft run clear 36.1% (10-50).
+   **Honest history:** first run 1/4 — Stamp too weak (+2pp), Formatting broken
+   (76%), Micromanager brutal (-37pp, it locked a home cell), Legacy System
+   *helped* the player (symmetric concrete). Three content-tuning rounds (bars
+   never moved); notable dead ends: "Formatting needs both neighbours" was too
+   weak, and giving Finance a $$$ cell made Legacy System brutal again (8%),
+   because a $$$ cell lets Finance open with Headcount. Thin margins to watch:
+   Stamp 54.0% and Circular 69.5%. Not yet built: the meeting calendar, joker
+   draft screen and desk-object tray; helpers (keycaps / sticky notes); "The
+   Board" final boss; Pivot Table / Newton's Cradle / Paste Special jokers.
 6. Mascot: an original **binder clip** assistant (jaws = expressions). NOT
    Clippy/Clippit — that is Microsoft's character.
 
@@ -202,6 +226,8 @@ pnpm typecheck
 pnpm measure     # Phase 0 report: [seedsPerSeat=1000] [rules, e.g. pasteOver,takeover]
 pnpm sweep       # all 8 rule combinations vs the pre-registered bars
 pnpm match       # best-of-3 bars M1-M4: [seedsPerSeat=500]
+# from packages/sim: tsx src/runbars.ts [seeds] (jokers/bosses/run bars J1 J2 B1 R1),
+#                    tsx src/nopaste.ts (match bars with vs without paste-over)
 # from packages/sim: tsx src/passplan.ts (pass-plan thresholds),
 #                    tsx src/matchsweep.ts (hand size x between-quarter draws)
 ```

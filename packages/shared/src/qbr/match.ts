@@ -22,6 +22,7 @@ import {
   type Player,
   type Rules,
 } from './game.js';
+import { NO_MODS, bonusDraw, type Mods } from './mods.js';
 import type { Policy } from './policies.js';
 import type { RngState } from './rng.js';
 
@@ -35,8 +36,12 @@ export interface MatchConfig {
 export const DEFAULT_MATCH: MatchConfig = { openingHand: 8, drawAfter: [3, 2], lives: 2 };
 
 /** Quarter rules inside a match: the adopted single-quarter rules, plus locking
- *  pass and no per-turn draw. */
-export const MATCH_RULES: Rules = { ...DEFAULT_RULES, drawPerTurn: false, lockingPass: true };
+ *  pass and no per-turn draw — and NO paste-over: a filled cell stays filled
+ *  (user decision 2026-09-25). Measured first (sim/src/nopaste.ts, 1000 seeds):
+ *  the match bars still pass 4/4 without it (seat 45.8%, passing 63.5%,
+ *  headroom 61.3%, 21 turns), because a match's fixed hand, not board space, is
+ *  now the binding constraint. Paste-over is reserved for a future joker. */
+export const MATCH_RULES: Rules = { ...DEFAULT_RULES, pasteOver: false, drawPerTurn: false, lockingPass: true };
 
 export interface QuarterResult {
   readonly revenue: readonly [number, number];
@@ -64,9 +69,10 @@ export function newMatch(
   deck: readonly string[],
   config: MatchConfig = DEFAULT_MATCH,
   rules: Rules = MATCH_RULES,
+  mods: Mods = NO_MODS,
 ): MatchState {
   return {
-    quarter: newGame(seed, deck, { ...rules, handSize: config.openingHand }),
+    quarter: newGame(seed, deck, { ...rules, handSize: config.openingHand }, mods),
     quarterNo: 1,
     lives: [config.lives, config.lives],
     results: [],
@@ -97,8 +103,9 @@ export function matchReducer(m: MatchState, action: Action): MatchState {
     return { ...m, quarter: q, lives, results, totalTurns, over, winner };
   }
 
-  const n = m.config.drawAfter[results.length - 1] ?? 0;
+  const base = m.config.drawAfter[results.length - 1] ?? 0;
   const draw = (p: Player): [string[], string[]] => {
+    const n = base + bonusDraw(q.mods, p);
     const deck = q.decks[p];
     return [[...q.hands[p], ...deck.slice(0, n)], deck.slice(n)];
   };
@@ -107,7 +114,7 @@ export function matchReducer(m: MatchState, action: Action): MatchState {
   const starter: Player = m.starter === 0 ? 1 : 0;
   const next: GameState = {
     ...q,
-    cells: freshBoard(),
+    cells: freshBoard(q.mods),
     hands: [h0, h1],
     decks: [d0, d1],
     toMove: starter,
@@ -187,8 +194,9 @@ export function matchPlayout(
   seats: readonly [MatchPolicy, MatchPolicy],
   config: MatchConfig = DEFAULT_MATCH,
   rules: Rules = MATCH_RULES,
+  mods: Mods = NO_MODS,
 ): MatchPlayout {
-  let m = newMatch(seed, deck, config, rules);
+  let m = newMatch(seed, deck, config, rules, mods);
   let rng: RngState = (seed * 2654435761) >>> 0;
   const voluntary: [number, number] = [0, 0];
   while (!m.over) {

@@ -33,6 +33,16 @@ describe('match setup', () => {
   });
 });
 
+describe('filled cells', () => {
+  it('in a match you can never place on a cell that already holds a card, even your own', () => {
+    let m = newMatch(9, STARTER_DECK);
+    for (let t = 0; t < 12 && !m.over; t++) {
+      for (const a of legalPlays(m.quarter)) expect(m.quarter.cells[a.cell]!.card).toBeNull();
+      m = matchReducer(m, legalPlays(m.quarter)[0] ?? pass);
+    }
+  });
+});
+
 describe('locking pass', () => {
   it('after you pass, the opponent keeps the turn until they pass', () => {
     let m = newMatch(2, STARTER_DECK);
