@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import {
+  CARDS,
+  SPECIALS,
+  newlyUnlocked,
+  type Progress,
   JOKERS,
   MEETINGS,
   currentMeeting,
@@ -12,6 +16,7 @@ import {
   type Player,
   type RunState,
 } from '@qbr/shared';
+import { CardFace } from './CardFace.js';
 import { Game } from './Game.js';
 import { OrgChart, yourTitle } from './OrgChart.js';
 
@@ -24,6 +29,10 @@ export interface RunResult {
 
 export interface RunProps {
   readonly seed: number;
+  /** Your deck for this whole career (fixed at the start). */
+  readonly deck?: readonly string[];
+  /** Your progress before this career — to announce what it unlocks. */
+  readonly progress?: Progress;
   readonly paused?: boolean;
   readonly onExit: () => void;
   readonly onRunEnd: (r: RunResult) => void;
@@ -45,7 +54,7 @@ function CloseButton({ onExit }: { onExit: () => void }) {
  * first meeting and after every win, and it is the career-end screen too. Each
  * meeting's Game is keyed by rung so it starts clean.
  */
-export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
+export function Run({ seed, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
   const [run, setRun] = useState<RunState>(() => newRun(seed));
 
   const meetingOver = (winner: Player | null) => setRun((r) => finishMeeting(r, winner === 0));
@@ -53,6 +62,10 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
   if (run.status === 'won' || run.status === 'lost') {
     const won = run.status === 'won';
     const beaten = won ? MEETINGS.length : run.meeting;
+    const earned = newlyUnlocked(progress, {
+      bestRung: Math.max(progress.bestRung, beaten),
+      careers: progress.careers + 1,
+    });
     return (
       <div className="app home" data-run-end>
         <div className="window start-window chart-window">
@@ -66,6 +79,24 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
                 : `Your career ended at ${currentMeeting(run).role.replace(/^The /, 'the ')}'s ${currentMeeting(run).name}. Title: ${yourTitle(beaten)}.`}
             </p>
             <OrgChart run={run} beaten={beaten} />
+            {earned.length > 0 && (
+              <div className="unlocked" data-unlocked>
+                <b>New card{earned.length > 1 ? 's' : ''} unlocked</b>
+                <div className="unlocked-cards">
+                  {earned.map((id) => {
+                    const s = SPECIALS.find((x) => x.id === id)!;
+                    return (
+                      <div key={id} className="unlocked-item" data-unlocked-card={id}>
+                        <div className="card deck-card special">
+                          <CardFace id={id} />
+                        </div>
+                        <small>replaces a {CARDS[s.replaces]!.name.replace(/­/g, '')}</small>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <button
               className="btn primary"
               data-run-home
@@ -146,6 +177,7 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
       opponentName={meeting.role}
       opponentInitials={meeting.initials}
       meetingName={meeting.name}
+      {...(deck ? { deck } : {})}
     />
   );
 }

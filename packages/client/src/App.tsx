@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import type { Player, QuarterResult } from '@qbr/shared';
+import { playerDeck, type Player, type QuarterResult } from '@qbr/shared';
+import { DeckView } from './DeckView.js';
 import { Game } from './Game.js';
 import { Home } from './Home.js';
-import { loadRecord, recordRun, recordYear, saveRecord, type Record } from './record.js';
+import { loadRecord, progressOf, recordRun, recordYear, saveRecord, type Record } from './record.js';
 import { Run, type RunResult } from './Run.js';
 
-type Screen = 'home' | 'play';
+type Screen = 'home' | 'play' | 'deck';
 
-/** One thing in progress at a time: a run (the main mode) or a quick year. */
+/** One thing in progress at a time: a career (a "run" in code) or one year. The
+ *  deck is fixed when it starts, so unlocks earned mid-way apply next time. */
 interface Session {
   readonly kind: 'run' | 'quick';
   readonly id: number;
+  readonly deck: readonly string[];
 }
 
 function freshSeed(): number {
@@ -18,10 +21,11 @@ function freshSeed(): number {
 }
 
 /**
- * The shell: the Home Screen at launch and after every finished run or year, and
- * the session in between. A session in progress stays MOUNTED (hidden, paused)
- * while the player is home, so "Resume" is exact and Finance never moves in the
- * background. Starting something new replaces it.
+ * The shell: the Home Screen at launch and after every finished career or year,
+ * the deck view, and the session in between. A session in progress stays
+ * MOUNTED (hidden, paused) while the player is elsewhere, so "Resume" is exact
+ * and the opponent never moves in the background. Starting something new
+ * replaces it.
  */
 export function App({ seed }: { seed?: number } = {}) {
   const [screen, setScreen] = useState<Screen>('home');
@@ -29,7 +33,7 @@ export function App({ seed }: { seed?: number } = {}) {
   const [record, setRecord] = useState<Record>(loadRecord);
 
   const start = (kind: Session['kind']) => {
-    setSession((s) => ({ kind, id: (s?.id ?? 0) + 1 }));
+    setSession((s) => ({ kind, id: (s?.id ?? 0) + 1, deck: playerDeck(progressOf(record)) }));
     setScreen('play');
   };
 
@@ -55,14 +59,18 @@ export function App({ seed }: { seed?: number } = {}) {
           onStartRun={() => start('run')}
           onStartQuick={() => start('quick')}
           onResume={() => setScreen('play')}
+          onDeck={() => setScreen('deck')}
         />
       )}
+      {screen === 'deck' && <DeckView progress={progressOf(record)} onClose={() => setScreen('home')} />}
       {session && (
         <div className="game-host" hidden={screen !== 'play'}>
           {session.kind === 'run' ? (
             <Run
               key={session.id}
               seed={sessionSeed(session.id)}
+              deck={session.deck}
+              progress={progressOf(record)}
               paused={screen !== 'play'}
               onExit={() => setScreen('home')}
               onRunEnd={runEnded}
@@ -71,6 +79,7 @@ export function App({ seed }: { seed?: number } = {}) {
             <Game
               key={session.id}
               seed={sessionSeed(session.id)}
+              deck={session.deck}
               paused={screen !== 'play'}
               onExit={() => setScreen('home')}
               onYearEnd={yearEnded}

@@ -93,17 +93,24 @@ export const idx = (row: number, col: number): number => row * COLS + col;
 export const rowOf = (i: number): number => Math.floor(i / COLS);
 export const colOf = (i: number): number => i % COLS;
 
+/** One list both seats play, or separate lists: the player's deck grows with
+ *  unlocked specials while opponents keep the starter deck. */
+export type Deck = readonly string[] | { readonly player: readonly string[]; readonly opponent: readonly string[] };
+
+const deckFor = (deck: Deck, seat: Player): readonly string[] =>
+  'player' in deck ? (seat === 0 ? deck.player : deck.opponent) : deck;
+
 export function newGame(
   seed: number,
-  deck: readonly string[],
+  deck: Deck,
   rules: Rules = DEFAULT_RULES,
   mods: Mods = NO_MODS,
 ): GameState {
   let rng: RngState = seed;
   let d0: string[];
   let d1: string[];
-  [rng, d0] = shuffle(rng, deck);
-  [rng, d1] = shuffle(rng, deck);
+  [rng, d0] = shuffle(rng, deckFor(deck, 0));
+  [rng, d1] = shuffle(rng, deckFor(deck, 1));
   if (rules.cheapOpener) {
     d0 = withCheapOpener(d0, rules.handSize);
     d1 = withCheapOpener(d1, rules.handSize);

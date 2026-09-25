@@ -1,7 +1,7 @@
 // The player's year-by-year record, kept on the device. localStorage can be
 // missing or throw (private mode, cleared data, some WKWebView states), so every
 // access is guarded and the app works identically without it.
-import type { Player, QuarterResult } from '@qbr/shared';
+import type { Player, Progress, QuarterResult } from '@qbr/shared';
 
 export interface Record {
   readonly wins: number;
@@ -69,6 +69,12 @@ export function recordYear(r: Record, winner: Player | null, results: readonly Q
     last: results.map((q) => (q.winner === 0 ? 'W' : q.winner === 1 ? 'L' : 'T')).join(' '),
     lastOutcome: outcome,
   };
+}
+
+/** What unlocks care about, from the record. A career's rungs beaten = its
+ *  `meetingsWon`, so `bestMeetings` is the best rung reached. */
+export function progressOf(r: Record): Progress {
+  return { bestRung: r.bestMeetings, careers: r.runs };
 }
 
 /** Fold one finished run into the record. */

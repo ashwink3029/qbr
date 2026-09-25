@@ -18,6 +18,7 @@ import {
   reducer,
   revenue,
   type Action,
+  type Deck,
   type GameState,
   type Player,
   type Rules,
@@ -66,7 +67,7 @@ export interface MatchState {
 
 export function newMatch(
   seed: number,
-  deck: readonly string[],
+  deck: Deck,
   config: MatchConfig = DEFAULT_MATCH,
   rules: Rules = MATCH_RULES,
   mods: Mods = NO_MODS,
@@ -190,7 +191,7 @@ export interface MatchPlayout {
 
 export function matchPlayout(
   seed: number,
-  deck: readonly string[],
+  deck: Deck,
   seats: readonly [MatchPolicy, MatchPolicy],
   config: MatchConfig = DEFAULT_MATCH,
   rules: Rules = MATCH_RULES,

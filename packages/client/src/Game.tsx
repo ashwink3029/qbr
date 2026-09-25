@@ -26,7 +26,8 @@ import {
   type QuarterResult,
   type RngState,
 } from '@qbr/shared';
-import { SCREEN_COLS, SCREEN_ROWS, fromScreen, spreadToScreen } from './layout.js';
+import { CardFace } from './CardFace.js';
+import { SCREEN_COLS, SCREEN_ROWS, fromScreen } from './layout.js';
 import { TipBubble } from './Mascot.js';
 import { loadSeenTips, markTipSeen, pickTip } from './tips.js';
 
@@ -39,25 +40,6 @@ const HUMAN = 0;
 
 function freshSeed(): number {
   return (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0;
-}
-
-/** A card's spread drawn as a 3-wide x 5-tall mini-grid centred on the card,
- *  oriented like the board: forward is up. */
-function SpreadGlyph({ id }: { id: string }) {
-  const hits = new Set(
-    card(id).spread.map((o) => {
-      const { dx, dy } = spreadToScreen(o);
-      return `${dx},${dy}`;
-    }),
-  );
-  const cells = [];
-  for (let dy = -2; dy <= 2; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const cls = dx === 0 && dy === 0 ? 'g self' : hits.has(`${dx},${dy}`) ? 'g hit' : 'g';
-      cells.push(<i key={`${dx},${dy}`} className={cls} />);
-    }
-  }
-  return <span className="glyph">{cells}</span>;
 }
 
 /** Life pips: losing a quarter costs one. */
@@ -105,6 +87,9 @@ export interface GameProps {
   readonly opponentInitials?: string;
   /** A career meeting's name ("Budget review"); absent in a one-off year. */
   readonly meetingName?: string;
+  /** Your deck (starter upgraded by unlocked specials); the opponent always
+   *  plays the plain starter deck. */
+  readonly deck?: readonly string[];
 }
 
 export function Game({
@@ -117,10 +102,11 @@ export function Game({
   opponentName: who = 'Finance',
   opponentInitials: whoInitials = 'FIN',
   meetingName,
+  deck = STARTER_DECK,
 }: GameProps = {}) {
   const opponent = useMemo(() => opponentPolicy(opponentKind), [opponentKind]);
   const [match, setMatch] = useState<MatchState>(() =>
-    newMatch(seed ?? freshSeed(), STARTER_DECK, DEFAULT_MATCH, MATCH_RULES, mods),
+    newMatch(seed ?? freshSeed(), { player: deck, opponent: STARTER_DECK }, DEFAULT_MATCH, MATCH_RULES, mods),
   );
   const blocked = useMemo(() => blockedCells(mods), [mods]);
   const boss = mods.boss ? BOSSES[mods.boss] : undefined;
@@ -448,10 +434,7 @@ export function Game({
                 disabled={!humanTurn}
                 onClick={() => pickCard(id)}
               >
-                <span className="cost">{'$'.repeat(card(id).cost)}</span>
-                <span className="cname">{card(id).name}</span>
-                <SpreadGlyph id={id} />
-                <span className="cval">{card(id).value}</span>
+                <CardFace id={id} />
                 {short && (
                   <span className="needs" data-needs>
                     {bestOpen < 0 ? 'no open cell' : `needs ${'$'.repeat(card(id).cost)}`}

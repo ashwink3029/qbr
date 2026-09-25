@@ -287,14 +287,34 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    home boost is strong but NOT monotone — CEO with 3 boosted cells was EASIER
    (71.6%) than with 2 (56.5%), likely the AI's eval over-valuing budget on its
    own empty cells. Final tuning is the table above.
-5. **Unlockable special cards for beating runs** — and an inventory to iterate
-   on. Beating a run (or a rung of the ladder) unlocks new cards that join your
-   deck/pool; persistence alongside `record.ts`. Every new card goes through the
-   sim (does it help without breaking bars?). Needs a real card-design pass —
-   the current 11-card pool is small.
-6. **Deck view from Home.** Show the deck you have and the cards not yet
-   unlocked (silhouettes / "locked" with the unlock condition). Depends on 5's
-   unlock model.
+5. ~~Unlockable special cards~~ **DONE.** `cards.ts` `SPECIALS`: six specials,
+   each an **upgrade that replaces one starter card** (deck stays 15):
+   | special | unlock | replaces | card |
+   |---|---|---|---|
+   | Coffee Run | beat the Intern | a Memo | $ v2, sides + leap 2 |
+   | Performance Review | beat the Manager | Slide Deck | $$ v5, forward |
+   | Budget Cut | beat Finance | a Cold Call | $ v1, forward fan + leap |
+   | Hostile Takeover | beat the VP | Vision Statement | $$$ v8, forward fan |
+   | Golden Parachute | get promoted | Headcount | $$ v8, no spread |
+   | Water Cooler Gossip | finish 3 careers | a Standup | $ v1, sides + back diagonals |
+   Unlocks derive from the saved record (`progressOf`: best rung, careers) — no
+   second store. Your deck (`playerDeck`) is fixed when a career/year starts;
+   opponents always play the starter deck (`Deck = {player, opponent}`). The
+   career-end screen announces new unlocks. **Unlock bars (pre-registered in
+   `sim/src/unlockbars.ts`), 2000 seeds: 3/3** — every special lifts the
+   player's share +1.2..+8.8pp (U1 >= +1, U2 <= +10), whole collection 71.7%
+   (U3 <= 75%). **Honest history — a real design finding:** the first model
+   ADDED specials to the deck and failed: expensive specials were NET NEGATIVE
+   (Hostile Takeover -6.3pp, Golden Parachute -6.7pp — a $$$ card is dead in an
+   8-card opening hand) while a cheap one was broken (+16.1pp). Switching to
+   replacements fixed the sign; two tuning rounds set the numbers above.
+   **Rule for future cards: in QBR cheap spreaders are king and $$$ cards are
+   liabilities until the board has budget — price new cards accordingly.**
+   Thin margin: Hostile Takeover +1.2pp (bar +1) — first to revisit.
+6. ~~Deck view from Home~~ **DONE.** Home -> "Your deck" (`DeckView.tsx`):
+   owned cards cheapest-first with copy counts, specials highlighted gold, and
+   locked specials as silhouettes with how to unlock and what they replace.
+   Card faces are shared (`CardFace.tsx`) by the hand, deck view and unlocks.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
