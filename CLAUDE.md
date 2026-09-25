@@ -78,18 +78,40 @@ into enemy cells holding weaker cards. Do not move the pre-registered bars.
   Phase 0. Fix candidates: guarantee a $-cost card in the opening hand, or a
   mulligan. Measure through `pnpm measure`, like the starvation fix.
 
-## Roadmap (not yet built)
-1. Fix territory starvation (above) until bar 4 passes; recheck bars 1-3.
-2. **Gwent layer:** best-of-3 quarters with passing as a real decision (currently
+## Backlog (prioritized — top item is next)
+1. **NEXT — App ID + signing, so QBR can reach a real iPhone / TestFlight.**
+   Mirror `rushie/` (formerly `chain/`), which did this in three commits:
+   `DEVELOPMENT_TEAM = 7XMX2SE648` + `CODE_SIGN_STYLE = Automatic` in both App
+   build configs; `ITSAppUsesNonExemptEncryption = false` in `App/Info.plist`
+   (TestFlight upload gate); and `ios/App/ci_scripts/ci_post_clone.sh` for Xcode
+   Cloud. Currently only `PRODUCT_BUNDLE_IDENTIFIER = com.ashwink.qbr` is set.
+   The App ID registration and App Store Connect app record live in the user's
+   Apple account — confirm the bundle ID before registering; it is permanent.
+2. **Vertical board: you at the bottom, the opponent at the top.** Portrait
+   phones want the lanes to run up the screen: render the sheet transposed as
+   **5 rows x 3 lanes**. Your home row is at the bottom, Finance's at the top, and
+   "forward" is up. The three business units become columns, and each lane's
+   `=SUM` score goes in a totals row. This is a **view-only transpose**: the
+   reducer, cards and `spreadTargets` stay as they are. The client maps
+   (row, col) -> (screen row = COLS-1-col, screen col = row), and the card glyph
+   rotates so the spread shape reads "up". Wins: cells get ~2x wider (~110px vs
+   58px), the opponent strip sits naturally above their home row, and the
+   standard "you vs them across a table" framing matches Gwent / Queen's Blood.
+   Cover the mapping with a client test (a Cold Call's claimed cell is the one
+   directly above it on screen).
+3. Fix territory starvation (Phase 0 bar 4) until it passes; recheck bars 1-3.
+   Fold in the opening-hand fix (guarantee a $ card, or mulligan).
+4. **Gwent layer:** best-of-3 quarters with passing as a real decision (currently
    policies only pass when forced, so passing is not yet measured at all).
-3. **Balatro layer:** run of meetings as blinds — "Quick sync" / "Standup" /
+5. **Balatro layer:** run of meetings as blinds — "Quick sync" / "Standup" /
    "Quarterly Review" boss — with boss rule-breakers (Micromanager locks a cell,
    Reply-All floods junk, Auditor halves your best row, Legacy System has
    unclaimable cells, final boss "The Board"). Jokers as desk objects (Coffee Mug,
    APPROVED stamp, Pivot Table rotates a shape, Newton's Cradle, Circular
-   Reference wraps edges). Helpers as keycaps (Ctrl+C/V/X/Z) and sticky notes.
-   Chain's Cascade Forge is the reference for the joker/blind plumbing.
-4. Mascot: an original **binder clip** assistant (jaws = expressions). NOT
+   Reference wraps edges) — the teal desktop above the window is their tray.
+   Helpers as keycaps (Ctrl+C/V/X/Z) and sticky notes. Rushie's Cascade Forge is
+   the reference for the joker/blind plumbing.
+6. Mascot: an original **binder clip** assistant (jaws = expressions). NOT
    Clippy/Clippit — that is Microsoft's character.
 
 ## IP guardrails — read before adding art, names or cards
@@ -112,7 +134,7 @@ pnpm measure     # Phase 0 report; optional arg = seeds per seat (default 1000)
 ```
 
 ## iOS Simulator
-Same recipe as `chain/CLAUDE.md` ("Dev workflow — running on the iOS Simulator"),
+Same recipe as `rushie/CLAUDE.md` (formerly `chain/`) ("Dev workflow — running on the iOS Simulator"),
 with bundle id `com.ashwink.qbr`:
 ```
 cd packages/client && pnpm build && pnpm exec cap sync ios && cd ios/App
