@@ -1,3 +1,6 @@
 node_modules/
 dist/
 *.log
+
+# Claude Code worktrees live inside the repo; never commit them
+.claude/worktrees/

@@ -110,11 +110,39 @@ orange stripes = takeover flip).
   sit in a `=SUM` row under your home row; revenue + deck sit beside the pass
   button.
 
+## Best-of-3 match — the Gwent layer (2026-09-25) — 4/4 bars PASS
+`packages/shared/src/qbr/match.ts`. **The app now plays a whole year**: up to 3
+quarters, one hand for the match (8 opening, +3 before Q2, +2 before Q3, no
+per-turn draw), **locking pass** ("Close out Qn": you are out for the quarter,
+Finance plays on alone), fresh board each quarter, 2 lives each (lose a quarter =
+-1, tie = both -1), starter alternates. Finance = `smartPass(lookaheadPolicy)`.
+Pre-registered bars (in `sim/src/matchbars.ts`, stated before the first run),
+`pnpm match 2000`:
+| bar | result | |
+|---|---|---|
+| M1 seat balance, smart mirror first-seat share in [40,60] | 50.1% | PASS |
+| M2 passing matters: smart-pass beats never-pass >= 60% | 63.3% | PASS |
+| M3 headroom: smart-lookahead beats smart-greedy >= 55% | 64.4% | PASS |
+| M4 length: median turns per whole match <= 36 | 23 | PASS |
+Also: 40% of matches reach Q3; ~1.9 voluntary passes per match; ~3 cards unplayed.
+**How it got there, honestly:** the first config (8 opening, +2/+1) passed M2 at
+60.2% — on the line (95% CI ~58.6-61.8), not a real pass. `pnpm passplan` showed
+~59% of passing's value is the one obvious move (after Finance closes out, stop
+the moment you lead); banking a lead early adds ~3pp. `pnpm matchsweep` then
+tested the card economy: **scarcity was the wrong lever** (5-card hands make
+passing matter LESS: 52-60%); **bigger between-quarter refills make it matter
+more** (a saved card is worth more when the next quarter re-arms you). 8 / +3/+2
+passes all four with margin; 10-card hands push seat balance to 55-56%.
+**Open design issue — conceding is worthless.** In every config, conceding a lost
+quarter to save cards scores 47-50% against the same plan without it, i.e. the
+signature Gwent "throw a round" play does not pay yet. Boards reset and ~3
+cards go unplayed at the end, so a saved card rarely matters. Candidate levers
+for later: carry something across quarters (a lane's budget? a card's value?),
+or make the last quarter card-hungrier. Do not claim "Gwent-style card
+advantage" in marketing until this moves.
+
 ## Known rules issue surfaced by play
-- **An opening hand can have no legal move** (all cards cost $$+, home cells hold
-  $). Seen live on a random seed; it is the "all cards too expensive" 4.8% from
-  Phase 0. Fix candidates: guarantee a $-cost card in the opening hand, or a
-  mulligan. Measure through `pnpm measure`, like the starvation fix.
+- ~~An opening hand can have no legal move~~ — fixed by `cheapOpener` (default).
 
 ## Backlog (prioritized — top item is next)
 1. **App ID + signing — project side DONE 2026-09-25 (`ba0ebe2`); account side
@@ -134,8 +162,8 @@ orange stripes = takeover flip).
    For a direct install, plug in a registered iPhone; the dev-signed build works.
 2. ~~Vertical board~~ **DONE 2026-09-25.** See "Phone layout" above.
 3. ~~Fix territory starvation + opening hand~~ **DONE 2026-09-25** — 4/4 bars.
-4. **Gwent layer:** best-of-3 quarters with passing as a real decision (currently
-   policies only pass when forced, so passing is not yet measured at all).
+4. ~~Gwent layer~~ **DONE 2026-09-25** — 4/4 match bars; see "Best-of-3 match".
+   Follow-up: make conceding a quarter worth something (open design issue).
 5. **Balatro layer:** run of meetings as blinds — "Quick sync" / "Standup" /
    "Quarterly Review" boss — with boss rule-breakers (Micromanager locks a cell,
    Reply-All floods junk, Auditor halves your best row, Legacy System has
@@ -165,7 +193,12 @@ pnpm test        # shared rule tests + client DOM test
 pnpm typecheck
 pnpm measure     # Phase 0 report: [seedsPerSeat=1000] [rules, e.g. pasteOver,takeover]
 pnpm sweep       # all 8 rule combinations vs the pre-registered bars
+pnpm match       # best-of-3 bars M1-M4: [seedsPerSeat=500]
+# from packages/sim: tsx src/passplan.ts (pass-plan thresholds),
+#                    tsx src/matchsweep.ts (hand size x between-quarter draws)
 ```
+Worktrees: a background Claude session edits in `.claude/worktrees/<name>`
+(gitignored) and fast-forwards `main`; run a second dev server there on 5177.
 
 ## iOS Simulator
 Same recipe as `rushie/CLAUDE.md` (formerly `chain/`) ("Dev workflow — running on the iOS Simulator"),

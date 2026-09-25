@@ -60,4 +60,42 @@ describe('the app', () => {
       vi.useRealTimers();
     }
   });
+
+  it('closing out Q1 locks you out, Finance finishes alone, then Q2 starts on a fresh sheet', () => {
+    vi.useFakeTimers();
+    try {
+      render(<App seed={5} />);
+      const title = () => document.querySelector('[data-title]')!.textContent;
+      const handBefore = document.querySelectorAll('[data-card]').length;
+      expect(title()).toMatch(/Q1/);
+
+      fireEvent.click(document.querySelector<HTMLButtonElement>('[data-pass]')!);
+      expect(document.querySelector<HTMLButtonElement>('[data-pass]')!.disabled).toBe(true);
+      expect(document.querySelector('[data-status]')!.textContent).toMatch(/closed out Q1/);
+
+      // Finance plays on alone until it closes out too; the summary then appears.
+      for (let k = 0; k < 30 && !document.querySelector('[data-dialog]'); k++) {
+        act(() => {
+          vi.advanceTimersByTime(AI_DELAY_MS + 10);
+        });
+        // While we are locked out, our cards stay unplayable.
+        const live = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).filter((b) => !b.disabled);
+        if (!document.querySelector('[data-dialog]')) expect(live).toHaveLength(0);
+      }
+      const dialog = document.querySelector('[data-dialog]');
+      expect(dialog, 'no quarter summary after both closed out').toBeTruthy();
+      expect(dialog!.textContent).toMatch(/Q1 results/);
+      // We played nothing, so Finance won Q1 (or tied at 0-0): we lost a life.
+      expect(document.querySelectorAll('[data-lives="You"] i.on')).toHaveLength(1);
+
+      fireEvent.click(document.querySelector<HTMLButtonElement>('[data-dialog-button]')!);
+      expect(document.querySelector('[data-dialog]')).toBeNull();
+      expect(title()).toMatch(/Q2/);
+      expect(cells().some((c) => c.querySelector('.placed'))).toBe(false);
+      // Hand kept and topped up (8 opening + 3 between Q1 and Q2).
+      expect(document.querySelectorAll('[data-card]').length).toBe(handBefore + 3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

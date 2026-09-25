@@ -251,3 +251,40 @@
 .btn:disabled { color: var(--lo); cursor: default; }
 .rev { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
 .rev small { color: var(--lo); font-size: 11px; }
+
+/* Lives: a filled pip is a life left; losing a quarter empties one. */
+.lives { display: inline-flex; gap: 3px; }
+.lives i { width: 10px; height: 10px; border: 1px solid #5ad15a; }
+.lives i.on { background: #5ad15a; }
+.lives i.off { background: transparent; border-color: var(--lo); }
+.opponent .lives { margin-left: auto; }
+.opponent .backs { margin-left: 8px; }
+.you-lives { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.you-lives small { color: var(--lo); font-size: 11px; }
+.you-lives .lives i { border-color: #2d6a00; }
+.you-lives .lives i.on { background: #2d6a00; }
+
+/* Quarter / year summary: a 90s modal dialog over the window. */
+.window { position: relative; }
+.dialog-scrim {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 16px;
+}
+.dialog {
+  width: 100%;
+  max-width: 320px;
+  background: var(--panel);
+  border: 2px solid;
+  border-color: var(--hi) var(--lo) var(--lo) var(--hi);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.dialog p { margin: 14px 14px 10px; line-height: 1.35; }
+.dialog .btn { align-self: center; margin: 0 0 14px; min-width: 140px; }

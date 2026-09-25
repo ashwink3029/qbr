@@ -6,7 +6,8 @@
   "scripts": {
     "measure": "tsx src/measure.ts",
     "typecheck": "tsc --noEmit",
-    "sweep": "tsx src/sweep.ts"
+    "sweep": "tsx src/sweep.ts",
+    "match": "tsx src/matchbars.ts"
   },
   "dependencies": {
     "@qbr/shared": "workspace:*"
