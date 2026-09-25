@@ -401,6 +401,43 @@
 .pval.down { color: #b00020; }
 
 /* Quarter / year summary: a 90s modal dialog over the window. */
+/* ── Bindy, the binder-clip assistant ────────────────────────────────── */
+.tip-anchor { position: relative; height: 0; z-index: 5; }
+.tip {
+  position: absolute;
+  top: 4px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: #fffbe0;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  touch-action: manipulation;
+  animation: tip-in 180ms ease-out;
+}
+.tip-text { display: flex; flex-direction: column; gap: 3px; line-height: 1.3; font-size: 13px; }
+.tip-text small { color: var(--lo); font-size: 10px; }
+.clipper { flex: 0 0 auto; }
+.clipper.talk { animation: clip-talk 900ms ease-in-out infinite; transform-origin: 50% 80%; }
+@keyframes clip-talk { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes tip-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .clipper.talk, .tip { animation: none; }
+}
+.home-clip { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.3; color: #333; }
+/* The desktop icons are decoration; on short phones the start window needs the room. */
+@media (max-height: 760px) {
+  .desktop-icons { display: none; }
+}
+
 /* Safety net: if a screen is ever too short for the window, it scrolls instead
    of letting panels overlap. */
 .window { position: relative; overflow-y: auto; }

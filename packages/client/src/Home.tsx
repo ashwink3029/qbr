@@ -1,5 +1,7 @@
 import { MEETINGS } from '@qbr/shared';
+import { BinderClip } from './Mascot.js';
 import type { Record } from './record.js';
+import { homeLine } from './tips.js';
 
 export interface HomeProps {
   readonly record: Record;
@@ -65,6 +67,11 @@ export function Home({ record, inProgress, onStartRun, onStartQuick, onResume }:
           <button className="btn" data-start onClick={onStartQuick}>
             Quick year vs Finance
           </button>
+
+          <div className="home-clip" data-home-clip>
+            <BinderClip mood="talk" size={44} />
+            <span>{homeLine(record.runs, record.promotions)}</span>
+          </div>
 
           <div className="record" data-record>
             {record.runs === 0 && years === 0 ? (

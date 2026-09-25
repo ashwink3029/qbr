@@ -28,6 +28,8 @@ import {
   type RngState,
 } from '@qbr/shared';
 import { SCREEN_COLS, SCREEN_ROWS, fromScreen, spreadToScreen } from './layout.js';
+import { TipBubble } from './Mascot.js';
+import { loadSeenTips, markTipSeen, pickTip } from './tips.js';
 
 /** The AI "thinks" this long before replying, so its move reads as a move. */
 export const AI_DELAY_MS = 450;
@@ -123,6 +125,7 @@ export function Game({
   const blocked = useMemo(() => blockedCells(mods), [mods]);
   const boss = mods.boss ? BOSSES[mods.boss] : undefined;
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [seenTips, setSeenTips] = useState<ReadonlySet<string>>(loadSeenTips);
   const [aiRng, setAiRng] = useState<RngState>(() => (seed ?? 1) * 7919);
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -229,6 +232,22 @@ export function Game({
             }${effects.flip.length ? ` — flips ${effects.flip.length}` : ''}`);
   }
 
+  const tip =
+    summary || paused || match.over
+      ? null
+      : pickTip(
+          {
+            humanTurn,
+            firstTurnOfMatch: match.quarterNo === 1 && match.quarter.turn === 0,
+            selected: selected !== null,
+            previewFlips: effects.flip.length > 0,
+            financeClosedOut: theyPassed,
+            lead: mine - theirs,
+            mods,
+          },
+          seenTips,
+        );
+
   let dialog: { title: string; body: string; button: string; onClick: () => void } | null = null;
   if (summary) {
     const [a, b] = summary.result.revenue;
@@ -315,6 +334,14 @@ export function Game({
         <div className="formula">
           <span className="fx">fx</span>
           <span data-status>{status}</span>
+        </div>
+
+        {/* Bindy's one-time tips float over Finance's side of the board,
+            away from your hand and home row. */}
+        <div className="tip-anchor">
+          {tip && (
+            <TipBubble text={tip.text} mood={tip.mood} onDismiss={() => setSeenTips((s) => markTipSeen(s, tip.id))} />
+          )}
         </div>
 
         <div className="sheet" role="grid">

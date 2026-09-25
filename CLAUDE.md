@@ -221,8 +221,25 @@ advantage" in marketing until this moves.
    Stamp 54.0% and Circular 69.5%. Not yet built: the meeting calendar, joker
    draft screen and desk-object tray; helpers (keycaps / sticky notes); "The
    Board" final boss; Pivot Table / Newton's Cradle / Paste Special jokers.
-6. Mascot: an original **binder clip** assistant (jaws = expressions). NOT
-   Clippy/Clippit — that is Microsoft's character.
+6. ~~Mascot~~ **DONE 2026-09-25 — "Bindy", an original binder clip**
+   (`client/src/Mascot.tsx`, inline SVG placeholder art: black plates, wire-handle
+   arms, the jaw is the face — shut idle, open talking, tilted worried). NOT
+   Clippy/Clippit; it was briefly "Clipper" and renamed for being one letter-swap
+   from Clippy. Bindy gives **one-time tips** (`tips.ts`, seen-set in guarded
+   localStorage, tap to dismiss): how to place (first turn), what orange stripes
+   mean (first flip preview), what to do when Finance closes out (ahead / behind),
+   and each boss's rule the first time you meet it. Tips float over Finance's
+   side of the board, away from your hand. Bindy also greets you on Home.
+   Respects `prefers-reduced-motion`.
+
+## Next up (not yet built)
+- Balatro depth: helpers (keycap consumables Ctrl+C/V/X/Z, sticky notes), more
+  jokers (Paste Special = paste over your own card, Pivot Table, Newton's
+  Cradle), "The Board" final boss, a shop/economy between meetings.
+- Gwent depth: make conceding a quarter worth something (open design issue).
+- Art: commission the pixel set (Bindy, jokers, bosses, card faces) — the SVG/CSS
+  shapes here are placeholders sized for it.
+- Device: install on a real iPhone via Xcode Cloud / TestFlight and play a run.
 
 ## IP guardrails — read before adding art, names or cards
 - Mechanics are free; expression is not. Card names, text, art and characters must
