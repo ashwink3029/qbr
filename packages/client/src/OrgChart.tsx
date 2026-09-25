@@ -1,4 +1,5 @@
 import { BOSSES, MEETINGS, bossFor, type RunState } from '@qbr/shared';
+import { AvatarImage } from './avatars.js';
 
 /** Your title after beating N rungs (N = run.meeting on the chart). */
 export const TITLES = ['New hire', 'Associate', 'Senior associate', 'Team lead', 'Director', 'Promoted'] as const;
@@ -14,7 +15,7 @@ function threat(run: RunState, i: number): string {
   const b = bossFor(run, i);
   if (b) parts.push(`${BOSSES[b]!.name}: ${BOSSES[b]!.blurb}`);
   if (m.edge > 0) parts.push(`+${m.edge} card${m.edge > 1 ? 's' : ''} each quarter`);
-  if (m.homeBoost > 0) parts.push(`${m.homeBoost} home cell${m.homeBoost > 1 ? 's' : ''} start at $$`);
+  if (m.homeBoost > 0) parts.push(`${m.homeBoost} home cell${m.homeBoost > 1 ? 's start' : ' starts'} at $$`);
   if (parts.length === 0) parts.push(m.opponent === 'rookie' ? 'plays anything' : 'plays it straight');
   return parts.join(' · ');
 }
@@ -33,8 +34,8 @@ export function OrgChart({ run, beaten }: { run: RunState; beaten: number }) {
         const state = i < beaten ? 'beaten' : i === beaten ? 'next' : 'above';
         return (
           <li key={m.role} className={`rung ${state}`} data-rung={i} data-state={state}>
-            <span className="rung-avatar" aria-hidden>
-              {m.initials}
+            <span className="rung-avatar">
+              <AvatarImage id={m.initials} size={34} />
             </span>
             <span className="rung-text">
               <b>{m.role}</b>

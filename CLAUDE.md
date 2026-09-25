@@ -329,6 +329,18 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    ios` and COMMIT Package.swift**, since CI only runs `cap copy`. Only
    verifiable on a real device: the Simulator has no haptics. Web audio is
    subject to the iPhone's silent switch.
+8. ~~Opponent avatars~~ **DONE.** `client/src/avatars.tsx`: 16x16 pixel
+   portraits authored as character maps (+ palette) and drawn as crisp SVG
+   runs — the Intern (hoodie, lanyard), the Manager (side part, headset), Finance
+   (green visor, glasses, sweater vest), the VP (silver hair, shades, power tie),
+   the CEO (silver beard, pinstripes, gold tie). Fictional office types; none
+   modelled on a real person. Shown on the opponent strip and the org chart,
+   keyed by the rung's `initials` (unknown ids fall back to the initials tile).
+   Same "placeholder art in code" status as Bindy and the icon: sized so a
+   commissioned 16x16 set can replace the maps 1:1. Tests pin every map to
+   16x16 and its palette (a typo'd row fails CI, not the eye). Caught in review:
+   Finance's glasses first rendered as solid bars (frame and pupil shared a
+   colour) and read as a second VP in shades.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

@@ -26,6 +26,7 @@ import {
   type QuarterResult,
   type RngState,
 } from '@qbr/shared';
+import { AvatarImage } from './avatars.js';
 import { CardFace } from './CardFace.js';
 import * as feedback from './feedback.js';
 import { SCREEN_COLS, SCREEN_ROWS, fromScreen } from './layout.js';
@@ -332,8 +333,8 @@ export function Game({
         </div>
 
         <div className={`opponent ${!summary && !match.over && game.toMove === 1 ? 'live' : ''}`} data-opponent>
-          <span className="avatar" aria-hidden>
-            {whoInitials}
+          <span className="avatar">
+            <AvatarImage id={whoInitials} size={40} />
           </span>
           <span className="who">
             <b>{who}</b>

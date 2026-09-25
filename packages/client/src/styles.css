@@ -414,6 +414,21 @@
 .pval.down { color: #b00020; }
 
 /* Quarter / year summary: a 90s modal dialog over the window. */
+/* ── Pixel avatars: a portrait replaces the initials tile ─────────────── */
+.pixel-avatar { display: block; image-rendering: pixelated; }
+.avatar:has(.pixel-avatar),
+.rung-avatar:has(.pixel-avatar) {
+  background: none;
+  padding: 0;
+  outline: 2px solid #000;
+  outline-offset: -1px;
+}
+.avatar-fallback { font-family: ui-monospace, Menlo, monospace; font-weight: 700; }
+@media (max-height: 760px) {
+  .rung-avatar .pixel-avatar { width: 28px; height: 28px; }
+  .avatar .pixel-avatar { width: 34px; height: 34px; }
+}
+
 /* ── Org chart: CEO at the top, you at the bottom ─────────────────────── */
 .chart-window { max-width: 380px; }
 .orgchart { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: stretch; }
