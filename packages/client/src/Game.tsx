@@ -168,12 +168,31 @@ export function Game({
     apply(match, a);
     setSelected(null);
     setPending(null);
+    setExplain(null);
   };
 
+  // A grey card is still tappable: it explains itself instead of selecting.
+  const [explain, setExplain] = useState<string | null>(null);
+
   const pickCard = (id: string) => {
-    setSelected(selected === id ? null : id);
     setPending(null);
+    if (!legal.some((a) => a.card === id)) {
+      setSelected(null);
+      setExplain(explain === id ? null : id);
+      return;
+    }
+    setExplain(null);
+    setSelected(selected === id ? null : id);
   };
+
+  /** Your best open cell's budget: -1 when you have no empty, unlocked cell. */
+  const bestOpen = useMemo(() => {
+    let best = -1;
+    game.cells.forEach((c, i) => {
+      if (c.owner === HUMAN && c.card === null && !blocked.has(i)) best = Math.max(best, c.budget);
+    });
+    return best;
+  }, [game, blocked]);
 
   const tapCell = (i: number) => {
     if (!humanTurn || selected === null || !legalCells.has(i)) return;
@@ -215,6 +234,12 @@ export function Game({
     status = `Q${summary.quarterNo} closed ${a}–${b}. ${verdict}.`;
   } else if (!humanTurn) {
     status = iPassed ? `You closed out Q${qNo} — Finance is still presenting…` : 'Finance is typing…';
+  } else if (explain !== null && game.hands[HUMAN].includes(explain)) {
+    const c = card(explain);
+    status =
+      bestOpen < 0
+        ? `${c.name} has nowhere to go — you have no open cells. Close out, or wait for a spread to claim more.`
+        : `${c.name} needs a ${'$'.repeat(c.cost)} cell; your best open cell has ${'$'.repeat(bestOpen)}. Spreads add $ to the cells they reach.`;
   } else if (legal.length === 0) {
     status = `No moves — close out Q${qNo}.`;
   } else {
@@ -244,6 +269,7 @@ export function Game({
             financeClosedOut: theyPassed,
             lead: mine - theirs,
             mods,
+            hasUnaffordable: humanTurn && game.hands[HUMAN].some((id) => !legal.some((a) => a.card === id)),
           },
           seenTips,
         );
@@ -406,20 +432,33 @@ export function Game({
         </div>
 
         <div className="hand">
-          {game.hands[HUMAN].map((id, k) => (
-            <button
-              key={`${id}-${k}`}
-              className={`card ${selected === id ? 'sel' : ''}`}
-              data-card={id}
-              disabled={!humanTurn || !legal.some((a) => a.card === id)}
-              onClick={() => pickCard(id)}
-            >
-              <span className="cost">{'$'.repeat(card(id).cost)}</span>
-              <span className="cname">{card(id).name}</span>
-              <SpreadGlyph id={id} />
-              <span className="cval">{card(id).value}</span>
-            </button>
-          ))}
+          {game.hands[HUMAN].map((id, k) => {
+            const playable = humanTurn && legal.some((a) => a.card === id);
+            // On your turn a card you cannot afford stays tappable (it explains
+            // itself) and says what it needs; off-turn everything is disabled.
+            const short = humanTurn && !playable;
+            return (
+              <button
+                key={`${id}-${k}`}
+                className={`card ${selected === id ? 'sel' : ''} ${short ? 'unaffordable' : ''} ${explain === id ? 'explained' : ''}`}
+                data-card={id}
+                data-playable={playable ? 'true' : 'false'}
+                aria-disabled={!playable}
+                disabled={!humanTurn}
+                onClick={() => pickCard(id)}
+              >
+                <span className="cost">{'$'.repeat(card(id).cost)}</span>
+                <span className="cname">{card(id).name}</span>
+                <SpreadGlyph id={id} />
+                <span className="cval">{card(id).value}</span>
+                {short && (
+                  <span className="needs" data-needs>
+                    {bestOpen < 0 ? 'no open cell' : `needs ${'$'.repeat(card(id).cost)}`}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <div className="actions">

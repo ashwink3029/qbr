@@ -12,6 +12,7 @@ const base: TipContext = {
   financeClosedOut: false,
   lead: 0,
   mods: NO_MODS,
+  hasUnaffordable: false,
 };
 const none: ReadonlySet<string> = new Set();
 
@@ -49,11 +50,43 @@ describe('Bindy in the game', () => {
     expect(tip?.textContent).toMatch(/Tap a card/);
     expect(document.querySelector('[data-mascot]')).toBeTruthy();
     fireEvent.click(tip!);
-    expect(document.querySelector('[data-tip]')).toBeNull();
+    const tipText = () => document.querySelector('[data-tip]')?.textContent ?? '';
+    expect(tipText()).not.toMatch(/Tap a card/);
     expect(loadSeenTips().has('place')).toBe(true);
 
     cleanup();
     render(<Game seed={6} />);
+    expect(tipText()).not.toMatch(/Tap a card/);
+  });
+
+  it('after placement, explains grey cards once: they cost more $ than your open cells', () => {
+    localStorage.setItem('qbr.tips.v1', JSON.stringify(['place']));
+    render(<Game seed={5} />);
+    expect(document.querySelector('[data-tip]')!.textContent).toMatch(/Grey cards cost more \$/);
+    fireEvent.click(document.querySelector('[data-tip]')!);
     expect(document.querySelector('[data-tip]')).toBeNull();
+  });
+});
+
+describe('grey cards explain themselves', () => {
+  beforeEach(() => localStorage.setItem('qbr.tips.v1', JSON.stringify(['place', 'cost'])));
+  afterEach(cleanup);
+
+  it('an unaffordable card is tagged with what it needs; tapping it explains instead of selecting', () => {
+    render(<Game seed={5} />);
+    const grey = document.querySelector<HTMLButtonElement>('[data-card][data-playable="false"]');
+    expect(grey, 'seed 5 opens with no unaffordable card').toBeTruthy();
+    expect(grey!.disabled).toBe(false); // still tappable on your turn
+    expect(grey!.querySelector('[data-needs]')!.textContent).toMatch(/needs \$\$/);
+
+    fireEvent.click(grey!);
+    const status = document.querySelector('[data-status]')!.textContent!;
+    expect(status).toMatch(/needs a \$\$+ cell; your best open cell has \$\./);
+    expect(document.querySelectorAll('.cell.legal')).toHaveLength(0); // nothing selected
+
+    // Picking a playable card clears the explanation and selects as normal.
+    fireEvent.click(document.querySelector<HTMLButtonElement>('[data-card][data-playable="true"]')!);
+    expect(document.querySelector('[data-status]')!.textContent).toMatch(/Place /);
+    expect(document.querySelectorAll('.cell.legal').length).toBeGreaterThan(0);
   });
 });

@@ -222,6 +222,19 @@
 }
 .card.sel { border-color: var(--lo) var(--hi) var(--hi) var(--lo); background: var(--legal); transform: translateY(-6px); }
 .card:disabled { opacity: 0.45; cursor: default; }
+/* Can't afford it this turn: greyed, but still tappable to explain itself. */
+.card.unaffordable { background: #e4e4e4; color: #777; }
+.card.unaffordable .g.hit { background: #8aa37a; }
+.card.unaffordable.explained { outline: 2px dashed var(--theirs-ink); outline-offset: -4px; }
+.needs {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 4px;
+  color: #fff;
+  background: var(--theirs-ink);
+  white-space: nowrap;
+}
 .cost { align-self: flex-start; padding-left: 3px; font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #2d6a00; }
 .cname {
   font-size: clamp(10px, 2.8vw, 12px);

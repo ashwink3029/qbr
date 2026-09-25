@@ -36,6 +36,8 @@ export interface TipContext {
   /** Your revenue minus Finance's, this quarter. */
   readonly lead: number;
   readonly mods: Mods;
+  /** Some card in your hand costs more than any open cell you own. */
+  readonly hasUnaffordable: boolean;
 }
 
 export interface Tip {
@@ -55,6 +57,13 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
     candidates.push({
       id: 'place',
       text: 'Tap a card, then a yellow cell to preview its spread. Tap the same cell again to commit.',
+      mood: 'talk',
+    });
+  }
+  if (ctx.humanTurn && ctx.hasUnaffordable && !ctx.selected) {
+    candidates.push({
+      id: 'cost',
+      text: 'Grey cards cost more $ than any open cell you own. Spreads add $ to the cells they reach — tap a grey card to see what it needs.',
       mood: 'talk',
     });
   }

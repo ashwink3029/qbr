@@ -13,7 +13,7 @@ const cells = (): HTMLElement[] => Array.from(document.querySelectorAll<HTMLElem
 describe('the app', () => {
   it('tapping a different legal cell moves the preview instead of placing', () => {
     render(<Game seed={5} />);
-    fireEvent.click(Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).find((b) => !b.disabled)!);
+    fireEvent.click(Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card][data-playable="true"]')).find((b) => !b.disabled)!);
     const legal = cells().filter((c) => c.classList.contains('legal'));
     expect(legal.length).toBeGreaterThan(1);
     fireEvent.click(legal[0]!);
@@ -34,7 +34,7 @@ describe('the app', () => {
     vi.useFakeTimers();
     try {
       render(<Game seed={5} />);
-      const playable = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).find((b) => !b.disabled);
+      const playable = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card][data-playable="true"]')).find((b) => !b.disabled);
       expect(playable, 'opening hand has no playable card').toBeTruthy();
       fireEvent.click(playable!);
       const target = cells().find((c) => c.classList.contains('legal'));
@@ -79,7 +79,7 @@ describe('the app', () => {
           vi.advanceTimersByTime(AI_DELAY_MS + 10);
         });
         // While we are locked out, our cards stay unplayable.
-        const live = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).filter((b) => !b.disabled);
+        const live = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card][data-playable="true"]')).filter((b) => !b.disabled);
         if (!document.querySelector('[data-dialog]')) expect(live).toHaveLength(0);
       }
       const dialog = document.querySelector('[data-dialog]');
@@ -104,7 +104,7 @@ describe('the app', () => {
     try {
       render(<Game seed={11} />);
       for (let turn = 0; turn < 8; turn++) {
-        const playable = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).filter((b) => !b.disabled);
+        const playable = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card][data-playable="true"]')).filter((b) => !b.disabled);
         if (playable.length === 0) break;
         for (const b of playable) {
           fireEvent.click(b);
@@ -135,7 +135,7 @@ describe('the app', () => {
     expect(locked).toHaveLength(2);
     // Coffee Mug: the opening hand is one card bigger than the plain 8.
     expect(document.querySelectorAll('[data-card]')).toHaveLength(9);
-    for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).filter((x) => !x.disabled)) {
+    for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card][data-playable="true"]')).filter((x) => !x.disabled)) {
       fireEvent.click(b);
       for (const c of locked) expect(c.classList.contains('legal')).toBe(false);
       fireEvent.click(b);

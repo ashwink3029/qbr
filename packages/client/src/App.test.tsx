@@ -52,7 +52,7 @@ describe('home screen', () => {
       expect(board().filter(visible)).toHaveLength(15);
 
       // Make a play so there is something to resume.
-      fireEvent.click(Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).find((b) => !b.disabled)!);
+      fireEvent.click(Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card][data-playable="true"]')).find((b) => !b.disabled)!);
       const target = board().find((c) => c.classList.contains('legal'))!;
       fireEvent.click(target);
       fireEvent.click(target);
