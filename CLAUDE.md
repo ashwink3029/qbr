@@ -79,15 +79,22 @@ into enemy cells holding weaker cards. Do not move the pre-registered bars.
   mulligan. Measure through `pnpm measure`, like the starvation fix.
 
 ## Backlog (prioritized — top item is next)
-1. **NEXT — App ID + signing, so QBR can reach a real iPhone / TestFlight.**
-   Mirror `rushie/` (formerly `chain/`), which did this in three commits:
-   `DEVELOPMENT_TEAM = 7XMX2SE648` + `CODE_SIGN_STYLE = Automatic` in both App
-   build configs; `ITSAppUsesNonExemptEncryption = false` in `App/Info.plist`
-   (TestFlight upload gate); and `ios/App/ci_scripts/ci_post_clone.sh` for Xcode
-   Cloud. Currently only `PRODUCT_BUNDLE_IDENTIFIER = com.ashwink.qbr` is set.
-   The App ID registration and App Store Connect app record live in the user's
-   Apple account — confirm the bundle ID before registering; it is permanent.
-2. **Vertical board: you at the bottom, the opponent at the top.** Portrait
+1. **App ID + signing — project side DONE 2026-09-25 (`ba0ebe2`); account side
+   is the user's.** Bundle ID `com.ashwink.qbr` is registered (user). Project now
+   mirrors `rushie/`: `DEVELOPMENT_TEAM = 7XMX2SE648`, automatic signing,
+   `ITSAppUsesNonExemptEncryption = false`, iPhone locked to portrait, and
+   `ios/App/ci_scripts/ci_post_clone.sh` builds `@qbr/client` for Xcode Cloud.
+   **Verified:** a signed Release archive builds (`xcodebuild ... -destination
+   'generic/platform=iOS' -allowProvisioningUpdates archive`), signed "Apple
+   Development" with the team wildcard profile, web assets bundled.
+   **Not possible locally:** App Store export fails with "No Accounts" / no
+   "iOS Distribution" certificate — no Apple ID is signed in to Xcode on this Mac.
+   That is fine: like rushie, distribution goes through **Xcode Cloud**. Remaining,
+   in the user's Apple account: (a) create the App Store Connect app record for
+   `com.ashwink.qbr`; (b) in Xcode, add an Xcode Cloud workflow on
+   `github.com/ashwink3029/qbr` `main` -> Archive -> TestFlight (internal).
+   For a direct install, plug in a registered iPhone; the dev-signed build works.
+2. **NEXT — Vertical board: you at the bottom, the opponent at the top.** Portrait
    phones want the lanes to run up the screen: render the sheet transposed as
    **5 rows x 3 lanes**. Your home row is at the bottom, Finance's at the top, and
    "forward" is up. The three business units become columns, and each lane's
