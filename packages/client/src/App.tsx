@@ -8,7 +8,7 @@ import {
   reducer,
   revenue,
   rowResults,
-  spreadTargets,
+  spreadEffects,
   type Action,
   type GameState,
   type RngState,
@@ -96,13 +96,17 @@ export function App({ seed }: { seed?: number } = {}) {
   const [mine, theirs] = revenue(game);
 
   const preview = pending ?? hover;
-  const previewTargets = useMemo(
+  const effects = useMemo(
     () =>
       selected !== null && preview !== null && legalCells.has(preview)
-        ? new Set(spreadTargets(selected, preview, HUMAN))
-        : new Set<number>(),
-    [selected, preview, legalCells],
+        ? spreadEffects(game, selected, preview, HUMAN)
+        : { claim: [], flip: [] },
+    [game, selected, preview, legalCells],
   );
+  const claimCells = useMemo(() => new Set(effects.claim), [effects]);
+  const flipCells = useMemo(() => new Set(effects.flip), [effects]);
+
+  const pendingCard = pending === null ? null : game.cells[pending]!.card;
 
   let status: string;
   if (game.over) {
@@ -117,7 +121,9 @@ export function App({ seed }: { seed?: number } = {}) {
         ? 'Pick a card'
         : pending === null
           ? `Place ${card(selected).name} — tap a yellow cell`
-          : `Tap again to place ${card(selected).name}`;
+          : `Tap again to ${pendingCard ? `paste ${card(selected).name} (${card(selected).value}) over ${card(pendingCard).name} (${card(pendingCard).value})` : `place ${card(selected).name}`}${
+              effects.flip.length ? ` — flips ${effects.flip.length}` : ''
+            }`;
   }
 
   return (
@@ -173,7 +179,8 @@ export function App({ seed }: { seed?: number } = {}) {
                 cell.owner === 0 ? 'mine' : cell.owner === 1 ? 'theirs' : '',
                 legalCells.has(i) ? 'legal' : '',
                 pending === i ? 'pending' : '',
-                previewTargets.has(i) ? 'reach' : '',
+                claimCells.has(i) ? 'reach' : '',
+                flipCells.has(i) ? 'flip' : '',
               ].join(' ');
               return (
                 <div

@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "measure": "tsx src/measure.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sweep": "tsx src/sweep.ts"
   },
-  "dependencies": { "@qbr/shared": "workspace:*" },
+  "dependencies": {
+    "@qbr/shared": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsx": "^4.19.2",

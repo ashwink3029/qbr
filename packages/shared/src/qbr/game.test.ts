@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STARTER_DECK } from './cards.js';
+import { STARTER_DECK, card } from './cards.js';
 import {
   COLS,
   idx,
@@ -8,14 +8,18 @@ import {
   reducer,
   revenue,
   rowResults,
+  BASELINE_RULES,
+  DEFAULT_RULES,
+  spreadEffects,
   type Cell,
   type GameState,
+  type Rules,
 } from './game.js';
 import { greedyPolicy, lookaheadPolicy, playout, randomPolicy } from './policies.js';
 
 /** A game whose hands are fixed, so tests don't depend on the shuffle. */
 function withHands(h0: string[], h1: string[]): GameState {
-  return { ...newGame(1, STARTER_DECK), hands: [h0, h1] };
+  return { ...newGame(1, STARTER_DECK, BASELINE_RULES), hands: [h0, h1] };
 }
 
 const at = (s: GameState, r: number, c: number): Cell => s.cells[idx(r, c)]!;
@@ -152,5 +156,95 @@ describe('playouts', () => {
         expect(playout(seed, STARTER_DECK, seats).final).toEqual(a.final);
       }
     }
+  });
+});
+
+describe('rule variants', () => {
+  const rules = (r: Partial<Rules>): Rules => ({ ...BASELINE_RULES, ...r });
+  const set = (s: GameState, cells: [number, Cell][]): GameState => {
+    const m = new Map(cells);
+    return { ...s, cells: s.cells.map((c, i) => m.get(i) ?? c) };
+  };
+
+  it('defaults to the adopted rules: all three on', () => {
+    expect(newGame(1, STARTER_DECK).rules).toEqual(DEFAULT_RULES);
+    expect(DEFAULT_RULES).toEqual({ pasteOver: true, takeover: true, cheapOpener: true });
+  });
+
+  it('spreadEffects previews exactly what the reducer does', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      let s = newGame(seed, STARTER_DECK);
+      for (let turn = 0; turn < 12 && !s.over; turn++) {
+        const plays = legalPlays(s);
+        if (plays.length === 0) {
+          s = reducer(s, { type: 'pass' });
+          continue;
+        }
+        const a = plays[(seed * 7 + turn) % plays.length]!;
+        const p = s.toMove;
+        const fx = spreadEffects(s, a.card, a.cell);
+        const next = reducer(s, a);
+        const claim = new Set(fx.claim);
+        const flip = new Set(fx.flip);
+        next.cells.forEach((c, i) => {
+          const was = s.cells[i]!;
+          if (i === a.cell) expect(c.card).toBe(a.card);
+          else if (claim.has(i)) expect(c).toEqual({ owner: p, budget: Math.min(3, was.budget + 1), card: null });
+          else if (flip.has(i)) expect(c).toEqual({ ...was, owner: p });
+          else expect(c).toEqual(was);
+        });
+        s = next;
+      }
+    }
+  });
+
+  it('paste-over: you may play onto your own occupied cell, replacing its card', () => {
+    let s: GameState = { ...newGame(1, STARTER_DECK, rules({ pasteOver: true })), hands: [['coldcall'], []] as [string[], string[]] };
+    s = set(s, [[idx(0, 0), { owner: 0, budget: 1, card: 'memo' }]]);
+    expect(legalPlays(s).some((a) => a.cell === idx(0, 0))).toBe(true);
+    s = reducer(s, { type: 'play', card: 'coldcall', cell: idx(0, 0) });
+    expect(at(s, 0, 0).card).toBe('coldcall');
+    expect(at(s, 0, 1).owner).toBe(0); // and it spreads again
+  });
+
+  it('paste-over is off in the baseline rules', () => {
+    let s = withHands(['coldcall'], []);
+    s = set(s, [[idx(0, 0), { owner: 0, budget: 1, card: 'memo' }]]);
+    expect(legalPlays(s).some((a) => a.cell === idx(0, 0))).toBe(false);
+  });
+
+  it('paste-over never lets you play onto an enemy card', () => {
+    let s: GameState = { ...newGame(1, STARTER_DECK, rules({ pasteOver: true })), hands: [['coldcall'], []] as [string[], string[]] };
+    s = set(s, [[idx(0, 0), { owner: 1, budget: 1, card: 'memo' }]]);
+    expect(legalPlays(s).some((a) => a.cell === idx(0, 0))).toBe(false);
+  });
+
+  it('takeover: a spread flips an enemy card only if it is weaker than the played card', () => {
+    let s: GameState = { ...newGame(1, STARTER_DECK, rules({ takeover: true })), hands: [['coldcall', 'coldcall'], []] as [string[], string[]] };
+    s = set(s, [
+      [idx(0, 1), { owner: 1, budget: 1, card: 'memo' }], // value 1 < 2: flips
+      [idx(1, 1), { owner: 1, budget: 1, card: 'reorg' }], // value 4 > 2: holds
+    ]);
+    s = reducer(s, { type: 'play', card: 'coldcall', cell: idx(0, 0) });
+    expect(at(s, 0, 1)).toEqual({ owner: 0, budget: 1, card: 'memo' });
+    s = reducer(s, { type: 'pass' });
+    s = reducer(s, { type: 'play', card: 'coldcall', cell: idx(1, 0) });
+    expect(at(s, 1, 1).owner).toBe(1);
+  });
+
+  it('cheap opener: every opening hand holds a $-cost card', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const s = newGame(seed, STARTER_DECK, rules({ cheapOpener: true }));
+      for (const hand of s.hands) expect(hand.some((id) => card(id).cost === 1)).toBe(true);
+      expect(s.hands[0].length + s.decks[0].length).toBe(STARTER_DECK.length);
+    }
+  });
+
+  it('without cheap opener, some opening hands have no $ card (the bug it fixes)', () => {
+    let bad = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      if (!newGame(seed, STARTER_DECK, BASELINE_RULES).hands[0].some((id) => card(id).cost === 1)) bad++;
+    }
+    expect(bad).toBeGreaterThan(0);
   });
 });

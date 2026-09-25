@@ -158,6 +158,8 @@
 .cell.theirs { background: var(--theirs); color: var(--theirs-ink); }
 .cell.legal { outline: 2px dashed #b08900; outline-offset: -4px; cursor: pointer; background: var(--legal); }
 .cell.reach { background: var(--reach); }
+/* An enemy card this play would take over: stripes over its red. */
+.cell.flip { background: repeating-linear-gradient(45deg, var(--theirs), var(--theirs) 6px, #ffb347 6px, #ffb347 12px); }
 .cell.pending { outline: 3px solid var(--title); outline-offset: -4px; }
 
 .budget { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 15px; letter-spacing: 1px; }

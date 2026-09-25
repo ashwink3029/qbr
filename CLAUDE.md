@@ -27,6 +27,14 @@ beats inventing a world.
 - **sim**: headless measurement via tsx.
 
 ## Rules as built (one quarter = one round)
+**Current defaults = `DEFAULT_RULES` (pasteOver + takeover + cheapOpener),
+adopted 2026-09-25 — see "Phase 0 re-run" below.** The bullets here describe
+the original baseline (`BASELINE_RULES`); the three rules modify it:
+- **Paste over:** you may play onto your OWN cell that already holds a card; the
+  old card is discarded and the new one spreads again.
+- **Takeover:** a spread reaching an enemy card of strictly lower value flips it.
+- **Cheap opener:** each opening hand is guaranteed a $-cost card.
+
 - Sheet is 3 rows (Sales / Ops / R&D) x 5 columns. You own column A, AI owns E,
   each home cell at budget `$` = 1.
 - Place a card on an **empty cell you own whose budget >= card cost** ($-$$$).
@@ -55,6 +63,27 @@ player holding cards with **no empty cell of their own left** (boxed in); 4.8% a
 next, one at a time against the same harness: a 6th column; a
 "replace your own card" play (overwrite for an upgrade); spreads that can push
 into enemy cells holding weaker cards. Do not move the pre-registered bars.
+
+## Phase 0 re-run with rule fixes (2026-09-25) — 4/4 bars PASS
+`pnpm sweep 1000` tests all 8 combinations against the same pre-registered bars
+(moved into `sim/src/bars.ts`, unchanged):
+| rules | seat | floor | headroom | med plays | thin | turns | bars |
+|---|---|---|---|---|---|---|---|
+| baseline | 50.8% | 76.5% | 63.8% | 4 | 27.8% | 19 | 2/4 |
+| pasteOver | 50.5% | 93.3% | 75.0% | 9 | 14.4% | 32 | 4/4 |
+| takeover | 47.8% | 77.0% | 64.2% | 4 | 27.5% | 19 | 2/4 |
+| pasteOver+takeover | 48.9% | 90.3% | 82.6% | 10 | 15.0% | 32 | 4/4 |
+| cheapOpener (any combo) | ~same as without | | | | | | |
+Confirmed at 2000 seeds for all three: seat 48.8%, floor 90.7%, headroom 83.6%,
+median 10 plays, 14.4% thin — **4/4 PASS**. Reading: pasteOver is THE fix for
+territory starvation; takeover does nothing alone (a locked board rarely lets it
+fire) but adds ~8pp of headroom on top of pasteOver; cheapOpener moves no bar but
+removes the "no legal first move" opening. **Cost to watch:** a quarter runs ~32
+turns (was 19), because nobody is boxed in and both players play out their
+decks — relevant to the best-of-3 layer, which must not triple that.
+`spreadEffects()` in shared is the single source of truth for what a play
+changes; the reducer applies it and the client previews it (green = claim,
+orange stripes = takeover flip).
 
 ## Phone layout (2026-09-25) — decisions, do not regress
 - **Window anchored to the BOTTOM of a teal desktop, only as tall as its content.**
@@ -104,8 +133,7 @@ into enemy cells holding weaker cards. Do not move the pre-registered bars.
    `github.com/ashwink3029/qbr` `main` -> Archive -> TestFlight (internal).
    For a direct install, plug in a registered iPhone; the dev-signed build works.
 2. ~~Vertical board~~ **DONE 2026-09-25.** See "Phone layout" above.
-3. Fix territory starvation (Phase 0 bar 4) until it passes; recheck bars 1-3.
-   Fold in the opening-hand fix (guarantee a $ card, or mulligan).
+3. ~~Fix territory starvation + opening hand~~ **DONE 2026-09-25** — 4/4 bars.
 4. **Gwent layer:** best-of-3 quarters with passing as a real decision (currently
    policies only pass when forced, so passing is not yet measured at all).
 5. **Balatro layer:** run of meetings as blinds — "Quick sync" / "Standup" /
@@ -135,7 +163,8 @@ pnpm install
 pnpm dev         # client on http://localhost:5176  (5173 casual, 5174 cubes, 5175 chain)
 pnpm test        # shared rule tests + client DOM test
 pnpm typecheck
-pnpm measure     # Phase 0 report; optional arg = seeds per seat (default 1000)
+pnpm measure     # Phase 0 report: [seedsPerSeat=1000] [rules, e.g. pasteOver,takeover]
+pnpm sweep       # all 8 rule combinations vs the pre-registered bars
 ```
 
 ## iOS Simulator

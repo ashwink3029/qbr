@@ -20,6 +20,29 @@ export const HAND_SIZE = 5;
 
 export type Player = 0 | 1;
 
+/**
+ * Optional rules, each a candidate fix for a Phase 0 finding, so the sim can
+ * measure them side by side (`pnpm sweep`).
+ */
+export interface Rules {
+  /** You may play onto your OWN cell that already holds a card, replacing it
+   *  (the old card is discarded) — "paste over". Relieves territory starvation. */
+  readonly pasteOver: boolean;
+  /** A spread that reaches an enemy card of strictly lower value flips it to you. */
+  readonly takeover: boolean;
+  /** Each opening hand is guaranteed at least one $-cost card. */
+  readonly cheapOpener: boolean;
+}
+
+/** The rules Phase 0 was first measured on (2/4 bars). Kept for reproducibility. */
+export const BASELINE_RULES: Rules = { pasteOver: false, takeover: false, cheapOpener: false };
+
+/** Adopted 2026-09-25 after `pnpm sweep`: all three pass 4/4 pre-registered bars
+ *  (2000 seeds: seat 48.8%, floor 90.7%, headroom 83.6%, median 10 plays, 14.4%
+ *  thin). pasteOver alone passes; takeover adds headroom 75% -> 83%; cheapOpener
+ *  moves no bar but removes the "no legal first move" opening. */
+export const DEFAULT_RULES: Rules = { pasteOver: true, takeover: true, cheapOpener: true };
+
 export interface Cell {
   readonly owner: Player | null;
   readonly budget: number;
@@ -37,6 +60,7 @@ export interface GameState {
   readonly turn: number;
   readonly over: boolean;
   readonly rngState: RngState;
+  readonly rules: Rules;
 }
 
 export type Action =
@@ -47,12 +71,16 @@ export const idx = (row: number, col: number): number => row * COLS + col;
 export const rowOf = (i: number): number => Math.floor(i / COLS);
 export const colOf = (i: number): number => i % COLS;
 
-export function newGame(seed: number, deck0: readonly string[], deck1: readonly string[] = deck0): GameState {
+export function newGame(seed: number, deck: readonly string[], rules: Rules = DEFAULT_RULES): GameState {
   let rng: RngState = seed;
   let d0: string[];
   let d1: string[];
-  [rng, d0] = shuffle(rng, deck0);
-  [rng, d1] = shuffle(rng, deck1);
+  [rng, d0] = shuffle(rng, deck);
+  [rng, d1] = shuffle(rng, deck);
+  if (rules.cheapOpener) {
+    d0 = withCheapOpener(d0);
+    d1 = withCheapOpener(d1);
+  }
   const cells: Cell[] = [];
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -70,7 +98,19 @@ export function newGame(seed: number, deck0: readonly string[], deck1: readonly 
     over: false,
     // Advance once so the reducer's stream is decorrelated from the shuffle.
     rngState: nextRng(rng)[0],
+    rules,
   };
+}
+
+/** If the top HAND_SIZE cards hold no $-cost card, swap the first one found
+ *  deeper in the deck with the last card of the hand. Deterministic. */
+function withCheapOpener(deck: string[]): string[] {
+  if (deck.slice(0, HAND_SIZE).some((id) => card(id).cost === 1)) return deck;
+  const j = deck.findIndex((id, k) => k >= HAND_SIZE && card(id).cost === 1);
+  if (j < 0) return deck;
+  const out = deck.slice();
+  [out[HAND_SIZE - 1], out[j]] = [out[j]!, out[HAND_SIZE - 1]!];
+  return out;
 }
 
 /** Cells reached by `cardId` placed at `at` by `player`, in-bounds only. */
@@ -87,6 +127,27 @@ export function spreadTargets(cardId: string, at: number, player: Player): numbe
   return out;
 }
 
+export interface SpreadEffects {
+  /** Empty cells that become the player's, each gaining +1 budget. */
+  readonly claim: readonly number[];
+  /** Enemy cards that flip to the player (takeover rule). */
+  readonly flip: readonly number[];
+}
+
+/** Exactly what placing `cardId` at `at` would change. The reducer applies this
+ *  and the client previews it, so the preview can never disagree with the move. */
+export function spreadEffects(state: GameState, cardId: string, at: number, player: Player = state.toMove): SpreadEffects {
+  const power = card(cardId).value;
+  const claim: number[] = [];
+  const flip: number[] = [];
+  for (const t of spreadTargets(cardId, at, player)) {
+    const c = state.cells[t]!;
+    if (c.card === null) claim.push(t);
+    else if (state.rules.takeover && c.owner !== player && card(c.card).value < power) flip.push(t);
+  }
+  return { claim, flip };
+}
+
 export function canPlay(state: GameState, cardId: string, at: number): boolean {
   if (state.over) return false;
   const p = state.toMove;
@@ -95,7 +156,7 @@ export function canPlay(state: GameState, cardId: string, at: number): boolean {
     cell !== undefined &&
     state.hands[p].includes(cardId) &&
     cell.owner === p &&
-    cell.card === null &&
+    (cell.card === null || state.rules.pasteOver) &&
     cell.budget >= card(cardId).cost
   );
 }
@@ -130,11 +191,11 @@ export function reducer(state: GameState, action: Action): GameState {
     const next = cells.slice();
     const placed = next[action.cell]!;
     next[action.cell] = { ...placed, card: action.card };
-    for (const t of spreadTargets(action.card, action.cell, p)) {
-      const c = next[t]!;
-      if (c.card !== null) continue;
-      next[t] = { owner: p, budget: Math.min(MAX_BUDGET, c.budget + 1), card: null };
+    const { claim, flip } = spreadEffects(state, action.card, action.cell, p);
+    for (const t of claim) {
+      next[t] = { owner: p, budget: Math.min(MAX_BUDGET, next[t]!.budget + 1), card: null };
     }
+    for (const t of flip) next[t] = { ...next[t]!, owner: p };
     cells = next;
     const hand = hands[p].slice();
     hand.splice(hand.indexOf(action.card), 1);

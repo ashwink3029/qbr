@@ -8,9 +8,11 @@ import {
   reducer,
   revenue,
   rowResults,
+  DEFAULT_RULES,
   type Action,
   type GameState,
   type Player,
+  type Rules,
 } from './game.js';
 import { nextInt, type RngState } from './rng.js';
 
@@ -112,8 +114,13 @@ export interface PlayoutResult {
 }
 
 /** Play a full quarter between two policies from a seed. Pure and replayable. */
-export function playout(seed: number, deck: readonly string[], seats: readonly [Policy, Policy]): PlayoutResult {
-  let state = newGame(seed, deck);
+export function playout(
+  seed: number,
+  deck: readonly string[],
+  seats: readonly [Policy, Policy],
+  rules: Rules = DEFAULT_RULES,
+): PlayoutResult {
+  let state = newGame(seed, deck, rules);
   let rng: RngState = (seed * 2654435761) >>> 0;
   const options: [number[], number[]] = [[], []];
   while (!state.over) {
