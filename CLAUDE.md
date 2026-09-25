@@ -181,7 +181,24 @@ advantage" in marketing until this moves.
    `DEFAULT_RULES` keep pasteOver only so Phase 0 stays reproducible; the app
    never uses them. **Paste-over is reserved for a future joker ("Paste
    Special": you may paste over your own card).**
-5. **Balatro layer — engine + run DONE, screens IN PROGRESS.**
+5. **Balatro layer — first playable slice DONE 2026-09-25.** Home's primary
+   button is now **Start run** (Quick year vs Finance is secondary). `Run.tsx`:
+   supply closet (pick 1 of 3 jokers + the meeting calendar, boss visible from
+   the start) -> meeting (`Game` with the run's mods, opponent strength and
+   meeting name) -> next draft ... -> "Promotion!" / "Calendar cleared" -> Home;
+   runs are recorded (runs / promotions / best meeting). In a meeting: jokers sit
+   as desk-object tiles on the teal desktop (`.tray`, compact strip on short
+   phones), the boss rule shows on Finance's strip, blocked cells are hatched,
+   and placed cards show their EFFECTIVE value (`cellValue`) in green/red when a
+   joker or boss changed it. × / Resume works mid-run like a quick year.
+   **Layout bug found and fixed here:** match hands are 8-10 cards, and on an
+   iPhone SE the hand had been sliding over row 5 (sheet `min-height: 0`); fixing
+   it with `min-height: auto` instead froze rows at their 96px max. Now: an
+   explicit sheet floor (header + 5 x min row + totals), a sideways-scrolling
+   snapping hand (cards min 66px), a compact mode under 760px height, and
+   `.window { overflow-y: auto }` as a safety net. Verified at 375x667 and
+   402x874: no overlap, no window scroll, pass button on screen.
+   Engine notes follow.
    `shared/src/qbr/mods.ts` (jokers for seat 0, boss for seat 1, all effects read
    through `cellValue` / `blockedCells` / `bonusDraw` / wrap in `spreadEffects`)
    and `run.ts` (3 meetings: Quick sync vs greedy, Standup vs lookahead,

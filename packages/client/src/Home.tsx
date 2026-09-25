@@ -1,29 +1,31 @@
+import { MEETINGS } from '@qbr/shared';
 import type { Record } from './record.js';
 
 export interface HomeProps {
   readonly record: Record;
-  /** A year was left mid-way through the window's × button. */
-  readonly inProgress: boolean;
-  readonly onStart: () => void;
+  /** What was left mid-way through the window's × button, if anything. */
+  readonly inProgress: 'run' | 'quick' | null;
+  readonly onStartRun: () => void;
+  readonly onStartQuick: () => void;
   readonly onResume: () => void;
 }
 
 /**
  * The Home Screen: the teal desktop with one small start window on it — the
- * same 90s-office frame as the game, so leaving a year feels like closing a
- * spreadsheet, not changing apps. Desktop space above is where the joker tray
- * and run map will live once the Balatro layer lands.
+ * same 90s-office frame as the game, so leaving a run feels like closing a
+ * spreadsheet, not changing apps.
  */
-export function Home({ record, inProgress, onStart, onResume }: HomeProps) {
-  const played = record.wins + record.losses + record.draws;
+export function Home({ record, inProgress, onStartRun, onStartQuick, onResume }: HomeProps) {
+  const years = record.wins + record.losses + record.draws;
   const last =
     record.lastOutcome === 'win'
-      ? 'Last year: promoted'
+      ? 'Last quick year: promoted'
       : record.lastOutcome === 'loss'
-        ? 'Last year: performance review'
+        ? 'Last quick year: performance review'
         : record.lastOutcome === 'draw'
-          ? 'Last year: flat'
+          ? 'Last quick year: flat'
           : null;
+  const furthest = record.bestMeetings >= MEETINGS.length ? 'promoted' : MEETINGS[record.bestMeetings]?.name;
 
   return (
     <div className="app home" data-home>
@@ -47,34 +49,39 @@ export function Home({ record, inProgress, onStart, onResume }: HomeProps) {
             <span>QBR</span>
           </div>
           <p className="pitch">
-            Beat <b>Finance</b> in 2 of 3 quarters.
+            Survive three meetings with <b>Finance</b>.
             <br />
             Claim cells, win lanes, close out at the right moment.
           </p>
 
-          {inProgress ? (
-            <>
-              <button className="btn primary" data-resume onClick={onResume}>
-                Resume year
-              </button>
-              <button className="btn" data-start onClick={onStart}>
-                Start a new year
-              </button>
-            </>
-          ) : (
-            <button className="btn primary" data-start onClick={onStart}>
-              Start fiscal year
+          {inProgress && (
+            <button className="btn primary" data-resume onClick={onResume}>
+              {inProgress === 'run' ? 'Resume run' : 'Resume quick year'}
             </button>
           )}
+          <button className={`btn ${inProgress ? '' : 'primary'}`} data-start-run onClick={onStartRun}>
+            {inProgress === 'run' ? 'Start a new run' : 'Start run'}
+          </button>
+          <button className="btn" data-start onClick={onStartQuick}>
+            Quick year vs Finance
+          </button>
 
           <div className="record" data-record>
-            {played === 0 ? (
+            {record.runs === 0 && years === 0 ? (
               <span>No years on record yet.</span>
             ) : (
               <>
-                <span>
-                  Record <b>{record.wins}</b>W · <b>{record.losses}</b>L{record.draws ? ` · ${record.draws}D` : ''}
-                </span>
+                {record.runs > 0 && (
+                  <span data-run-record>
+                    Runs <b>{record.runs}</b> · promoted <b>{record.promotions}</b>
+                    {furthest ? ` · best: ${furthest}` : ''}
+                  </span>
+                )}
+                {years > 0 && (
+                  <span>
+                    Quick years <b>{record.wins}</b>W · <b>{record.losses}</b>L{record.draws ? ` · ${record.draws}D` : ''}
+                  </span>
+                )}
                 {last && (
                   <small>
                     {last}

@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  BOSSES,
+  DEFAULT_MATCH,
+  JOKERS,
+  MATCH_RULES,
+  NO_MODS,
   STARTER_DECK,
+  blockedCells,
   card,
+  cellValue,
+  greedyPolicy,
   legalPlays,
   lookaheadPolicy,
   matchReducer,
@@ -12,6 +20,7 @@ import {
   smartPass,
   spreadEffects,
   type Action,
+  type Mods,
   type GameState,
   type MatchState,
   type Player,
@@ -27,9 +36,10 @@ const UNITS = ['Sales', 'Ops', 'R&D'] as const;
 const LANE_LETTERS = ['A', 'B', 'C'] as const;
 const HUMAN = 0;
 
-/** Finance plays the strongest measured policy: 2-ply lookahead with the
- *  Gwent-style pass plan (see match.ts / sim/src/matchbars.ts). */
-const opponent = smartPass(lookaheadPolicy);
+/** Finance's two measured strengths (see match.ts / sim/src/matchbars.ts): a
+ *  Quick sync faces greedy, everything else the 2-ply lookahead; both use the
+ *  Gwent-style pass plan. */
+const OPPONENTS = { greedy: smartPass(greedyPolicy), lookahead: smartPass(lookaheadPolicy) } as const;
 
 function freshSeed(): number {
   return (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0;
@@ -65,6 +75,16 @@ function Lives({ n, max, label }: { n: number; max: number; label: string }) {
   );
 }
 
+/** A placed card's scoring value; marked when a joker or boss changed it. */
+function CellValue({ printed, actual }: { printed: number; actual: number }) {
+  const cls = actual > printed ? 'pval up' : actual < printed ? 'pval down' : 'pval';
+  return (
+    <span className={cls} title={actual !== printed ? `printed ${printed}` : undefined}>
+      {actual}
+    </span>
+  );
+}
+
 interface Summary {
   readonly quarterNo: number;
   /** The ended quarter's final board (the match has already reset it). */
@@ -80,10 +100,28 @@ export interface GameProps {
   readonly onExit?: () => void;
   /** The year is over and the player dismissed the result: record it, go home. */
   readonly onYearEnd?: (winner: Player | null, results: readonly QuarterResult[]) => void;
+  /** Jokers in play and the boss in force (a run's meeting); none in a quick year. */
+  readonly mods?: Mods;
+  readonly opponent?: keyof typeof OPPONENTS;
+  /** A run's meeting name ("Standup"); absent in a quick year. */
+  readonly meetingName?: string;
 }
 
-export function Game({ seed, paused = false, onExit, onYearEnd }: GameProps = {}) {
-  const [match, setMatch] = useState<MatchState>(() => newMatch(seed ?? freshSeed(), STARTER_DECK));
+export function Game({
+  seed,
+  paused = false,
+  onExit,
+  onYearEnd,
+  mods = NO_MODS,
+  opponent: opponentKind = 'lookahead',
+  meetingName,
+}: GameProps = {}) {
+  const opponent = OPPONENTS[opponentKind];
+  const [match, setMatch] = useState<MatchState>(() =>
+    newMatch(seed ?? freshSeed(), STARTER_DECK, DEFAULT_MATCH, MATCH_RULES, mods),
+  );
+  const blocked = useMemo(() => blockedCells(mods), [mods]);
+  const boss = mods.boss ? BOSSES[mods.boss] : undefined;
   const [summary, setSummary] = useState<Summary | null>(null);
   const [aiRng, setAiRng] = useState<RngState>(() => (seed ?? 1) * 7919);
   const [selected, setSelected] = useState<string | null>(null);
@@ -196,14 +234,24 @@ export function Game({ seed, paused = false, onExit, onYearEnd }: GameProps = {}
     const [a, b] = summary.result.revenue;
     const w = summary.result.winner;
     if (match.over) {
-      dialog = {
-        title: match.winner === 0 ? 'Promotion!' : match.winner === 1 ? 'Performance review' : 'Flat year',
-        body: `Q${summary.quarterNo}: ${a}–${b}. ${
-          match.winner === 0 ? 'You won the year.' : match.winner === 1 ? 'Finance won the year.' : 'Nobody won the year.'
-        } Quarters: ${match.results.map((r) => (r.winner === 0 ? 'W' : r.winner === 1 ? 'L' : 'T')).join(' ')}`,
-        button: 'Back to home',
-        onClick: finishYear,
-      };
+      const quarters = match.results.map((r) => (r.winner === 0 ? 'W' : r.winner === 1 ? 'L' : 'T')).join(' ');
+      dialog = meetingName
+        ? {
+            title: match.winner === 0 ? `${meetingName}: nailed it` : `${meetingName}: not great`,
+            body: `Q${summary.quarterNo}: ${a}–${b}. ${
+              match.winner === 0 ? 'You won the meeting.' : 'You did not win the meeting.'
+            } Quarters: ${quarters}`,
+            button: 'Continue',
+            onClick: finishYear,
+          }
+        : {
+            title: match.winner === 0 ? 'Promotion!' : match.winner === 1 ? 'Performance review' : 'Flat year',
+            body: `Q${summary.quarterNo}: ${a}–${b}. ${
+              match.winner === 0 ? 'You won the year.' : match.winner === 1 ? 'Finance won the year.' : 'Nobody won the year.'
+            } Quarters: ${quarters}`,
+            button: 'Back to home',
+            onClick: finishYear,
+          };
     } else {
       dialog = {
         title: `Q${summary.quarterNo} results`,
@@ -220,9 +268,20 @@ export function Game({ seed, paused = false, onExit, onYearEnd }: GameProps = {}
 
   return (
     <div className="app">
+      {mods.jokers.length > 0 && (
+        <div className="tray" data-tray aria-label="Your jokers">
+          {mods.jokers.map((j) => (
+            <div key={j} className="joker" data-joker={j}>
+              <span className="jglyph">{JOKERS[j]!.glyph}</span>
+              <span className="jname">{JOKERS[j]!.name}</span>
+              <span className="jblurb">{JOKERS[j]!.blurb}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="window">
         <div className="titlebar">
-          <span data-title>QBR.xls — Q{qNo} Review</span>
+          <span data-title>{meetingName ? `${meetingName}.xls — Q${qNo}` : `QBR.xls — Q${qNo} Review`}</span>
           <span className="tb-buttons">
             <b>_</b>
             <b>□</b>
@@ -239,6 +298,11 @@ export function Game({ seed, paused = false, onExit, onYearEnd }: GameProps = {}
           <span className="who">
             <b>Finance</b>
             <small>{theyPassed ? 'closed out' : !summary && game.toMove === 1 ? 'is typing…' : 'on mute'}</small>
+            {boss && (
+              <span className="boss" data-boss={boss.id} title={boss.blurb}>
+                {boss.name}: {boss.blurb}
+              </span>
+            )}
           </span>
           <Lives n={match.lives[1]} max={maxLives} label="Finance" />
           <span className="backs" aria-label={`${game.hands[1].length} cards in hand`}>
@@ -275,6 +339,7 @@ export function Game({ seed, paused = false, onExit, onYearEnd }: GameProps = {}
                 pending === i ? 'pending' : '',
                 claimCells.has(i) ? 'reach' : '',
                 flipCells.has(i) ? 'flip' : '',
+                blocked.has(i) ? 'blocked' : '',
               ].join(' ');
               return (
                 <div
@@ -290,7 +355,7 @@ export function Game({ seed, paused = false, onExit, onYearEnd }: GameProps = {}
                   {cell.card ? (
                     <span className="placed">
                       <span className="pname">{card(cell.card).name}</span>
-                      <span className="pval">{card(cell.card).value}</span>
+                      <CellValue printed={card(cell.card).value} actual={cellValue(game, i)} />
                     </span>
                   ) : (
                     <span className="budget">{'$'.repeat(cell.budget)}</span>

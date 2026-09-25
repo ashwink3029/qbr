@@ -98,4 +98,19 @@ describe('the app', () => {
       vi.useRealTimers();
     }
   });
+
+  it('a boss meeting shows the boss rule, hatches its locked cells, and never offers them', () => {
+    render(<Game seed={5} mods={{ jokers: ['mug'], boss: 'micromanager' }} meetingName="Quarterly Review" />);
+    expect(document.querySelector('[data-title]')!.textContent).toMatch(/Quarterly Review/);
+    expect(document.querySelector('[data-boss="micromanager"]')!.textContent).toMatch(/Micromanager/);
+    const locked = cells().filter((c) => c.classList.contains('blocked'));
+    expect(locked).toHaveLength(2);
+    // Coffee Mug: the opening hand is one card bigger than the plain 8.
+    expect(document.querySelectorAll('[data-card]')).toHaveLength(9);
+    for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).filter((x) => !x.disabled)) {
+      fireEvent.click(b);
+      for (const c of locked) expect(c.classList.contains('legal')).toBe(false);
+      fireEvent.click(b);
+    }
+  });
 });
