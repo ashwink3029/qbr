@@ -12,6 +12,7 @@ const base: TipContext = {
   financeClosedOut: false,
   lead: 0,
   mods: NO_MODS,
+  who: 'Finance',
   hasUnaffordable: false,
 };
 const none: ReadonlySet<string> = new Set();

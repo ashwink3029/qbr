@@ -1,38 +1,78 @@
-// A run — the Balatro layer's spine. Three meetings, each a best-of-3 match,
-// escalating like Balatro's small blind / big blind / boss blind:
-//   1. Quick sync        vs a greedy Finance
-//   2. Standup           vs a lookahead Finance
-//   3. Quarterly Review  vs a lookahead Finance plus a boss rule
-// Before each meeting the player drafts one joker from up to three offered (the
-// supply closet). Lose a meeting and the run is over; win the review and you are
-// promoted. Pure and seeded, like everything in shared.
+// A career (called a "run" in code) — the Balatro layer's spine. You climb the
+// org chart one best-of-3 meeting at a time, each rung a stronger opponent:
+//   1. The Intern   — Onboarding sync   — greedy, never passes on purpose
+//   2. The Manager  — Weekly 1:1        — greedy + smart passing
+//   3. Finance      — Budget review     — lookahead + smart passing
+//   4. The VP       — Quarterly Review  — lookahead + a boss drawn at the start
+//   5. The CEO      — Board meeting     — lookahead + Reply-All (the CEO's inbox)
+// Flow: org chart -> supply closet (draft 1 of up to 3 jokers) -> meeting ->
+// org chart ... Lose a meeting and the career ends where you stood; beat the CEO
+// and you are promoted. Pure and seeded, like everything in shared.
+import { neverPass, smartPass, type MatchPolicy } from './match.js';
 import { BOSSES, JOKERS, type Mods } from './mods.js';
+import { greedyPolicy, lookaheadPolicy, randomPolicy } from './policies.js';
 import { nextInt, shuffle, type RngState } from './rng.js';
 
+/** How the opponent plays. One mapping for the app and the sim, so the
+ *  measured ladder IS the shipped ladder. */
+export type OpponentKind = 'rookie' | 'greedy' | 'lookahead';
+
+export function opponentPolicy(kind: OpponentKind): MatchPolicy {
+  switch (kind) {
+    case 'rookie':
+      return neverPass(randomPolicy); // the Intern plays anything, never passes on purpose
+    case 'greedy':
+      return smartPass(greedyPolicy);
+    case 'lookahead':
+      return smartPass(lookaheadPolicy);
+  }
+}
+
 export interface Meeting {
+  /** The opponent's role on the org chart. */
+  readonly role: string;
+  /** Avatar initials on the opponent strip. */
+  readonly initials: string;
+  /** The meeting's name — the game window's title. */
   readonly name: string;
-  readonly opponent: 'greedy' | 'lookahead';
-  readonly boss: boolean;
+  readonly opponent: OpponentKind;
+  /** null = no boss rule; 'drawn' = the career's boss (drawn at the start and
+   *  shown up front); anything else = that boss id, always. */
+  readonly boss: null | 'drawn' | string;
+  /** Extra cards the opponent draws every quarter: seniority's edge, which is
+   *  what keeps the climb steep while the player's jokers stack up. */
+  readonly edge: number;
+  /** Opponent home cells starting at $$ (seniority's head start). */
+  readonly homeBoost: number;
 }
 
 export const MEETINGS: readonly Meeting[] = [
-  { name: 'Quick sync', opponent: 'greedy', boss: false },
-  { name: 'Standup', opponent: 'lookahead', boss: false },
-  { name: 'Quarterly Review', opponent: 'lookahead', boss: true },
+  { role: 'The Intern', initials: 'INT', name: 'Onboarding sync', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
+  { role: 'The Manager', initials: 'MGR', name: 'Weekly 1:1', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
+  { role: 'Finance', initials: 'FIN', name: 'Budget review', opponent: 'lookahead', boss: null, edge: 1, homeBoost: 0 },
+  { role: 'The VP', initials: 'VP', name: 'Quarterly Review', opponent: 'lookahead', boss: 'drawn', edge: 1, homeBoost: 1 },
+  { role: 'The CEO', initials: 'CEO', name: 'Board meeting', opponent: 'lookahead', boss: 'replyall', edge: 2, homeBoost: 2 },
 ];
+
+/** Bosses the VP can draw — every boss not already fixed to a rung. */
+export const DRAWABLE_BOSSES: readonly string[] = Object.keys(BOSSES).filter(
+  (b) => !MEETINGS.some((m) => m.boss === b),
+);
 
 export const OFFER_SIZE = 3;
 
-export type RunStatus = 'draft' | 'meeting' | 'won' | 'lost';
+/** 'chart' = on the org chart before the next meeting; 'draft' = in the supply
+ *  closet; 'meeting' = playing; 'won' / 'lost' = the career is over. */
+export type RunStatus = 'chart' | 'draft' | 'meeting' | 'won' | 'lost';
 
 export interface RunState {
   readonly seed: number;
-  /** Index into MEETINGS of the current (or next) meeting. */
+  /** Index into MEETINGS of the current (or next) rung. */
   readonly meeting: number;
   readonly jokers: readonly string[];
-  /** The boss waiting at the Quarterly Review, known from the start (like Balatro). */
+  /** The VP's boss, drawn at the start and shown on the org chart. */
   readonly boss: string;
-  /** Jokers on offer while drafting; empty otherwise. */
+  /** Jokers on offer for the next draft (prepared on the chart). */
   readonly offer: readonly string[];
   readonly status: RunStatus;
   readonly rngState: RngState;
@@ -46,12 +86,18 @@ function draft(rng: RngState, owned: readonly string[]): [RngState, string[]] {
 
 export function newRun(seed: number): RunState {
   let rng: RngState = (seed ^ 0x9e3779b9) >>> 0;
-  const bosses = Object.keys(BOSSES);
   let b: number;
-  [rng, b] = nextInt(rng, bosses.length);
+  [rng, b] = nextInt(rng, DRAWABLE_BOSSES.length);
   let offer: string[];
   [rng, offer] = draft(rng, []);
-  return { seed, meeting: 0, jokers: [], boss: bosses[b]!, offer, status: 'draft', rngState: rng };
+  return { seed, meeting: 0, jokers: [], boss: DRAWABLE_BOSSES[b]!, offer, status: 'chart', rngState: rng };
+}
+
+/** Leave the org chart: to the supply closet, or straight to the meeting when
+ *  nothing is left to offer. */
+export function leaveChart(run: RunState): RunState {
+  if (run.status !== 'chart') throw new Error('not on the org chart');
+  return { ...run, status: run.offer.length > 0 ? 'draft' : 'meeting' };
 }
 
 export function pickJoker(run: RunState, id: string): RunState {
@@ -59,7 +105,7 @@ export function pickJoker(run: RunState, id: string): RunState {
   return { ...run, jokers: [...run.jokers, id], offer: [], status: 'meeting' };
 }
 
-/** Skip the draft (nothing left to offer, or the player declines). */
+/** Skip the draft (the player declines everything on offer). */
 export function skipDraft(run: RunState): RunState {
   if (run.status !== 'draft') throw new Error('not drafting');
   return { ...run, offer: [], status: 'meeting' };
@@ -70,24 +116,25 @@ export function finishMeeting(run: RunState, won: boolean): RunState {
   if (!won) return { ...run, status: 'lost' };
   if (run.meeting >= MEETINGS.length - 1) return { ...run, status: 'won' };
   const [rng, offer] = draft(run.rngState, run.jokers);
-  return {
-    ...run,
-    meeting: run.meeting + 1,
-    offer,
-    status: offer.length > 0 ? 'draft' : 'meeting',
-    rngState: rng,
-  };
+  return { ...run, meeting: run.meeting + 1, offer, status: 'chart', rngState: rng };
 }
 
 export function currentMeeting(run: RunState): Meeting {
   return MEETINGS[run.meeting]!;
 }
 
-export function meetingMods(run: RunState): Mods {
-  return { jokers: run.jokers, boss: currentMeeting(run).boss ? run.boss : null };
+/** The boss rule a rung brings in this career, or null. */
+export function bossFor(run: RunState, rung: number): string | null {
+  const b = MEETINGS[rung]!.boss;
+  return b === null ? null : b === 'drawn' ? run.boss : b;
 }
 
-/** A distinct, reproducible deal for each meeting of a run. */
+export function meetingMods(run: RunState): Mods {
+  const m = currentMeeting(run);
+  return { jokers: run.jokers, boss: bossFor(run, run.meeting), oppEdge: m.edge, oppHomeBoost: m.homeBoost };
+}
+
+/** A distinct, reproducible deal for each meeting of a career. */
 export function meetingSeed(run: RunState): number {
   return (Math.imul(run.seed, 31) + run.meeting * 7919 + 1) >>> 0;
 }

@@ -110,6 +110,18 @@ describe('bosses', () => {
     expect(revenue(s)).toEqual([3 + 6, 7]);
   });
 
+  it('seniority: an opponent edge adds cards every quarter; a home boost starts home cells at $$', () => {
+    const plain = newMatch(1, STARTER_DECK);
+    const senior = newMatch(1, STARTER_DECK, DEFAULT_MATCH, undefined, mods({ oppEdge: 2, oppHomeBoost: 2 }));
+    expect(senior.quarter.hands[1].length).toBe(plain.quarter.hands[1].length + 2);
+    expect(senior.quarter.hands[0].length).toBe(plain.quarter.hands[0].length);
+    expect([0, 1, 2].map((r) => senior.quarter.cells[idx(r, 4)]!.budget)).toEqual([2, 2, 1]);
+    expect([0, 1, 2].map((r) => senior.quarter.cells[idx(r, 0)]!.budget)).toEqual([1, 1, 1]);
+    const pass = { type: 'pass' } as const;
+    const q2 = matchReducer(matchReducer(senior, pass), pass);
+    expect(q2.quarter.cells[idx(0, 4)]!.budget).toBe(2); // every quarter
+  });
+
   it('Reply-All: Finance draws +2 at the start and at every refill', () => {
     const plain = newMatch(1, STARTER_DECK);
     const ra = newMatch(1, STARTER_DECK, DEFAULT_MATCH, undefined, mods({ boss: 'replyall' }));

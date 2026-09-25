@@ -1,4 +1,4 @@
-import { MEETINGS } from '@qbr/shared';
+import { yourTitle } from './OrgChart.js';
 import { BinderClip } from './Mascot.js';
 import type { Record } from './record.js';
 import { homeLine } from './tips.js';
@@ -27,7 +27,7 @@ export function Home({ record, inProgress, onStartRun, onStartQuick, onResume }:
         : record.lastOutcome === 'draw'
           ? 'Last year: flat'
           : null;
-  const furthest = record.bestMeetings >= MEETINGS.length ? 'promoted' : MEETINGS[record.bestMeetings]?.name;
+  const furthest = record.runs > 0 ? yourTitle(record.bestMeetings) : null;
 
   return (
     <div className="app home" data-home>
@@ -51,7 +51,7 @@ export function Home({ record, inProgress, onStartRun, onStartQuick, onResume }:
             <span>QBR</span>
           </div>
           <p className="pitch">
-            Survive three meetings with <b>Finance</b>.
+            Climb the org chart from <b>Intern</b> to <b>CEO</b>.
             <br />
             Claim cells, win lanes, close out at the right moment.
           </p>

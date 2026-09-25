@@ -94,29 +94,38 @@ describe('home screen', () => {
 });
 
 describe('a run', () => {
-  it('drafts a joker, plays the meeting with it on the desk, survives × / Resume, and records the run', () => {
+  it('opens on the org chart, drafts, plays the Intern with the joker on the desk, survives × / Resume, and records the career', () => {
     vi.useFakeTimers();
     try {
       render(<App seed={5} />);
       fireEvent.click(q('[data-start-run]')!);
 
-      // Supply closet: three offers and the calendar with the boss waiting.
+      // The org chart first: CEO at the top, you at the bottom, the Intern next.
+      expect(q('[data-chart]')).toBeTruthy();
+      const rungs = Array.from(document.querySelectorAll<HTMLElement>('[data-rung]')).map((r) => r.textContent);
+      expect(rungs[0]).toMatch(/The CEO/);
+      expect(rungs.at(-1)).toMatch(/You[\s\S]*New hire/);
+      expect(q('[data-rung="0"]')!.dataset.state).toBe('next');
+      expect(q('[data-rung="3"]')!.textContent).toMatch(/The VP[\s\S]*(Micromanager|Legacy|Auditor)/); // boss shown up front
+      fireEvent.click(q('[data-chart-go]')!);
+
+      // Supply closet: three offers.
       expect(q('[data-draft]')).toBeTruthy();
       const offers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-offer]'));
       expect(offers).toHaveLength(3);
-      expect(q('[data-calendar]')!.textContent).toMatch(/Quick sync[\s\S]*Standup[\s\S]*Quarterly Review[\s\S]*boss/);
       const picked = offers[0]!.dataset.offer!;
       fireEvent.click(offers[0]!);
 
-      // The Quick sync, with the joker on the desktop tray.
-      expect(q('[data-title]')!.textContent).toMatch(/Quick sync/);
+      // The Intern's Onboarding sync, with the joker on the desktop tray.
+      expect(q('[data-title]')!.textContent).toMatch(/Onboarding sync/);
+      expect(q('[data-opponent]')!.textContent).toMatch(/The Intern/);
       expect(q(`[data-tray] [data-joker="${picked}"]`)).toBeTruthy();
-      expect(q('[data-boss]')).toBeNull(); // no boss before the review
+      expect(q('[data-boss]')).toBeNull(); // no boss this low on the chart
 
       fireEvent.click(q('[data-exit]')!);
       expect(q('[data-resume]')!.textContent).toMatch(/Resume career/);
       fireEvent.click(q('[data-resume]')!);
-      expect(q('[data-title]')!.textContent).toMatch(/Quick sync/);
+      expect(q('[data-title]')!.textContent).toMatch(/Onboarding sync/);
 
       // Close out every quarter: Finance takes the meeting and the run ends.
       for (let guard = 0; guard < 12 && !q('[data-run-end]'); guard++) {
@@ -132,12 +141,13 @@ describe('a run', () => {
         const btn = q<HTMLButtonElement>('[data-dialog-button]');
         if (btn) fireEvent.click(btn);
       }
-      expect(q('[data-run-end]')!.textContent).toMatch(/ended at the Quick sync/);
+      expect(q('[data-run-end]')!.textContent).toMatch(/ended at the Intern's Onboarding sync/);
+      expect(q('[data-run-end] [data-rung="0"]')!.dataset.state).toBe('next'); // where you stopped
       fireEvent.click(q('[data-run-home]')!);
 
       expect(home()).toBeTruthy();
       expect(q('[data-resume]')).toBeNull();
-      expect(q('[data-run-record]')!.textContent).toMatch(/Careers 1 · promoted 0 · best: Quick sync/);
+      expect(q('[data-run-record]')!.textContent).toMatch(/Careers 1 · promoted 0 · best: New hire/);
       expect(JSON.parse(localStorage.getItem('qbr.record.v1')!)).toMatchObject({ runs: 1, promotions: 0 });
     } finally {
       vi.useRealTimers();

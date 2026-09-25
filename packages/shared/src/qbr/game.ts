@@ -189,7 +189,8 @@ export function freshBoard(mods: Mods = NO_MODS): Cell[] {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const owner: Player | null = c === 0 ? 0 : c === COLS - 1 ? 1 : null;
-      const budget = owner === null ? 0 : owner === 1 && r === 1 && mods.boss === 'legacy' ? 2 : 1;
+      const boosted = owner === 1 && ((r === 1 && mods.boss === 'legacy') || r < (mods.oppHomeBoost ?? 0));
+      const budget = owner === null ? 0 : boosted ? 2 : 1;
       cells.push({ owner, budget, card: null });
     }
   }

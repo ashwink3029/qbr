@@ -414,6 +414,61 @@
 .pval.down { color: #b00020; }
 
 /* Quarter / year summary: a 90s modal dialog over the window. */
+/* ── Org chart: CEO at the top, you at the bottom ─────────────────────── */
+.chart-window { max-width: 380px; }
+.orgchart { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: stretch; }
+.rung {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid;
+  border-color: var(--lo) var(--hi) var(--hi) var(--lo);
+}
+/* The reporting line between boxes. */
+.rung + .rung { margin-top: 12px; }
+.rung + .rung::before {
+  content: '';
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  width: 2px;
+  height: 12px;
+  background: var(--ink);
+}
+.rung-avatar {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theirs-ink);
+  color: #fff;
+  font-family: ui-monospace, Menlo, monospace;
+  font-weight: 700;
+  font-size: 11px;
+}
+.rung-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.rung-text small { color: #555; font-size: 11px; }
+.rung-text .threat { color: var(--theirs-ink); }
+.rung.beaten { background: #eef6ee; color: var(--lo); }
+.rung.beaten .rung-avatar { background: var(--lo); }
+.rung.next { outline: 3px solid var(--title); outline-offset: -3px; background: #fffbe0; }
+.rung.you { background: var(--mine); }
+.rung.you .rung-avatar { background: var(--mine-ink); }
+.tick { margin-left: auto; color: #1b7f1b; font-weight: 800; font-size: 18px; }
+@media (max-height: 760px) {
+  .rung { padding: 4px 6px; }
+  .rung + .rung { margin-top: 8px; }
+  .rung + .rung::before { top: -9px; height: 8px; }
+  .rung-avatar { width: 28px; height: 28px; font-size: 10px; }
+  .chart-window .pitch { margin: 0; }
+  .chart-window .logo { display: none; }
+}
+
 /* ── Bindy, the binder-clip assistant ────────────────────────────────── */
 .tip-anchor { position: relative; height: 0; z-index: 5; }
 .tip {

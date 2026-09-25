@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import {
-  BOSSES,
   JOKERS,
   MEETINGS,
   currentMeeting,
   finishMeeting,
+  leaveChart,
   meetingMods,
   meetingSeed,
   newRun,
@@ -13,10 +13,11 @@ import {
   type RunState,
 } from '@qbr/shared';
 import { Game } from './Game.js';
+import { OrgChart, yourTitle } from './OrgChart.js';
 
 export interface RunResult {
   readonly promoted: boolean;
-  /** Meetings won before the run ended (3 = promoted). */
+  /** Rungs beaten before the career ended (MEETINGS.length = promoted). */
   readonly meetingsWon: number;
   readonly jokers: readonly string[];
 }
@@ -28,35 +29,21 @@ export interface RunProps {
   readonly onRunEnd: (r: RunResult) => void;
 }
 
-/** The meeting calendar: done / next / the boss waiting at the review. */
-function Calendar({ run }: { run: RunState }) {
+function CloseButton({ onExit }: { onExit: () => void }) {
   return (
-    <ol className="calendar" data-calendar>
-      {MEETINGS.map((m, i) => {
-        const state = i < run.meeting ? 'done' : i === run.meeting ? 'next' : 'later';
-        return (
-          <li key={m.name} className={state}>
-            <span className="mname">{m.name}</span>
-            <small>
-              {state === 'done'
-                ? 'won'
-                : m.boss
-                  ? `boss: ${BOSSES[run.boss]!.name} — ${BOSSES[run.boss]!.blurb}`
-                  : m.opponent === 'greedy'
-                    ? 'Finance, winging it'
-                    : 'Finance, prepared'}
-            </small>
-          </li>
-        );
-      })}
-    </ol>
+    <span className="tb-buttons">
+      <button className="tb-close" data-exit aria-label="Back to home" onClick={onExit}>
+        ×
+      </button>
+    </span>
   );
 }
 
 /**
- * One run: draft a joker in the supply closet, play the meeting (a best-of-3
- * match with the run's jokers and, at the review, the boss), repeat. The
- * meeting's Game is keyed by meeting index so each meeting starts clean.
+ * A career (a "run" in code): org chart -> supply closet -> meeting -> org chart
+ * ... up the ladder from the Intern to the CEO. The org chart shows before the
+ * first meeting and after every win, and it is the career-end screen too. Each
+ * meeting's Game is keyed by rung so it starts clean.
  */
 export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
   const [run, setRun] = useState<RunState>(() => newRun(seed));
@@ -65,26 +52,52 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
 
   if (run.status === 'won' || run.status === 'lost') {
     const won = run.status === 'won';
-    const reached = currentMeeting(run).name;
+    const beaten = won ? MEETINGS.length : run.meeting;
     return (
       <div className="app home" data-run-end>
-        <div className="window start-window">
+        <div className="window start-window chart-window">
           <div className="titlebar">
             <span>{won ? 'Promotion!' : 'Calendar cleared'}</span>
           </div>
           <div className="start-body">
             <p className="pitch">
               {won
-                ? 'You survived the Quarterly Review. Corner office secured.'
-                : `Your career ended at the ${reached}.`}
+                ? 'You beat the CEO in the Board meeting. Corner office secured.'
+                : `Your career ended at ${currentMeeting(run).role.replace(/^The /, 'the ')}'s ${currentMeeting(run).name}. Title: ${yourTitle(beaten)}.`}
             </p>
-            <Calendar run={run} />
+            <OrgChart run={run} beaten={beaten} />
             <button
               className="btn primary"
               data-run-home
-              onClick={() => onRunEnd({ promoted: won, meetingsWon: won ? MEETINGS.length : run.meeting, jokers: run.jokers })}
+              onClick={() => onRunEnd({ promoted: won, meetingsWon: beaten, jokers: run.jokers })}
             >
               Back to home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (run.status === 'chart') {
+    const next = currentMeeting(run);
+    const fresh = run.meeting === 0;
+    return (
+      <div className="app home" data-chart>
+        <div className="window start-window chart-window">
+          <div className="titlebar">
+            <span>Org chart — {yourTitle(run.meeting)}</span>
+            <CloseButton onExit={onExit} />
+          </div>
+          <div className="start-body">
+            <p className="pitch">
+              {fresh
+                ? 'Day one. Climb the org chart one meeting at a time — lose once and the career ends.'
+                : `Promoted to ${yourTitle(run.meeting)}. Next up: ${next.role.replace(/^The /, 'the ')}.`}
+            </p>
+            <OrgChart run={run} beaten={run.meeting} />
+            <button className="btn primary" data-chart-go onClick={() => setRun((r) => leaveChart(r))}>
+              {run.offer.length > 0 ? 'Stop by the supply closet' : `Walk into the ${next.name}`}
             </button>
           </div>
         </div>
@@ -98,11 +111,7 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
         <div className="window start-window closet">
           <div className="titlebar">
             <span>Supply closet — before the {currentMeeting(run).name}</span>
-            <span className="tb-buttons">
-              <button className="tb-close" data-exit aria-label="Back to home" onClick={onExit}>
-                ×
-              </button>
-            </span>
+            <CloseButton onExit={onExit} />
           </div>
           <div className="start-body">
             <p className="pitch">Take one thing for your desk.</p>
@@ -118,7 +127,6 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
             {run.jokers.length > 0 && (
               <small className="owned">On your desk: {run.jokers.map((j) => JOKERS[j]!.name).join(', ')}</small>
             )}
-            <Calendar run={run} />
           </div>
         </div>
       </div>
@@ -135,6 +143,8 @@ export function Run({ seed, paused = false, onExit, onRunEnd }: RunProps) {
       onYearEnd={meetingOver}
       mods={meetingMods(run)}
       opponent={meeting.opponent}
+      opponentName={meeting.role}
+      opponentInitials={meeting.initials}
       meetingName={meeting.name}
     />
   );

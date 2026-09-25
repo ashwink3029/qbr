@@ -263,13 +263,30 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    `client/icon/qbr-icon.svg` (+ README with the re-render recipe); shipped as
    the single universal 1024 PNG, no alpha. Checked at 120px and on the
    Simulator home screen. Placeholder until the commissioned pixel art.
-4. **Runs climb the org chart.** Keep one-off matches (Quick year). A full run
-   becomes a ladder of named opponents the player can anticipate, e.g. **Intern
-   -> Manager -> Finance -> VP -> (CEO / The Board)**, each a best-of-3 meeting
-   of rising strength with its own personality/boss rule. Show an **org-chart
-   screen before the run starts and after every round**: where you are, who's
-   next, who's above. Replaces today's fixed 3-meeting calendar (`run.ts`
-   MEETINGS) — re-run `runbars` for the new ladder (R1 clear rate etc.).
+4. ~~Careers climb the org chart~~ **DONE.** `run.ts` MEETINGS is now a 5-rung
+   ladder, each rung a best-of-3 meeting:
+   | rung | meeting | plays | boss | edge (cards/qtr) | $$ home cells |
+   |---|---|---|---|---|---|
+   | The Intern | Onboarding sync | random, never passes on purpose | - | 0 | 0 |
+   | The Manager | Weekly 1:1 | smart greedy | - | 0 | 0 |
+   | Finance | Budget review | smart lookahead | - | 1 | 0 |
+   | The VP | Quarterly Review | smart lookahead | drawn at start (Micromanager / Legacy / Auditor) | 1 | 1 |
+   | The CEO | Board meeting | smart lookahead | Reply-All (always) | 2 | 2 |
+   Flow: **org chart** (before the career and after every win; also the
+   career-end screen) -> supply closet -> meeting. Your title climbs New hire ->
+   Associate -> Senior associate -> Team lead -> Director -> Promoted.
+   `OrgChart.tsx`; opponents' names/initials flow into the strip, status, tips.
+   `opponentPolicy(kind)` in shared is the ONE rung -> AI mapping for app + sim.
+   **Ladder bars (pre-registered in `runbars.ts` before the first ladder run),
+   2000 seeds: 6/6 with J1/J2/B1** — L1 difficulty climbs 82.1% > 80.3% > 67.6%
+   > 60.2% > 52.1%; L2 random-draft promotion 14.0% (10-40); L3 Intern 82.1%
+   (>=75). **Honest history:** first ladder run failed L1 — win rates ROSE up
+   the chart (VP 87.6% > Intern 78.6%) because stacked jokers outscale smarter
+   opponents. Added seniority levers: `oppEdge` (extra cards/quarter) and
+   `oppHomeBoost` (opponent home cells at $$). Edge saturates (a 15-card deck);
+   home boost is strong but NOT monotone — CEO with 3 boosted cells was EASIER
+   (71.6%) than with 2 (56.5%), likely the AI's eval over-valuing budget on its
+   own empty cells. Final tuning is the table above.
 5. **Unlockable special cards for beating runs** — and an inventory to iterate
    on. Beating a run (or a rung of the ladder) unlocks new cards that join your
    deck/pool; persistence alongside `record.ts`. Every new card goes through the

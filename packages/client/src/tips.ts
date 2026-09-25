@@ -33,7 +33,9 @@ export interface TipContext {
   readonly selected: boolean;
   readonly previewFlips: boolean;
   readonly financeClosedOut: boolean;
-  /** Your revenue minus Finance's, this quarter. */
+  /** Who you're facing ("Finance", "The VP"). */
+  readonly who: string;
+  /** Your revenue minus theirs, this quarter. */
   readonly lead: number;
   readonly mods: Mods;
   /** Some card in your hand costs more than any open cell you own. */
@@ -70,21 +72,21 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
   if (ctx.previewFlips) {
     candidates.push({
       id: 'takeover',
-      text: 'Orange stripes: that Finance card is weaker than yours, so it flips to you.',
+      text: `Orange stripes: that card of ${ctx.who}'s is weaker than yours, so it flips to you.`,
       mood: 'talk',
     });
   }
   if (ctx.humanTurn && ctx.financeClosedOut && ctx.lead > 0) {
     candidates.push({
       id: 'closeout-ahead',
-      text: 'Finance closed out and you’re ahead. Close out now — unplayed cards carry into next quarter.',
+      text: `${ctx.who} closed out and you’re ahead. Close out now — unplayed cards carry into next quarter.`,
       mood: 'talk',
     });
   }
   if (ctx.humanTurn && ctx.financeClosedOut && ctx.lead <= 0) {
     candidates.push({
       id: 'closeout-behind',
-      text: 'Finance closed out. You play on alone now — stop the moment you’re ahead.',
+      text: `${ctx.who} closed out. You play on alone now — stop the moment you’re ahead.`,
       mood: 'worried',
     });
   }

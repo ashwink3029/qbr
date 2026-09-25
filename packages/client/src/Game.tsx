@@ -9,17 +9,16 @@ import {
   blockedCells,
   card,
   cellValue,
-  greedyPolicy,
   legalPlays,
-  lookaheadPolicy,
   matchReducer,
   newMatch,
+  opponentPolicy,
   reducer,
   revenue,
   rowResults,
-  smartPass,
   spreadEffects,
   type Action,
+  type OpponentKind,
   type Mods,
   type GameState,
   type MatchState,
@@ -37,11 +36,6 @@ export const AI_DELAY_MS = 450;
 const UNITS = ['Sales', 'Ops', 'R&D'] as const;
 const LANE_LETTERS = ['A', 'B', 'C'] as const;
 const HUMAN = 0;
-
-/** Finance's two measured strengths (see match.ts / sim/src/matchbars.ts): a
- *  Quick sync faces greedy, everything else the 2-ply lookahead; both use the
- *  Gwent-style pass plan. */
-const OPPONENTS = { greedy: smartPass(greedyPolicy), lookahead: smartPass(lookaheadPolicy) } as const;
 
 function freshSeed(): number {
   return (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0;
@@ -104,8 +98,12 @@ export interface GameProps {
   readonly onYearEnd?: (winner: Player | null, results: readonly QuarterResult[]) => void;
   /** Jokers in play and the boss in force (a run's meeting); none in a quick year. */
   readonly mods?: Mods;
-  readonly opponent?: keyof typeof OPPONENTS;
-  /** A run's meeting name ("Standup"); absent in a quick year. */
+  /** How the opponent plays — the same shared mapping the sim measures. */
+  readonly opponent?: OpponentKind;
+  /** Who sits across the table ("The VP") and their avatar initials. */
+  readonly opponentName?: string;
+  readonly opponentInitials?: string;
+  /** A career meeting's name ("Budget review"); absent in a one-off year. */
   readonly meetingName?: string;
 }
 
@@ -116,9 +114,11 @@ export function Game({
   onYearEnd,
   mods = NO_MODS,
   opponent: opponentKind = 'lookahead',
+  opponentName: who = 'Finance',
+  opponentInitials: whoInitials = 'FIN',
   meetingName,
 }: GameProps = {}) {
-  const opponent = OPPONENTS[opponentKind];
+  const opponent = useMemo(() => opponentPolicy(opponentKind), [opponentKind]);
   const [match, setMatch] = useState<MatchState>(() =>
     newMatch(seed ?? freshSeed(), STARTER_DECK, DEFAULT_MATCH, MATCH_RULES, mods),
   );
@@ -229,11 +229,11 @@ export function Game({
       summary.result.winner === 0
         ? 'You won the quarter'
         : summary.result.winner === 1
-          ? 'Finance won the quarter'
+          ? `${who} won the quarter`
           : 'Flat quarter — both lose a life';
     status = `Q${summary.quarterNo} closed ${a}–${b}. ${verdict}.`;
   } else if (!humanTurn) {
-    status = iPassed ? `You closed out Q${qNo} — Finance is still presenting…` : 'Finance is typing…';
+    status = iPassed ? `You closed out Q${qNo} — ${who} is still presenting…` : `${who} is typing…`;
   } else if (explain !== null && game.hands[HUMAN].includes(explain)) {
     const c = card(explain);
     status =
@@ -243,7 +243,7 @@ export function Game({
   } else if (legal.length === 0) {
     status = `No moves — close out Q${qNo}.`;
   } else {
-    const lead = theyPassed ? 'Finance closed out. ' : '';
+    const lead = theyPassed ? `${who} closed out. ` : '';
     status =
       lead +
       (selected === null
@@ -267,6 +267,7 @@ export function Game({
             selected: selected !== null,
             previewFlips: effects.flip.length > 0,
             financeClosedOut: theyPassed,
+            who,
             lead: mine - theirs,
             mods,
             hasUnaffordable: humanTurn && game.hands[HUMAN].some((id) => !legal.some((a) => a.card === id)),
@@ -292,7 +293,7 @@ export function Game({
         : {
             title: match.winner === 0 ? 'Promotion!' : match.winner === 1 ? 'Performance review' : 'Flat year',
             body: `Q${summary.quarterNo}: ${a}–${b}. ${
-              match.winner === 0 ? 'You won the year.' : match.winner === 1 ? 'Finance won the year.' : 'Nobody won the year.'
+              match.winner === 0 ? 'You won the year.' : match.winner === 1 ? `${who} won the year.` : 'Nobody won the year.'
             } Quarters: ${quarters}`,
             button: 'Back to home',
             onClick: finishYear,
@@ -301,7 +302,7 @@ export function Game({
       dialog = {
         title: `Q${summary.quarterNo} results`,
         body: `${a}–${b}. ${
-          w === 0 ? 'You beat Finance.' : w === 1 ? 'Finance beat you.' : 'Tied — both lose a life.'
+          w === 0 ? `You beat ${who}.` : w === 1 ? `${who} beat you.` : 'Tied — both lose a life.'
         } Q${summary.quarterNo + 1} starts on a fresh sheet; you draw ${
           match.config.drawAfter[summary.quarterNo - 1] ?? 0
         } and keep your hand.`,
@@ -338,10 +339,10 @@ export function Game({
 
         <div className={`opponent ${!summary && !match.over && game.toMove === 1 ? 'live' : ''}`} data-opponent>
           <span className="avatar" aria-hidden>
-            FIN
+            {whoInitials}
           </span>
           <span className="who">
-            <b>Finance</b>
+            <b>{who}</b>
             <small>{theyPassed ? 'closed out' : !summary && game.toMove === 1 ? 'is typing…' : 'on mute'}</small>
             {boss && (
               <span className="boss" data-boss={boss.id} title={boss.blurb}>
@@ -349,7 +350,7 @@ export function Game({
               </span>
             )}
           </span>
-          <Lives n={match.lives[1]} max={maxLives} label="Finance" />
+          <Lives n={match.lives[1]} max={maxLives} label={who} />
           <span className="backs" aria-label={`${game.hands[1].length} cards in hand`}>
             {game.hands[1].map((_, k) => (
               <i key={k} />
@@ -467,7 +468,7 @@ export function Game({
           </button>
           <span className="rev">
             <span>
-              <b data-mine>{mine}</b> you · <b>{theirs}</b> Finance
+              <b data-mine>{mine}</b> you · <b>{theirs}</b> {who}
             </span>
             <span className="you-lives">
               <Lives n={match.lives[0]} max={maxLives} label="You" />

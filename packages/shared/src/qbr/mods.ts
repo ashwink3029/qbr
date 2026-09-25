@@ -9,6 +9,12 @@
 export interface Mods {
   readonly jokers: readonly string[];
   readonly boss: string | null;
+  /** Extra cards the opponent (seat 1) draws every quarter — a senior rung's
+   *  "edge" on the career ladder. Absent = 0. */
+  readonly oppEdge?: number;
+  /** How many of the opponent's home cells (from the Sales lane down) start at
+   *  $$ instead of $ — a senior rung's head start. Absent = 0. */
+  readonly oppHomeBoost?: number;
 }
 
 export const NO_MODS: Mods = { jokers: [], boss: null };
@@ -46,9 +52,9 @@ export const BOSSES: Readonly<Record<string, ModDef>> = {
     blurb: 'Locks the cells in front of your Sales and Ops homes',
     glyph: 'MM',
   },
-  legacy: { id: 'legacy', name: 'Legacy System', blurb: 'Finance’s Ops home cell starts with $$', glyph: 'LS' },
+  legacy: { id: 'legacy', name: 'Legacy System', blurb: 'Their Ops home cell starts with $$', glyph: 'LS' },
   auditor: { id: 'auditor', name: 'The Auditor', blurb: 'Your best card on the sheet counts half', glyph: 'AU' },
-  replyall: { id: 'replyall', name: 'Reply-All', blurb: 'Finance draws +2 cards every quarter', glyph: 'RE' },
+  replyall: { id: 'replyall', name: 'Reply-All', blurb: 'Draws +2 extra cards every quarter', glyph: 'RE' },
 };
 
 export const hasJoker = (mods: Mods, id: string): boolean => mods.jokers.includes(id);
@@ -56,5 +62,5 @@ export const hasJoker = (mods: Mods, id: string): boolean => mods.jokers.include
 /** Extra cards a seat receives at the start of every quarter (opening and refills). */
 export function bonusDraw(mods: Mods, seat: 0 | 1): number {
   if (seat === 0) return hasJoker(mods, 'mug') ? 1 : 0;
-  return mods.boss === 'replyall' ? 2 : 0;
+  return (mods.boss === 'replyall' ? 2 : 0) + (mods.oppEdge ?? 0);
 }
