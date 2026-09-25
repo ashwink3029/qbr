@@ -11,6 +11,18 @@ afterEach(cleanup);
 const cells = (): HTMLElement[] => Array.from(document.querySelectorAll<HTMLElement>('[data-cell]'));
 
 describe('the app', () => {
+  it('tapping a different legal cell moves the preview instead of placing', () => {
+    render(<App seed={5} />);
+    fireEvent.click(Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).find((b) => !b.disabled)!);
+    const legal = cells().filter((c) => c.classList.contains('legal'));
+    expect(legal.length).toBeGreaterThan(1);
+    fireEvent.click(legal[0]!);
+    fireEvent.click(legal[1]!);
+    expect(cells().filter((c) => c.querySelector('.placed'))).toHaveLength(0);
+    expect(legal[1]!.classList.contains('pending')).toBe(true);
+    expect(legal[0]!.classList.contains('pending')).toBe(false);
+  });
+
   it('renders a 3x5 sheet with home columns owned', () => {
     render(<App seed={5} />);
     expect(cells()).toHaveLength(15);
@@ -27,6 +39,12 @@ describe('the app', () => {
       fireEvent.click(playable!);
       const target = cells().find((c) => c.classList.contains('legal'));
       expect(target, 'selected card highlights no legal cell').toBeTruthy();
+      // First tap previews the spread without committing — touch has no hover.
+      fireEvent.click(target!);
+      expect(target!.querySelector('.placed')).toBeNull();
+      expect(target!.classList.contains('pending')).toBe(true);
+      expect(cells().some((c) => c.classList.contains('reach'))).toBe(true);
+      // Second tap on the same cell places the card.
       fireEvent.click(target!);
       expect(target!.querySelector('.placed')).toBeTruthy();
       expect(document.querySelector('[data-status]')!.textContent).toMatch(/typing/);

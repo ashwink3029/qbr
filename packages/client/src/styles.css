@@ -17,34 +17,43 @@
 
 * { box-sizing: border-box; }
 
+/* Phone-first: the window IS the screen. It runs from under the notch to the
+   home indicator, the board stretches to take the slack height, and the hand +
+   pass button sit in the thumb zone at the bottom. On a wide screen (desktop dev)
+   it stays a phone-shaped column, centred. */
 .app {
   height: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: env(safe-area-inset-top) 8px env(safe-area-inset-bottom);
+  padding: calc(env(safe-area-inset-top) + 4px) 6px calc(env(safe-area-inset-bottom) + 4px);
   background: var(--desk);
 }
 
 .window {
   width: 100%;
-  min-width: 0; /* a flex item would otherwise grow to its hand's width */
-  max-width: 440px;
+  min-width: 0;
+  max-width: 480px;
+  max-height: 960px;
+  align-self: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   background: var(--panel);
   color: var(--ink);
   border: 2px solid;
   border-color: var(--hi) var(--lo) var(--lo) var(--hi);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .titlebar {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: linear-gradient(90deg, var(--title), #3a6ea5);
   color: #fff;
   font-weight: 700;
-  padding: 3px 4px;
+  padding: 5px 6px;
 }
 .tb-buttons b {
   display: inline-block;
@@ -59,91 +68,130 @@
 }
 
 .formula {
+  flex: 0 0 auto;
   display: flex;
+  align-items: center;
   gap: 6px;
   margin: 4px;
   padding: 3px 6px;
   background: #fff;
   border: 1px solid;
   border-color: var(--lo) var(--hi) var(--hi) var(--lo);
-  min-height: 22px;
+  min-height: 30px;
 }
 .fx { font-style: italic; color: var(--lo); }
 
 .sheet {
-  width: calc(100% - 8px);
+  flex: 1 1 auto;
+  min-height: 0;
   margin: 0 4px;
-  border-collapse: collapse;
-  table-layout: fixed;
+  display: grid;
+  grid-template-columns: 40px repeat(5, minmax(0, 1fr)) 46px;
+  grid-template-rows: 24px repeat(3, minmax(64px, 1fr)) 32px;
   background: #fff;
+  border: 1px solid var(--lo);
 }
-.sheet th {
+.hd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background: var(--panel);
   border: 1px solid var(--lo);
-  font-weight: 400;
-  padding: 2px;
+  border-width: 0 1px 1px 0;
+  font-size: 13px;
 }
-.sheet th.unit { width: 44px; line-height: 1.1; }
-.sheet th.unit small { display: block; font-size: 9px; color: var(--lo); }
-.sheet th.sum, .sheet td.sum { width: 48px; }
+.hd.unit { line-height: 1.1; }
+.hd.unit small { font-size: 9px; color: #555; }
 
 .cell {
-  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
   border: 1px solid #d4d4d4;
+  border-width: 0 1px 1px 0;
   text-align: center;
-  vertical-align: middle;
-  padding: 1px;
-  cursor: default;
   transition: background 120ms;
+  touch-action: manipulation;
 }
 .cell.mine { background: var(--mine); color: var(--mine-ink); }
 .cell.theirs { background: var(--theirs); color: var(--theirs-ink); }
-.cell.legal { outline: 2px dashed #b08900; outline-offset: -3px; cursor: pointer; background: var(--legal); }
+.cell.legal { outline: 2px dashed #b08900; outline-offset: -4px; cursor: pointer; background: var(--legal); }
 .cell.reach { background: var(--reach); }
+.cell.pending { outline: 3px solid var(--title); outline-offset: -4px; }
 
-.budget { font-family: ui-monospace, Menlo, monospace; font-weight: 700; letter-spacing: 1px; }
-.placed { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.pname { font-size: 9px; line-height: 1; }
-.pval { font-size: 18px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+.budget { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 15px; letter-spacing: 1px; }
+.placed { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0 2px; }
+.pname { font-size: 10px; line-height: 1.05; hyphens: auto; -webkit-hyphens: auto; }
+.pval { font-size: 24px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; line-height: 1; }
 
-td.sum { text-align: center; font-family: ui-monospace, Menlo, monospace; border: 1px solid #d4d4d4; }
-td.sum.win { background: var(--mine); color: var(--mine-ink); font-weight: 700; }
-td.sum.lose { background: var(--theirs); color: var(--theirs-ink); font-weight: 700; }
-tr.totals td.rev { text-align: right; padding: 4px 6px; border-top: 2px double var(--ink); }
+.sum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  border-bottom: 1px solid #d4d4d4;
+}
+.sum.win { background: var(--mine); color: var(--mine-ink); font-weight: 700; }
+.sum.lose { background: var(--theirs); color: var(--theirs-ink); font-weight: 700; }
+.rev {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  border-top: 2px double var(--ink);
+}
 
 .hand {
+  flex: 0 0 auto;
   display: flex;
   gap: 4px;
   padding: 8px 4px 4px;
-  overflow-x: auto;
 }
 .card {
   flex: 1 1 0;
   min-width: 0;
+  min-height: 118px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 5px 3px;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 6px 2px;
   background: #fffef0;
   color: var(--ink);
   font: inherit;
   border: 2px solid;
   border-color: var(--hi) var(--lo) var(--lo) var(--hi);
   cursor: pointer;
+  touch-action: manipulation;
 }
-.card.sel { border-color: var(--lo) var(--hi) var(--hi) var(--lo); background: var(--legal); }
+.card.sel { border-color: var(--lo) var(--hi) var(--hi) var(--lo); background: var(--legal); transform: translateY(-6px); }
 .card:disabled { opacity: 0.45; cursor: default; }
-.cost { align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #2d6a00; }
-.cname { font-size: 9px; letter-spacing: -0.2px; overflow-wrap: normal; font-weight: 700; text-align: center; line-height: 1.1; min-height: 22px; }
-.cval { font-size: 18px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+.cost { align-self: flex-start; padding-left: 3px; font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #2d6a00; }
+.cname {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.1;
+  min-height: 25px;
+  width: 100%;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: normal;
+}
+.cval { font-size: 22px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; line-height: 1; }
 
-.glyph { display: grid; grid-template-columns: repeat(5, 8px); gap: 1px; }
-.g { width: 8px; height: 8px; background: #e2e2e2; }
+.glyph { display: grid; grid-template-columns: repeat(5, 9px); gap: 1px; }
+.g { width: 9px; height: 9px; background: #e2e2e2; }
 .g.hit { background: #2d6a00; }
 .g.self { background: var(--title); }
 
 .actions {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -152,11 +200,13 @@ tr.totals td.rev { text-align: right; padding: 4px 6px; border-top: 2px double v
 .btn {
   font: inherit;
   color: var(--ink); /* WebKit tints bare buttons system-blue */
-  padding: 5px 12px;
+  min-height: 44px; /* Apple HIG minimum touch target */
+  padding: 0 16px;
   background: var(--panel);
   border: 2px solid;
   border-color: var(--hi) var(--lo) var(--lo) var(--hi);
   cursor: pointer;
+  touch-action: manipulation;
 }
 .btn:active { border-color: var(--lo) var(--hi) var(--hi) var(--lo); }
 .btn:disabled { color: var(--lo); cursor: default; }

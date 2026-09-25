@@ -52,6 +52,8 @@ export function App({ seed }: { seed?: number } = {}) {
     [legal, selected],
   );
 
+  const humanTurn = !game.over && game.toMove === HUMAN;
+
   // The opponent replies on a timer, never synchronously inside a click.
   useEffect(() => {
     if (game.over || game.toMove === HUMAN) return;
@@ -63,16 +65,33 @@ export function App({ seed }: { seed?: number } = {}) {
     return () => clearTimeout(t);
   }, [game, aiRng]);
 
+  // Touch has no hover, so the first tap on a legal cell previews the spread
+  // (`pending`) and a second tap on the same cell commits. A mouse also gets
+  // the preview on hover, but still commits the same way.
+  const [pending, setPending] = useState<number | null>(null);
+  const [hover, setHover] = useState<number | null>(null);
+
   const act = (a: Action) => {
     setGame((g) => reducer(g, a));
     setSelected(null);
+    setPending(null);
   };
 
-  const humanTurn = !game.over && game.toMove === HUMAN;
+  const pickCard = (id: string) => {
+    setSelected(selected === id ? null : id);
+    setPending(null);
+  };
+
+  const tapCell = (i: number) => {
+    if (!humanTurn || selected === null || !legalCells.has(i)) return;
+    if (pending === i) act({ type: 'play', card: selected, cell: i });
+    else setPending(i);
+  };
+
   const rows = rowResults(game);
   const [mine, theirs] = revenue(game);
 
-  const [preview, setPreview] = useState<number | null>(null);
+  const preview = pending ?? hover;
   const previewTargets = useMemo(
     () =>
       selected !== null && preview !== null && legalCells.has(preview)
@@ -89,7 +108,12 @@ export function App({ seed }: { seed?: number } = {}) {
   } else if (legal.length === 0) {
     status = 'No moves — defer to next quarter.';
   } else {
-    status = selected ? `Place ${card(selected).name}` : 'Pick a card';
+    status =
+      selected === null
+        ? 'Pick a card'
+        : pending === null
+          ? `Place ${card(selected).name} — tap a yellow cell`
+          : `Tap again to place ${card(selected).name}`;
   }
 
   return (
@@ -109,67 +133,60 @@ export function App({ seed }: { seed?: number } = {}) {
           <span data-status>{status}</span>
         </div>
 
-        <table className="sheet">
-          <thead>
-            <tr>
-              <th />
-              {COL_LETTERS.map((l) => (
-                <th key={l}>{l}</th>
-              ))}
-              <th className="sum">=SUM</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: ROWS }, (_, r) => (
-              <tr key={r}>
-                <th className="unit">
-                  {r + 1}
-                  <small>{UNITS[r]}</small>
-                </th>
-                {Array.from({ length: COLS }, (_, c) => {
-                  const i = idx(r, c);
-                  const cell = game.cells[i]!;
-                  const cls = [
-                    'cell',
-                    cell.owner === 0 ? 'mine' : cell.owner === 1 ? 'theirs' : '',
-                    legalCells.has(i) ? 'legal' : '',
-                    previewTargets.has(i) ? 'reach' : '',
-                  ].join(' ');
-                  return (
-                    <td
-                      key={c}
-                      className={cls}
-                      data-cell={i}
-                      onPointerEnter={() => setPreview(i)}
-                      onClick={() => {
-                        if (humanTurn && selected && legalCells.has(i)) act({ type: 'play', card: selected, cell: i });
-                      }}
-                    >
-                      {cell.card ? (
-                        <span className="placed">
-                          <span className="pname">{card(cell.card).name}</span>
-                          <span className="pval">{card(cell.card).value}</span>
-                        </span>
-                      ) : (
-                        <span className="budget">{'$'.repeat(cell.budget)}</span>
-                      )}
-                    </td>
-                  );
-                })}
-                <td className={`sum ${rows[r]!.winner === 0 ? 'win' : rows[r]!.winner === 1 ? 'lose' : ''}`}>
-                  {rows[r]!.totals[0]}–{rows[r]!.totals[1]}
-                </td>
-              </tr>
-            ))}
-            <tr className="totals">
-              <th />
-              <td colSpan={COLS} className="rev">
-                Revenue: <b data-mine>{mine}</b> you · <b>{theirs}</b> them
-              </td>
-              <td />
-            </tr>
-          </tbody>
-        </table>
+        <div className="sheet" role="grid">
+          <div className="hd corner" />
+          {COL_LETTERS.map((l) => (
+            <div key={l} className="hd">
+              {l}
+            </div>
+          ))}
+          <div className="hd">=SUM</div>
+          {Array.from({ length: ROWS }, (_, r) => {
+            const row = rows[r]!;
+            return [
+              <div key={`u${r}`} className="hd unit">
+                {r + 1}
+                <small>{UNITS[r]}</small>
+              </div>,
+              ...Array.from({ length: COLS }, (_, c) => {
+                const i = idx(r, c);
+                const cell = game.cells[i]!;
+                const cls = [
+                  'cell',
+                  cell.owner === 0 ? 'mine' : cell.owner === 1 ? 'theirs' : '',
+                  legalCells.has(i) ? 'legal' : '',
+                  pending === i ? 'pending' : '',
+                  previewTargets.has(i) ? 'reach' : '',
+                ].join(' ');
+                return (
+                  <div
+                    key={i}
+                    className={cls}
+                    data-cell={i}
+                    onPointerEnter={(e) => e.pointerType === 'mouse' && setHover(i)}
+                    onPointerLeave={(e) => e.pointerType === 'mouse' && setHover(null)}
+                    onClick={() => tapCell(i)}
+                  >
+                    {cell.card ? (
+                      <span className="placed">
+                        <span className="pname">{card(cell.card).name}</span>
+                        <span className="pval">{card(cell.card).value}</span>
+                      </span>
+                    ) : (
+                      <span className="budget">{'$'.repeat(cell.budget)}</span>
+                    )}
+                  </div>
+                );
+              }),
+              <div key={`s${r}`} className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : ''}`}>
+                {row.totals[0]}–{row.totals[1]}
+              </div>,
+            ];
+          })}
+          <div className="rev">
+            Revenue <b data-mine>{mine}</b> you · <b>{theirs}</b> them
+          </div>
+        </div>
 
         <div className="hand">
           {game.hands[HUMAN].map((id, k) => (
@@ -178,7 +195,7 @@ export function App({ seed }: { seed?: number } = {}) {
               className={`card ${selected === id ? 'sel' : ''}`}
               data-card={id}
               disabled={!humanTurn || !legal.some((a) => a.card === id)}
-              onClick={() => setSelected(selected === id ? null : id)}
+              onClick={() => pickCard(id)}
             >
               <span className="cost">{'$'.repeat(card(id).cost)}</span>
               <span className="cname">{card(id).name}</span>
