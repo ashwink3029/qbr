@@ -90,8 +90,8 @@ into enemy cells holding weaker cards. Do not move the pre-registered bars.
    **Not possible locally:** App Store export fails with "No Accounts" / no
    "iOS Distribution" certificate — no Apple ID is signed in to Xcode on this Mac.
    That is fine: like rushie, distribution goes through **Xcode Cloud**. Remaining,
-   in the user's Apple account: (a) create the App Store Connect app record for
-   `com.ashwink.qbr`; (b) in Xcode, add an Xcode Cloud workflow on
+   in the user's Apple account: (a) ~~create the App Store Connect app record for
+   `com.ashwink.qbr`~~ done 2026-09-25; (b) in Xcode, add an Xcode Cloud workflow on
    `github.com/ashwink3029/qbr` `main` -> Archive -> TestFlight (internal).
    For a direct install, plug in a registered iPhone; the dev-signed build works.
 2. **NEXT — Vertical board: you at the bottom, the opponent at the top.** Portrait
