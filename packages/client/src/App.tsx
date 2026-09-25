@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  COLS,
-  ROWS,
   STARTER_DECK,
   card,
-  idx,
   legalPlays,
   lookaheadPolicy,
   newGame,
@@ -16,26 +13,33 @@ import {
   type GameState,
   type RngState,
 } from '@qbr/shared';
+import { SCREEN_COLS, SCREEN_ROWS, fromScreen, spreadToScreen } from './layout.js';
 
 /** The AI "thinks" this long before replying, so its move reads as a move. */
 export const AI_DELAY_MS = 450;
 
 const UNITS = ['Sales', 'Ops', 'R&D'] as const;
-const COL_LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
+const LANE_LETTERS = ['A', 'B', 'C'] as const;
 const HUMAN = 0;
 
 function freshSeed(): number {
   return (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0;
 }
 
-/** A card's spread drawn as a 3x5 mini-grid centred on the card. */
+/** A card's spread drawn as a 3-wide x 5-tall mini-grid centred on the card,
+ *  oriented like the board: forward is up. */
 function SpreadGlyph({ id }: { id: string }) {
-  const hits = new Set(card(id).spread.map(([r, c]) => `${r},${c}`));
+  const hits = new Set(
+    card(id).spread.map((o) => {
+      const { dx, dy } = spreadToScreen(o);
+      return `${dx},${dy}`;
+    }),
+  );
   const cells = [];
-  for (let r = -1; r <= 1; r++) {
-    for (let c = -2; c <= 2; c++) {
-      const cls = r === 0 && c === 0 ? 'g self' : hits.has(`${r},${c}`) ? 'g hit' : 'g';
-      cells.push(<i key={`${r},${c}`} className={cls} />);
+  for (let dy = -2; dy <= 2; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      const cls = dx === 0 && dy === 0 ? 'g self' : hits.has(`${dx},${dy}`) ? 'g hit' : 'g';
+      cells.push(<i key={`${dx},${dy}`} className={cls} />);
     }
   }
   return <span className="glyph">{cells}</span>;
@@ -151,59 +155,61 @@ export function App({ seed }: { seed?: number } = {}) {
 
         <div className="sheet" role="grid">
           <div className="hd corner" />
-          {COL_LETTERS.map((l) => (
-            <div key={l} className="hd">
+          {LANE_LETTERS.map((l, sc) => (
+            <div key={l} className="hd lane">
               {l}
+              <small>{UNITS[sc]}</small>
             </div>
           ))}
-          <div className="hd">=SUM</div>
-          {Array.from({ length: ROWS }, (_, r) => {
-            const row = rows[r]!;
-            return [
-              <div key={`u${r}`} className="hd unit">
-                {r + 1}
-                <small>{UNITS[r]}</small>
-              </div>,
-              ...Array.from({ length: COLS }, (_, c) => {
-                const i = idx(r, c);
-                const cell = game.cells[i]!;
-                const cls = [
-                  'cell',
-                  cell.owner === 0 ? 'mine' : cell.owner === 1 ? 'theirs' : '',
-                  legalCells.has(i) ? 'legal' : '',
-                  pending === i ? 'pending' : '',
-                  previewTargets.has(i) ? 'reach' : '',
-                ].join(' ');
-                return (
-                  <div
-                    key={i}
-                    className={cls}
-                    data-cell={i}
-                    onPointerEnter={(e) => e.pointerType === 'mouse' && setHover(i)}
-                    onPointerLeave={(e) => e.pointerType === 'mouse' && setHover(null)}
-                    onClick={() => tapCell(i)}
-                  >
-                    {cell.card ? (
-                      <span className="placed">
-                        <span className="pname">{card(cell.card).name}</span>
-                        <span className="pval">{card(cell.card).value}</span>
-                      </span>
-                    ) : (
-                      <span className="budget">{'$'.repeat(cell.budget)}</span>
-                    )}
-                  </div>
-                );
-              }),
-              <div key={`s${r}`} className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : ''}`}>
-                {row.totals[0]}–{row.totals[1]}
-              </div>,
-            ];
-          })}
-          <div className="rev">
-            <span>
-              Revenue <b data-mine>{mine}</b> you · <b>{theirs}</b> them
-            </span>
-          </div>
+          {Array.from({ length: SCREEN_ROWS }, (_, sr) => [
+            <div key={`n${sr}`} className="hd num">
+              {sr + 1}
+            </div>,
+            ...Array.from({ length: SCREEN_COLS }, (_, sc) => {
+              const i = fromScreen(sr, sc);
+              const cell = game.cells[i]!;
+              const cls = [
+                'cell',
+                cell.owner === 0 ? 'mine' : cell.owner === 1 ? 'theirs' : '',
+                legalCells.has(i) ? 'legal' : '',
+                pending === i ? 'pending' : '',
+                previewTargets.has(i) ? 'reach' : '',
+              ].join(' ');
+              return (
+                <div
+                  key={i}
+                  className={cls}
+                  data-cell={i}
+                  data-sr={sr}
+                  data-sc={sc}
+                  onPointerEnter={(e) => e.pointerType === 'mouse' && setHover(i)}
+                  onPointerLeave={(e) => e.pointerType === 'mouse' && setHover(null)}
+                  onClick={() => tapCell(i)}
+                >
+                  {cell.card ? (
+                    <span className="placed">
+                      <span className="pname">{card(cell.card).name}</span>
+                      <span className="pval">{card(cell.card).value}</span>
+                    </span>
+                  ) : (
+                    <span className="budget">{'$'.repeat(cell.budget)}</span>
+                  )}
+                </div>
+              );
+            }),
+          ])}
+          <div className="hd num sumlabel">=SUM</div>
+          {rows.map((row, sc) => (
+            <div
+              key={`s${sc}`}
+              className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : ''}`}
+              data-lane-total={sc}
+            >
+              <span className="you">{row.totals[0]}</span>
+              <span className="vs">vs</span>
+              <span className="them">{row.totals[1]}</span>
+            </div>
+          ))}
         </div>
 
         <div className="hand">
@@ -233,7 +239,12 @@ export function App({ seed }: { seed?: number } = {}) {
               Defer to next quarter
             </button>
           )}
-          <span className="deck">Your deck {game.decks[HUMAN].length}</span>
+          <span className="rev">
+            <span>
+              <b data-mine>{mine}</b> you · <b>{theirs}</b> Finance
+            </span>
+            <small>Deck {game.decks[HUMAN].length}</small>
+          </span>
         </div>
       </div>
     </div>

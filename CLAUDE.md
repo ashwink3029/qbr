@@ -71,6 +71,15 @@ into enemy cells holding weaker cards. Do not move the pre-registered bars.
 - Long single-word card names carry soft hyphens (`Stake\u00ADholder`).
 - Opponent strip at the top ("Finance", hand as card backs, deck count) is the
   future boss video-call tile.
+- **Vertical board (you at the bottom, Finance on top).** The screen shows the sheet
+  transposed: 3 lanes (A Sales / B Ops / C R&D) across x 5 rows up, forward = up.
+  It is a **view-only transpose** in `client/src/layout.ts` (`toScreen` /
+  `fromScreen` / `spreadToScreen`), tested there, including "a Cold Call claims the
+  cell directly above it". The rules model is still 3 lanes x 5 columns; never
+  bake screen orientation into `packages/shared`. Card glyphs are 3 wide x 5 tall
+  in the same orientation. Cells are ~105-127px wide (were 53-66). Lane scores
+  sit in a `=SUM` row under your home row; revenue + deck sit beside the pass
+  button.
 
 ## Known rules issue surfaced by play
 - **An opening hand can have no legal move** (all cards cost $$+, home cells hold
@@ -94,18 +103,7 @@ into enemy cells holding weaker cards. Do not move the pre-registered bars.
    `com.ashwink.qbr`~~ done 2026-09-25; (b) in Xcode, add an Xcode Cloud workflow on
    `github.com/ashwink3029/qbr` `main` -> Archive -> TestFlight (internal).
    For a direct install, plug in a registered iPhone; the dev-signed build works.
-2. **NEXT — Vertical board: you at the bottom, the opponent at the top.** Portrait
-   phones want the lanes to run up the screen: render the sheet transposed as
-   **5 rows x 3 lanes**. Your home row is at the bottom, Finance's at the top, and
-   "forward" is up. The three business units become columns, and each lane's
-   `=SUM` score goes in a totals row. This is a **view-only transpose**: the
-   reducer, cards and `spreadTargets` stay as they are. The client maps
-   (row, col) -> (screen row = COLS-1-col, screen col = row), and the card glyph
-   rotates so the spread shape reads "up". Wins: cells get ~2x wider (~110px vs
-   58px), the opponent strip sits naturally above their home row, and the
-   standard "you vs them across a table" framing matches Gwent / Queen's Blood.
-   Cover the mapping with a client test (a Cold Call's claimed cell is the one
-   directly above it on screen).
+2. ~~Vertical board~~ **DONE 2026-09-25.** See "Phone layout" above.
 3. Fix territory starvation (Phase 0 bar 4) until it passes; recheck bars 1-3.
    Fold in the opening-hand fix (guarantee a $ card, or mulligan).
 4. **Gwent layer:** best-of-3 quarters with passing as a real decision (currently

@@ -122,8 +122,10 @@
   min-height: 0;
   margin: 0 4px;
   display: grid;
-  grid-template-columns: 40px repeat(5, minmax(0, 1fr)) 46px;
-  grid-template-rows: 24px repeat(3, minmax(56px, 112px)) 32px;
+  /* Portrait: 3 lanes across, 5 rows up. Finance's home row is on top, yours on
+     the bottom, forward is up (see layout.ts). */
+  grid-template-columns: 40px repeat(3, minmax(0, 1fr));
+  grid-template-rows: 34px repeat(5, minmax(48px, 96px)) 34px;
   background: #fff;
   border: 1px solid var(--lo);
 }
@@ -137,8 +139,9 @@
   border-width: 0 1px 1px 0;
   font-size: 13px;
 }
-.hd.unit { line-height: 1.1; }
-.hd.unit small { font-size: 9px; color: #555; }
+.hd.lane { line-height: 1.05; }
+.hd.lane small { font-size: 10px; color: #555; }
+.hd.num { font-size: 12px; }
 
 .cell {
   display: flex;
@@ -166,20 +169,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   font-family: ui-monospace, Menlo, monospace;
-  font-size: 13px;
-  border-bottom: 1px solid #d4d4d4;
-}
-.sum.win { background: var(--mine); color: var(--mine-ink); font-weight: 700; }
-.sum.lose { background: var(--theirs); color: var(--theirs-ink); font-weight: 700; }
-.rev {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 8px;
+  font-size: 15px;
+  border-right: 1px solid #d4d4d4;
   border-top: 2px double var(--ink);
 }
+.sum .vs { font-size: 10px; color: var(--lo); }
+.sum .you { color: var(--mine-ink); }
+.sum .them { color: var(--theirs-ink); }
+.sum.win { background: var(--mine); font-weight: 700; }
+.sum.lose { background: var(--theirs); font-weight: 700; }
+.hd.sumlabel { border-top: 2px double var(--ink); font-size: 11px; }
 
 .hand {
   flex: 0 0 auto;
@@ -190,7 +191,7 @@
 .card {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 118px;
+  min-height: 112px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -221,8 +222,8 @@
 }
 .cval { font-size: 22px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; line-height: 1; }
 
-.glyph { display: grid; grid-template-columns: repeat(5, 9px); gap: 1px; }
-.g { width: 9px; height: 9px; background: #e2e2e2; }
+.glyph { display: grid; grid-template-columns: repeat(3, 8px); gap: 1px; }
+.g { width: 8px; height: 8px; background: #e2e2e2; }
 .g.hit { background: #2d6a00; }
 .g.self { background: var(--title); }
 
@@ -246,4 +247,5 @@
 }
 .btn:active { border-color: var(--lo) var(--hi) var(--hi) var(--lo); }
 .btn:disabled { color: var(--lo); cursor: default; }
-.deck { color: var(--lo); }
+.rev { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
+.rev small { color: var(--lo); font-size: 11px; }
