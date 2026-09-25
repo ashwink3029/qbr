@@ -164,6 +164,14 @@ advantage" in marketing until this moves.
 3. ~~Fix territory starvation + opening hand~~ **DONE 2026-09-25** — 4/4 bars.
 4. ~~Gwent layer~~ **DONE 2026-09-25** — 4/4 match bars; see "Best-of-3 match".
    Follow-up: make conceding a quarter worth something (open design issue).
+4b. ~~Home Screen (user request 2026-09-25)~~ **DONE 2026-09-25.** The app opens
+   to Home (`client/src/Home.tsx`): the teal desktop with a start window, "Start
+   fiscal year", and the player's record (W/L/D + last year's quarters, saved in
+   localStorage via guarded `record.ts`). Finishing a year ("Back to home" on the
+   year-end dialog) returns Home and records it. The game window's title-bar ×
+   also returns Home **without** ending the year: `App.tsx` keeps the `Game`
+   mounted but hidden and `paused` (Finance cannot move), and Home offers
+   "Resume year". The desktop space is reserved for the run map / joker tray.
 5. **Balatro layer:** run of meetings as blinds — "Quick sync" / "Standup" /
    "Quarterly Review" boss — with boss rule-breakers (Micromanager locks a cell,
    Reply-All floods junk, Auditor halves your best row, Legacy System has

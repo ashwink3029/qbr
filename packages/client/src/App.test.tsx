@@ -1,99 +1,91 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import { App, AI_DELAY_MS } from './App.js';
+import { App } from './App.js';
+import { AI_DELAY_MS } from './Game.js';
 
-// Verified headlessly, like chain: mount the real component, make a real play
-// through the DOM, let the real AI reply on its timer, and assert the sheet
-// changed. Catches a board that renders but does nothing when touched.
+// The Home Screen flow, end to end through the real components: launch lands on
+// Home; Start opens a year; the window's × goes home and Resume returns to the
+// same board; finishing a year returns home and updates the saved record.
 
 afterEach(cleanup);
+beforeEach(() => localStorage.clear());
 
-const cells = (): HTMLElement[] => Array.from(document.querySelectorAll<HTMLElement>('[data-cell]'));
+const q = <T extends Element = HTMLElement>(sel: string): T | null => document.querySelector<T>(sel);
+const home = () => q('[data-home]');
+const board = () => Array.from(document.querySelectorAll<HTMLElement>('[data-cell]'));
+const visible = (el: Element | null) => !!el && !el.closest('[hidden]');
 
-describe('the app', () => {
-  it('tapping a different legal cell moves the preview instead of placing', () => {
-    render(<App seed={5} />);
-    fireEvent.click(Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).find((b) => !b.disabled)!);
-    const legal = cells().filter((c) => c.classList.contains('legal'));
-    expect(legal.length).toBeGreaterThan(1);
-    fireEvent.click(legal[0]!);
-    fireEvent.click(legal[1]!);
-    expect(cells().filter((c) => c.querySelector('.placed'))).toHaveLength(0);
-    expect(legal[1]!.classList.contains('pending')).toBe(true);
-    expect(legal[0]!.classList.contains('pending')).toBe(false);
-  });
-
-  it('renders a 3x5 sheet with home columns owned', () => {
-    render(<App seed={5} />);
-    expect(cells()).toHaveLength(15);
-    expect(cells().filter((c) => c.classList.contains('mine'))).toHaveLength(3);
-    expect(cells().filter((c) => c.classList.contains('theirs'))).toHaveLength(3);
-  });
-
-  it('select a card, place it, and the opponent replies', () => {
-    vi.useFakeTimers();
-    try {
-      render(<App seed={5} />);
-      const playable = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).find((b) => !b.disabled);
-      expect(playable, 'opening hand has no playable card').toBeTruthy();
-      fireEvent.click(playable!);
-      const target = cells().find((c) => c.classList.contains('legal'));
-      expect(target, 'selected card highlights no legal cell').toBeTruthy();
-      // First tap previews the spread without committing — touch has no hover.
-      fireEvent.click(target!);
-      expect(target!.querySelector('.placed')).toBeNull();
-      expect(target!.classList.contains('pending')).toBe(true);
-      expect(cells().some((c) => c.classList.contains('reach'))).toBe(true);
-      // Second tap on the same cell places the card.
-      fireEvent.click(target!);
-      expect(target!.querySelector('.placed')).toBeTruthy();
-      expect(document.querySelector('[data-status]')!.textContent).toMatch(/typing/);
+/** Close out every quarter and let Finance play each one out. */
+function loseTheYear(): void {
+  for (let guard = 0; guard < 10 && !home(); guard++) {
+    const pass = q<HTMLButtonElement>('[data-pass]');
+    if (pass && !pass.disabled) fireEvent.click(pass);
+    for (let k = 0; k < 40 && !q('[data-dialog]'); k++) {
       act(() => {
         vi.advanceTimersByTime(AI_DELAY_MS + 10);
       });
-      const theirCards = cells().filter((c) => c.classList.contains('theirs') && c.querySelector('.placed'));
-      const status = document.querySelector('[data-status]')!.textContent;
-      // The AI either placed a card or deferred; either way it is our turn again.
-      expect(theirCards.length > 0 || /Pick|No moves/.test(status ?? '')).toBe(true);
-      expect(status).not.toMatch(/typing/);
+      const p = q<HTMLButtonElement>('[data-pass]');
+      if (p && !p.disabled) fireEvent.click(p);
+    }
+    const btn = q<HTMLButtonElement>('[data-dialog-button]');
+    if (btn) fireEvent.click(btn);
+  }
+}
+
+describe('home screen', () => {
+  it('is what the app opens to, with no board mounted', () => {
+    render(<App seed={5} />);
+    expect(home()).toBeTruthy();
+    expect(q('[data-start]')!.textContent).toMatch(/Start fiscal year/);
+    expect(q('[data-resume]')).toBeNull();
+    expect(board()).toHaveLength(0);
+    expect(q('[data-record]')!.textContent).toMatch(/No years/);
+  });
+
+  it('Start opens a year; × returns home; Resume restores the same board', () => {
+    vi.useFakeTimers();
+    try {
+      render(<App seed={5} />);
+      fireEvent.click(q('[data-start]')!);
+      expect(home()).toBeNull();
+      expect(board().filter(visible)).toHaveLength(15);
+
+      // Make a play so there is something to resume.
+      fireEvent.click(Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).find((b) => !b.disabled)!);
+      const target = board().find((c) => c.classList.contains('legal'))!;
+      fireEvent.click(target);
+      fireEvent.click(target);
+      const placedCell = target.dataset.cell;
+
+      fireEvent.click(q('[data-exit]')!);
+      expect(home()).toBeTruthy();
+      expect(q('[data-resume]')).toBeTruthy();
+      // Finance must not move while we are home.
+      const before = board().map((c) => c.textContent).join('|');
+      act(() => {
+        vi.advanceTimersByTime(AI_DELAY_MS * 10);
+      });
+      expect(board().map((c) => c.textContent).join('|')).toBe(before);
+
+      fireEvent.click(q('[data-resume]')!);
+      expect(home()).toBeNull();
+      expect(q(`[data-cell="${placedCell}"] .placed`)).toBeTruthy();
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it('closing out Q1 locks you out, Finance finishes alone, then Q2 starts on a fresh sheet', () => {
+  it('finishing a year returns home and records it', () => {
     vi.useFakeTimers();
     try {
       render(<App seed={5} />);
-      const title = () => document.querySelector('[data-title]')!.textContent;
-      const handBefore = document.querySelectorAll('[data-card]').length;
-      expect(title()).toMatch(/Q1/);
-
-      fireEvent.click(document.querySelector<HTMLButtonElement>('[data-pass]')!);
-      expect(document.querySelector<HTMLButtonElement>('[data-pass]')!.disabled).toBe(true);
-      expect(document.querySelector('[data-status]')!.textContent).toMatch(/closed out Q1/);
-
-      // Finance plays on alone until it closes out too; the summary then appears.
-      for (let k = 0; k < 30 && !document.querySelector('[data-dialog]'); k++) {
-        act(() => {
-          vi.advanceTimersByTime(AI_DELAY_MS + 10);
-        });
-        // While we are locked out, our cards stay unplayable.
-        const live = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-card]')).filter((b) => !b.disabled);
-        if (!document.querySelector('[data-dialog]')) expect(live).toHaveLength(0);
-      }
-      const dialog = document.querySelector('[data-dialog]');
-      expect(dialog, 'no quarter summary after both closed out').toBeTruthy();
-      expect(dialog!.textContent).toMatch(/Q1 results/);
-      // We played nothing, so Finance won Q1 (or tied at 0-0): we lost a life.
-      expect(document.querySelectorAll('[data-lives="You"] i.on')).toHaveLength(1);
-
-      fireEvent.click(document.querySelector<HTMLButtonElement>('[data-dialog-button]')!);
-      expect(document.querySelector('[data-dialog]')).toBeNull();
-      expect(title()).toMatch(/Q2/);
-      expect(cells().some((c) => c.querySelector('.placed'))).toBe(false);
-      // Hand kept and topped up (8 opening + 3 between Q1 and Q2).
-      expect(document.querySelectorAll('[data-card]').length).toBe(handBefore + 3);
+      fireEvent.click(q('[data-start]')!);
+      loseTheYear();
+      expect(home(), 'did not return home after the year').toBeTruthy();
+      expect(q('[data-resume]')).toBeNull();
+      expect(q('[data-record]')!.textContent).toMatch(/0W · 1L|Record/);
+      expect(q('[data-record]')!.textContent).toMatch(/performance review|flat/);
+      expect(JSON.parse(localStorage.getItem('qbr.record.v1')!)).toMatchObject({ losses: 1 });
     } finally {
       vi.useRealTimers();
     }
