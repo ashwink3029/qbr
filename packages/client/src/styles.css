@@ -1,0 +1,163 @@
+/* 90s office, evoked not copied: beveled grey panels on a teal desktop. No
+   vendor logos, ribbons or fonts — see CLAUDE.md "IP guardrails". */
+:root {
+  --desk: #0f7b7b;
+  --panel: #c3c3c3;
+  --hi: #ffffff;
+  --lo: #7b7b7b;
+  --ink: #111;
+  --title: #0a246a;
+  --mine: #cfe3ff;
+  --mine-ink: #0a3d91;
+  --theirs: #ffd6d0;
+  --theirs-ink: #9b1c0c;
+  --legal: #fff59a;
+  --reach: #9be7a0;
+}
+
+* { box-sizing: border-box; }
+
+.app {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top) 8px env(safe-area-inset-bottom);
+  background: var(--desk);
+}
+
+.window {
+  width: 100%;
+  min-width: 0; /* a flex item would otherwise grow to its hand's width */
+  max-width: 440px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 2px solid;
+  border-color: var(--hi) var(--lo) var(--lo) var(--hi);
+  font-size: 12px;
+}
+
+.titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, var(--title), #3a6ea5);
+  color: #fff;
+  font-weight: 700;
+  padding: 3px 4px;
+}
+.tb-buttons b {
+  display: inline-block;
+  width: 16px;
+  margin-left: 2px;
+  text-align: center;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid;
+  border-color: var(--hi) var(--lo) var(--lo) var(--hi);
+  line-height: 13px;
+}
+
+.formula {
+  display: flex;
+  gap: 6px;
+  margin: 4px;
+  padding: 3px 6px;
+  background: #fff;
+  border: 1px solid;
+  border-color: var(--lo) var(--hi) var(--hi) var(--lo);
+  min-height: 22px;
+}
+.fx { font-style: italic; color: var(--lo); }
+
+.sheet {
+  width: calc(100% - 8px);
+  margin: 0 4px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #fff;
+}
+.sheet th {
+  background: var(--panel);
+  border: 1px solid var(--lo);
+  font-weight: 400;
+  padding: 2px;
+}
+.sheet th.unit { width: 44px; line-height: 1.1; }
+.sheet th.unit small { display: block; font-size: 9px; color: var(--lo); }
+.sheet th.sum, .sheet td.sum { width: 48px; }
+
+.cell {
+  height: 58px;
+  border: 1px solid #d4d4d4;
+  text-align: center;
+  vertical-align: middle;
+  padding: 1px;
+  cursor: default;
+  transition: background 120ms;
+}
+.cell.mine { background: var(--mine); color: var(--mine-ink); }
+.cell.theirs { background: var(--theirs); color: var(--theirs-ink); }
+.cell.legal { outline: 2px dashed #b08900; outline-offset: -3px; cursor: pointer; background: var(--legal); }
+.cell.reach { background: var(--reach); }
+
+.budget { font-family: ui-monospace, Menlo, monospace; font-weight: 700; letter-spacing: 1px; }
+.placed { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.pname { font-size: 9px; line-height: 1; }
+.pval { font-size: 18px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+
+td.sum { text-align: center; font-family: ui-monospace, Menlo, monospace; border: 1px solid #d4d4d4; }
+td.sum.win { background: var(--mine); color: var(--mine-ink); font-weight: 700; }
+td.sum.lose { background: var(--theirs); color: var(--theirs-ink); font-weight: 700; }
+tr.totals td.rev { text-align: right; padding: 4px 6px; border-top: 2px double var(--ink); }
+
+.hand {
+  display: flex;
+  gap: 4px;
+  padding: 8px 4px 4px;
+  overflow-x: auto;
+}
+.card {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 3px;
+  background: #fffef0;
+  color: var(--ink);
+  font: inherit;
+  border: 2px solid;
+  border-color: var(--hi) var(--lo) var(--lo) var(--hi);
+  cursor: pointer;
+}
+.card.sel { border-color: var(--lo) var(--hi) var(--hi) var(--lo); background: var(--legal); }
+.card:disabled { opacity: 0.45; cursor: default; }
+.cost { align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #2d6a00; }
+.cname { font-size: 9px; letter-spacing: -0.2px; overflow-wrap: normal; font-weight: 700; text-align: center; line-height: 1.1; min-height: 22px; }
+.cval { font-size: 18px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+
+.glyph { display: grid; grid-template-columns: repeat(5, 8px); gap: 1px; }
+.g { width: 8px; height: 8px; background: #e2e2e2; }
+.g.hit { background: #2d6a00; }
+.g.self { background: var(--title); }
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 8px;
+}
+.btn {
+  font: inherit;
+  color: var(--ink); /* WebKit tints bare buttons system-blue */
+  padding: 5px 12px;
+  background: var(--panel);
+  border: 2px solid;
+  border-color: var(--hi) var(--lo) var(--lo) var(--hi);
+  cursor: pointer;
+}
+.btn:active { border-color: var(--lo) var(--hi) var(--hi) var(--lo); }
+.btn:disabled { color: var(--lo); cursor: default; }
+.deck { color: var(--lo); }
