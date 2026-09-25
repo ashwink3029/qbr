@@ -1,75 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- QBR app icon source. Bindy (the original binder-clip mascot) clipped to a
-       QBR report whose rows echo the board: Finance's pink row on top, your blue
-       row at the bottom, one dashed-yellow legal cell. 90s office, evoked not
-       copied: no Excel/Office marks (see CLAUDE.md IP guardrails). No text — it
-       would be illegible at home-screen size. iOS applies the corner mask.
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" shape-rendering="crispEdges">
+  <!-- QBR app icon source (v2, simplified per user 2026-09-25): just a mini
+       spreadsheet, centred and straight-on, laid out like the game's vertical
+       board — Finance's side shaded red on top, yours blue at the bottom.
+       Flat colours, no mascot, no text, no tilt or shadow, so it stays crisp at
+       home-screen size. Tints are a notch deeper than the in-game pastels so the
+       two sides read at 60px. 90s office, evoked not copied: no Excel/Office
+       marks (see CLAUDE.md IP guardrails). iOS applies the corner mask.
        Re-render: see packages/client/icon/README.md. -->
-  <defs>
-    <linearGradient id="desk" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#138a8a" />
-      <stop offset="1" stop-color="#0c6a6a" />
-    </linearGradient>
-    <linearGradient id="wire" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#e9ecf0" />
-      <stop offset="1" stop-color="#9aa0a8" />
-    </linearGradient>
-  </defs>
+  <rect width="1024" height="1024" fill="#0f7b7b" />
 
-  <rect width="1024" height="1024" fill="url(#desk)" />
+  <!-- Sheet: outer frame, header strip, row-number gutter, body. -->
+  <rect x="184" y="154" width="656" height="716" fill="#1d1d1d" />
+  <rect x="192" y="162" width="640" height="700" fill="#ffffff" />
+  <rect x="192" y="162" width="640" height="72" fill="#c3c3c3" />
+  <rect x="192" y="162" width="72" height="700" fill="#c3c3c3" />
 
-  <g transform="rotate(-5 512 560)">
-    <!-- hard 90s drop shadow -->
-    <rect x="200" y="300" width="640" height="610" fill="#000" opacity="0.28" />
-    <!-- the sheet, with a bevelled grey frame -->
-    <rect x="176" y="276" width="640" height="610" fill="#c3c3c3" />
-    <rect x="176" y="276" width="640" height="6" fill="#ffffff" />
-    <rect x="176" y="276" width="6" height="610" fill="#ffffff" />
-    <rect x="176" y="880" width="640" height="6" fill="#7b7b7b" />
-    <rect x="810" y="276" width="6" height="610" fill="#7b7b7b" />
-    <!-- title bar -->
-    <rect x="190" y="290" width="612" height="64" fill="#0a246a" />
-    <rect x="190" y="290" width="612" height="64" fill="#3a6ea5" opacity="0.45" />
-    <!-- body -->
-    <rect x="190" y="366" width="612" height="506" fill="#ffffff" />
+  <!-- Finance's side (top row) and yours (bottom row). -->
+  <rect x="264" y="234" width="568" height="126" fill="#f2a79d" />
+  <rect x="264" y="736" width="568" height="126" fill="#9cc2f2" />
 
-    <!-- 3 lanes x 4 rows of cells -->
-    <!-- row 1: Finance -->
-    <rect x="198" y="374" width="194" height="114" fill="#ffd6d0" />
-    <rect x="400" y="374" width="194" height="114" fill="#ffd6d0" />
-    <rect x="602" y="374" width="192" height="114" fill="#ffd6d0" />
-    <!-- rows 2-3: open sheet, one legal cell -->
-    <rect x="198" y="496" width="194" height="114" fill="#ffffff" />
-    <rect x="400" y="496" width="194" height="114" fill="#fff59a" />
-    <rect x="412" y="508" width="170" height="90" fill="none" stroke="#b08900" stroke-width="8" stroke-dasharray="22 14" />
-    <rect x="602" y="496" width="192" height="114" fill="#ffffff" />
-    <rect x="198" y="618" width="194" height="114" fill="#9be7a0" />
-    <rect x="400" y="618" width="194" height="114" fill="#ffffff" />
-    <rect x="602" y="618" width="192" height="114" fill="#ffffff" />
-    <!-- row 4: you -->
-    <rect x="198" y="740" width="194" height="124" fill="#cfe3ff" />
-    <rect x="400" y="740" width="194" height="124" fill="#cfe3ff" />
-    <rect x="602" y="740" width="192" height="124" fill="#cfe3ff" />
-    <!-- values on your cards: bold bars read as "numbers" without text -->
-    <rect x="262" y="776" width="66" height="52" fill="#0a3d91" />
-    <rect x="466" y="776" width="66" height="52" fill="#0a3d91" />
-    <rect x="258" y="410" width="74" height="42" fill="#9b1c0c" />
-  </g>
-
-  <!-- Bindy, clipped over the sheet's top edge -->
-  <g transform="rotate(-5 512 300)">
-    <!-- wire handles, folded up -->
-    <path d="M430 262 L372 120 L420 106 L462 246" fill="none" stroke="url(#wire)" stroke-width="22" stroke-linejoin="round" stroke-linecap="round" />
-    <path d="M594 262 L652 120 L604 106 L562 246" fill="none" stroke="url(#wire)" stroke-width="22" stroke-linejoin="round" stroke-linecap="round" />
-    <!-- upper plate (the face) -->
-    <path d="M388 240 L636 240 L668 350 L356 350 Z" fill="#1d1d1d" />
-    <rect x="356" y="344" width="312" height="10" fill="#000" opacity="0.4" />
-    <!-- eyes -->
-    <ellipse cx="462" cy="296" rx="30" ry="32" fill="#ffffff" />
-    <ellipse cx="562" cy="296" rx="30" ry="32" fill="#ffffff" />
-    <circle cx="470" cy="304" r="14" fill="#111" />
-    <circle cx="570" cy="304" r="14" fill="#111" />
-    <!-- mouth: the jaw just open -->
-    <rect x="420" y="330" width="184" height="12" rx="4" fill="#9b1c0c" />
+  <!-- Grid lines: 3 lanes x 5 rows, plus the header/gutter rules. -->
+  <g fill="#8a8a8a">
+    <rect x="453" y="162" width="6" height="700" />
+    <rect x="643" y="162" width="6" height="700" />
+    <rect x="258" y="162" width="6" height="700" />
+    <rect x="192" y="228" width="640" height="6" />
+    <rect x="192" y="357" width="640" height="6" />
+    <rect x="192" y="483" width="640" height="6" />
+    <rect x="192" y="609" width="640" height="6" />
+    <rect x="192" y="733" width="640" height="6" />
   </g>
 </svg>

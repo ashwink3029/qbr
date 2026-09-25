@@ -257,12 +257,15 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Tests find playable cards by `data-playable="true"`, not `:not(:disabled)`.
 2b. ~~Terminology: run -> career, quick round -> one year~~ **DONE** (see
    "Terminology").
-3. ~~App icon~~ **DONE.** Bindy clipped to a QBR report on the teal desktop;
-   the sheet's rows echo the board (Finance pink on top, a dashed-yellow legal
-   cell, a green claim, your blue row at the bottom). No text. Source
-   `client/icon/qbr-icon.svg` (+ README with the re-render recipe); shipped as
-   the single universal 1024 PNG, no alpha. Checked at 120px and on the
-   Simulator home screen. Placeholder until the commissioned pixel art.
+3. ~~App icon~~ **DONE, then simplified (v2, user request 2026-09-25).** v1 was
+   Bindy clipped to a tilted report — the user found it mixed two ideas. **v2 is
+   just a mini spreadsheet**, centred and straight-on on flat teal: grey header
+   strip + row gutter, 3 lanes x 5 rows, Finance's side red on top and yours blue
+   at the bottom (tints a notch deeper than in-game so they read at 60px), crisp
+   grid lines, no mascot/text/tilt/shadow. Source `client/icon/qbr-icon.svg`
+   (+ README with the re-render recipe); shipped as the single universal 1024
+   PNG, no alpha. Checked at 1024 and 120px. Direction for future icon work:
+   **simpler wins** — one idea, flat colour, the board's red/blue identity.
 4. ~~Careers climb the org chart~~ **DONE.** `run.ts` MEETINGS is now a 5-rung
    ladder, each rung a best-of-3 meeting:
    | rung | meeting | plays | boss | edge (cards/qtr) | $$ home cells |

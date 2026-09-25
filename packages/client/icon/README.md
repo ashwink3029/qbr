@@ -1,7 +1,7 @@
 # App icon
 
-`qbr-icon.svg` is the source for the iOS app icon: Bindy (the original binder-clip
-mascot) clipped to a QBR report whose rows echo the board. It is a placeholder
+`qbr-icon.svg` is the source for the iOS app icon (v2, simplified): a mini
+spreadsheet, centred and straight-on, with Finance's side shaded red on top and yours blue at the bottom, like the game's vertical board. It is a placeholder
 until the commissioned pixel-art set exists (see the IP guardrails in the repo's
 `CLAUDE.md`: original shapes only, no Excel/Office marks).
 
