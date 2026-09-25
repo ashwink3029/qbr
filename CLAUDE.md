@@ -257,10 +257,12 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Tests find playable cards by `data-playable="true"`, not `:not(:disabled)`.
 2b. ~~Terminology: run -> career, quick round -> one year~~ **DONE** (see
    "Terminology").
-3. **App icon in the in-game style.** 90s spreadsheet vibe: teal desktop, a grid
-   cell with yellow highlight, Bindy or the QBR logo tile. Needs the full
-   `AppIcon` set in `ios/App/App/Assets.xcassets` (1024 master; no alpha). Keep
-   it original (no Excel green X / Office look — see IP guardrails).
+3. ~~App icon~~ **DONE.** Bindy clipped to a QBR report on the teal desktop;
+   the sheet's rows echo the board (Finance pink on top, a dashed-yellow legal
+   cell, a green claim, your blue row at the bottom). No text. Source
+   `client/icon/qbr-icon.svg` (+ README with the re-render recipe); shipped as
+   the single universal 1024 PNG, no alpha. Checked at 120px and on the
+   Simulator home screen. Placeholder until the commissioned pixel art.
 4. **Runs climb the org chart.** Keep one-off matches (Quick year). A full run
    becomes a ladder of named opponents the player can anticipate, e.g. **Intern
    -> Manager -> Finance -> VP -> (CEO / The Board)**, each a best-of-3 meeting
