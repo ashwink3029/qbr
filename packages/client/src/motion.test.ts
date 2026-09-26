@@ -35,6 +35,29 @@ describe('moveFx: what a play visibly changes', () => {
     expect(Math.max(...fx.claim.map((c) => c.order))).toBe(1);
   });
 
+  it('marks ability targets: boosted cards, weakened cards, and destroyed ones', () => {
+    const boost = board(
+      [
+        [idx(0, 0), { owner: 0, budget: 2, card: null }],
+        [idx(1, 0), { owner: 0, budget: 1, card: 'coldcall' }],
+      ],
+      ['teambuilding'],
+    );
+    expect(moveFx(boost, { type: 'play', card: 'teambuilding', cell: idx(0, 0) })!.boost).toEqual([idx(1, 0)]);
+    // PIP weakens every Finance card in its lane: Headcount survives, a worn Reorg is removed.
+    const weaken = board(
+      [
+        [idx(1, 0), { owner: 0, budget: 2, card: null }],
+        [idx(1, 3), { owner: 1, budget: 1, card: 'headcount' }],
+        [idx(1, 4), { owner: 1, budget: 1, card: 'reorg', mod: -2 }],
+      ],
+      ['pip'],
+    );
+    const fx = moveFx(weaken, { type: 'play', card: 'pip', cell: idx(1, 0) })!;
+    expect(fx.weaken).toEqual([idx(1, 3)]);
+    expect(fx.destroy).toEqual([idx(1, 4)]);
+  });
+
   it('every animation finishes inside the opponent’s thinking delay', () => {
     expect(FX_MAX_MS).toBeLessThanOrEqual(450);
   });

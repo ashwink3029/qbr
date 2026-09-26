@@ -219,11 +219,19 @@ export function Game({
     () =>
       selected !== null && preview !== null && legalCells.has(preview)
         ? spreadEffects(game, selected, preview, HUMAN)
-        : { claim: [], flip: [] },
+        : { claim: [], flip: [], boost: [], weaken: [] },
     [game, selected, preview, legalCells],
   );
   const claimCells = useMemo(() => new Set(effects.claim), [effects]);
   const flipCells = useMemo(() => new Set(effects.flip), [effects]);
+  // Ability preview: what the selected card's ability would do to each card.
+  const abilityDelta = useMemo(() => {
+    const amount = selected ? (card(selected).ability?.amount ?? 0) : 0;
+    const m = new Map<number, string>();
+    for (const t of effects.boost) m.set(t, `+${amount}`);
+    for (const w of effects.weaken) m.set(w.cell, w.destroys ? '✕' : `−${amount}`);
+    return m;
+  }, [effects, selected]);
 
   const pendingCard = pending === null ? null : game.cells[pending]!.card;
 
@@ -231,8 +239,18 @@ export function Game({
     () => new Map((fx && fx.id !== settledFx ? fx.claim : []).map((c) => [c.cell, c.order])),
     [fx, settledFx],
   );
-  const fxKind = (i: number): 'drop' | 'flip' | null =>
-    !fx ? null : fx.placed === i ? 'drop' : fx.flip.includes(i) ? 'flip' : null;
+  const fxKind = (i: number): 'drop' | 'flip' | 'boost' | 'weaken' | null =>
+    !fx
+      ? null
+      : fx.placed === i
+        ? 'drop'
+        : fx.flip.includes(i)
+          ? 'flip'
+          : fx.boost.includes(i)
+            ? 'boost'
+            : fx.weaken.includes(i)
+              ? 'weaken'
+              : null;
   const qNo = summary ? summary.quarterNo : match.quarterNo;
   const theyPassed = !summary && match.quarter.passed[1];
   const iPassed = !summary && match.quarter.passed[0];
@@ -270,7 +288,9 @@ export function Game({
               pendingCard
                 ? `paste ${card(selected).name} (${card(selected).value}) over ${card(pendingCard).name} (${card(pendingCard).value})`
                 : `place ${card(selected).name}`
-            }${effects.flip.length ? ` — flips ${effects.flip.length}` : ''}`);
+            }${effects.flip.length ? ` — flips ${effects.flip.length}` : ''}${
+              effects.boost.length ? ` — boosts ${effects.boost.length}` : ''
+            }${effects.weaken.length ? ` — weakens ${effects.weaken.length}` : ''}`);
   }
 
   const tip =
@@ -414,6 +434,7 @@ export function Game({
                 pending === i ? 'pending' : '',
                 claimCells.has(i) ? 'reach' : '',
                 flipCells.has(i) ? 'flip' : '',
+                abilityDelta.has(i) ? (abilityDelta.get(i)!.startsWith('+') ? 'boost' : 'weaken') : '',
                 blocked.has(i) ? 'blocked' : '',
               ].join(' ');
               return (
@@ -442,6 +463,16 @@ export function Game({
                     </span>
                   ) : (
                     <span className="budget">{'$'.repeat(cell.budget)}</span>
+                  )}
+                  {abilityDelta.has(i) && (
+                    <i className="delta" data-preview-delta={abilityDelta.get(i)} aria-hidden>
+                      {abilityDelta.get(i)}
+                    </i>
+                  )}
+                  {fx && fx.id !== settledFx && fx.destroy.includes(i) && (
+                    <i key={`destroy-${fx.id}`} className="fx-destroy" data-fx="destroy" aria-hidden>
+                      ✕
+                    </i>
                   )}
                   {claimOrder.has(i) && (
                     <i

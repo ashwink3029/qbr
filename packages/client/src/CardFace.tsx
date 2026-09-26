@@ -1,4 +1,5 @@
 import { card } from '@qbr/shared';
+import { abilityBadge } from './a11y.js';
 import { spreadToScreen } from './layout.js';
 
 /** A card's spread drawn as a 3-wide x 5-tall mini-grid centred on the card,
@@ -24,11 +25,17 @@ export function SpreadGlyph({ id }: { id: string }) {
  *  deck view and unlock announcements. */
 export function CardFace({ id }: { id: string }) {
   const c = card(id);
+  const badge = abilityBadge(id);
   return (
     <>
       <span className="cost">{'$'.repeat(c.cost)}</span>
       <span className="cname">{c.name}</span>
       <SpreadGlyph id={id} />
+      {badge && (
+        <span className="cab" data-ability={c.ability!.kind}>
+          {badge}
+        </span>
+      )}
       <span className="cval">{c.value}</span>
     </>
   );

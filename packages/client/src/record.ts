@@ -78,7 +78,7 @@ export function recordYear(r: Record, winner: Player | null, results: readonly Q
 /** What unlocks care about, from the record. A career's rungs beaten = its
  *  `meetingsWon`, so `bestMeetings` is the best rung reached. */
 export function progressOf(r: Record): Progress {
-  return { bestRung: r.bestMeetings, careers: r.runs };
+  return { bestRung: r.bestMeetings, careers: r.runs, stakeCleared: r.stakeCleared };
 }
 
 /** Fold one finished run into the record. */

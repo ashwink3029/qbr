@@ -26,7 +26,7 @@ describe('deck view', () => {
     expect(q('[data-owned-card="slidedeck"]')).toBeNull(); // replaced by Performance Review
     expect(q('[data-owned-card="memo"] .copies')).toBeNull(); // one Memo left
     expect(q('[data-deck-view] .titlebar')!.textContent).toMatch(/15 cards/);
-    expect(q('[data-deck-view]')!.textContent).toMatch(/2\/6 unlocked/);
+    expect(q('[data-deck-view]')!.textContent).toMatch(new RegExp(`2/${SPECIALS.length} unlocked`));
   });
 });
 
@@ -42,5 +42,13 @@ describe('Home -> Your deck', () => {
     expect(q('[data-owned-card="gossip"]')).toBeTruthy(); // 3 careers
     fireEvent.click(q('[data-deck-view] [data-exit]')!);
     expect(q('[data-home]')).toBeTruthy();
+  });
+  it('a promotion on a harder stake unlocks that stake\'s ability special', () => {
+    localStorage.setItem('qbr.record.v1', JSON.stringify({ runs: 1, bestMeetings: 5, stakeCleared: 2 }));
+    render(<App seed={5} />);
+    fireEvent.click(q('[data-deck]')!);
+    expect(q('[data-owned-card="teambuilding"]')).toBeTruthy(); // promoted on Budget freeze
+    expect(q('[data-owned-card="pip"]')).toBeNull(); // needs Restructuring
+    expect(q('[data-locked-card="pip"]')!.textContent).toMatch(/Restructuring/);
   });
 });

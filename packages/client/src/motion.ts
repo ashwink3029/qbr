@@ -17,6 +17,10 @@ export interface MoveFx {
   readonly placed: number;
   readonly claim: readonly { cell: number; order: number }[];
   readonly flip: readonly number[];
+  /** Ability targets: your cards raised, rival cards lowered, rival cards removed. */
+  readonly boost: readonly number[];
+  readonly weaken: readonly number[];
+  readonly destroy: readonly number[];
 }
 
 let nextId = 1;
@@ -25,7 +29,7 @@ let nextId = 1;
 export function moveFx(before: GameState, action: Action): MoveFx | null {
   if (action.type !== 'play') return null;
   const by = before.toMove;
-  const { claim, flip } = spreadEffects(before, action.card, action.cell, by);
+  const { claim, flip, boost, weaken } = spreadEffects(before, action.card, action.cell, by);
   const r0 = rowOf(action.cell);
   const c0 = colOf(action.cell);
   // Grid-step (Manhattan) rings: orthogonal neighbours first, then diagonals and
@@ -38,5 +42,8 @@ export function moveFx(before: GameState, action: Action): MoveFx | null {
     placed: action.cell,
     claim: claim.map((cell) => ({ cell, order: rings.indexOf(ring(cell)) })),
     flip: [...flip],
+    boost: [...boost],
+    weaken: weaken.filter((w) => !w.destroys).map((w) => w.cell),
+    destroy: weaken.filter((w) => w.destroys).map((w) => w.cell),
   };
 }

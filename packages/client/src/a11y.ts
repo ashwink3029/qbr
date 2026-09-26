@@ -25,7 +25,25 @@ export function spreadWords(id: string): string {
 
 export function cardLabel(id: string): string {
   const c = card(id);
-  return `${plain(c.name)}, costs ${'$'.repeat(c.cost)}, value ${c.value}, spreads ${spreadWords(id)}`;
+  const ability = abilityWords(id);
+  return `${plain(c.name)}, costs ${'$'.repeat(c.cost)}, value ${c.value}, spreads ${spreadWords(id)}${ability ? `; ${ability}` : ''}`;
+}
+
+/** An on-play ability in words, or null for a plain card. */
+export function abilityWords(id: string): string | null {
+  const a = card(id).ability;
+  if (!a) return null;
+  const where = a.reach === 'lane' ? 'in its lane' : 'it reaches';
+  return a.kind === 'boost'
+    ? `gives +${a.amount} to your cards ${where}`
+    : `gives −${a.amount} to every rival card ${where}; a card at 0 is removed`;
+}
+
+/** The short tag printed on an ability card's face. */
+export function abilityBadge(id: string): string | null {
+  const a = card(id).ability;
+  if (!a) return null;
+  return `${a.kind === 'boost' ? '+' : '−'}${a.amount}${a.reach === 'lane' ? ' lane' : ''}`;
 }
 
 /** A board cell by its on-screen spreadsheet address. */

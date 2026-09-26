@@ -18,6 +18,15 @@ export interface CardDef {
   /** Revenue this card contributes to its row. */
   readonly value: number;
   readonly spread: readonly Offset[];
+  /** On-play ability, acting after claims and takeover flips: `boost` raises
+   *  your cards, `weaken` lowers the opponent's (a card at 0 or below is
+   *  destroyed). It reaches the cells the spread reaches, or with
+   *  `reach: 'lane'` every card in the lane the card is placed in. */
+  readonly ability?: {
+    readonly kind: 'boost' | 'weaken';
+    readonly amount: number;
+    readonly reach?: 'spread' | 'lane';
+  };
 }
 
 const up: Offset = [-1, 0];
@@ -51,6 +60,24 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   takeover: { id: 'takeover', name: 'Hostile Takeover', cost: 3, value: 8, spread: [[-1, 1], fwd, [1, 1]] },
   parachute: { id: 'parachute', name: 'Golden Parachute', cost: 2, value: 8, spread: [] },
   gossip: { id: 'gossip', name: 'Water Cooler Gossip', cost: 1, value: 1, spread: [up, down, [-1, -1], [1, -1]] },
+
+  // ── Ability specials (unlocked by clearing career stakes) ──
+  teambuilding: {
+    id: 'teambuilding',
+    name: 'Team Building',
+    cost: 2,
+    value: 3,
+    spread: [up, down, fwd, back],
+    ability: { kind: 'boost', amount: 2 },
+  },
+  pip: {
+    id: 'pip',
+    name: 'Performance Improvement Plan',
+    cost: 2,
+    value: 3,
+    spread: [[-1, 1], fwd, [1, 1]],
+    ability: { kind: 'weaken', amount: 2, reach: 'lane' },
+  },
 };
 
 /** Both seats play the same 15-card list (shuffled independently), so a seat
@@ -68,11 +95,14 @@ export interface Progress {
   readonly bestRung: number;
   /** Careers finished (won or lost). */
   readonly careers: number;
+  /** Highest career stake promoted at (0 = none). */
+  readonly stakeCleared?: number;
 }
 
 export type UnlockCondition =
   | { readonly kind: 'rung'; readonly rungsBeaten: number }
-  | { readonly kind: 'careers'; readonly count: number };
+  | { readonly kind: 'careers'; readonly count: number }
+  | { readonly kind: 'stake'; readonly cleared: number };
 
 export interface Special {
   readonly id: string;
@@ -97,10 +127,19 @@ export const SPECIALS: readonly Special[] = [
   { id: 'takeover', replaces: 'vision', unlock: { kind: 'rung', rungsBeaten: 4 }, how: 'Beat the VP', flavor: 'It was never really their department.' },
   { id: 'parachute', replaces: 'headcount', unlock: { kind: 'rung', rungsBeaten: 5 }, how: 'Get promoted (beat the CEO)', flavor: 'Land softly. Land expensively.' },
   { id: 'gossip', replaces: 'standup', unlock: { kind: 'careers', count: 3 }, how: 'Finish 3 careers', flavor: 'Heard it from someone in R&D.' },
+  { id: 'teambuilding', replaces: 'synergy', unlock: { kind: 'stake', cleared: 2 }, how: 'Get promoted on Budget freeze', flavor: 'Mandatory fun. Measurable results.' },
+  { id: 'pip', replaces: 'stakeholder', unlock: { kind: 'stake', cleared: 3 }, how: 'Get promoted on Restructuring', flavor: 'Thirty days to turn it around.' },
 ];
 
 export function isUnlocked(s: Special, p: Progress): boolean {
-  return s.unlock.kind === 'rung' ? p.bestRung >= s.unlock.rungsBeaten : p.careers >= s.unlock.count;
+  switch (s.unlock.kind) {
+    case 'rung':
+      return p.bestRung >= s.unlock.rungsBeaten;
+    case 'careers':
+      return p.careers >= s.unlock.count;
+    case 'stake':
+      return (p.stakeCleared ?? 0) >= s.unlock.cleared;
+  }
 }
 
 export function unlockedSpecials(p: Progress): string[] {

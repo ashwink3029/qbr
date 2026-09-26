@@ -65,6 +65,9 @@ export interface Cell {
   readonly owner: Player | null;
   readonly budget: number;
   readonly card: string | null;
+  /** Value modifier on the card here from abilities (boost +, weaken -).
+   *  Belongs to the card: gone when the card is replaced or destroyed. */
+  readonly mod?: number;
 }
 
 export interface GameState {
@@ -149,16 +152,17 @@ function leadsLane(state: GameState, r: number): boolean {
     const cell = state.cells[idx(r, c)]!;
     if (cell.card === null) continue;
     const def = card(cell.card);
-    if (cell.owner === 0) mine += def.value + (hasJoker(state.mods, 'stamp') && def.cost >= 2 ? 1 : 0);
-    else if (cell.owner === 1) theirs += def.value;
+    const mod = cell.mod ?? 0;
+    if (cell.owner === 0) mine += def.value + mod + (hasJoker(state.mods, 'stamp') && def.cost >= 2 ? 1 : 0);
+    else if (cell.owner === 1) theirs += def.value + mod;
   }
   return mine > theirs;
 }
 
-/** Base value of a card id plus seat-0 joker bonuses. */
+/** Base value of a card id plus its cell's ability modifier and seat-0 joker bonuses. */
 function jokerBase(state: GameState, i: number, cardId: string): number {
   const def = card(cardId);
-  let v = def.value;
+  let v = def.value + (state.cells[i]!.mod ?? 0);
   if (hasJoker(state.mods, 'stamp') && def.cost >= 2) v += 1;
   if (hasJoker(state.mods, 'formatting') && leadsLane(state, rowOf(i))) v += 1;
   return v;
@@ -172,7 +176,7 @@ function jokerBase(state: GameState, i: number, cardId: string): number {
 export function cellValue(state: GameState, i: number): number {
   const cell = state.cells[i]!;
   if (cell.card === null) return 0;
-  if (cell.owner !== 0) return card(cell.card).value;
+  if (cell.owner !== 0) return card(cell.card).value + (cell.mod ?? 0);
   const v = jokerBase(state, i, cell.card);
   if (state.mods.boss !== 'auditor') return v;
   let best = -1;
@@ -239,6 +243,11 @@ export interface SpreadEffects {
   readonly claim: readonly number[];
   /** Enemy cards that flip to the player (takeover rule). */
   readonly flip: readonly number[];
+  /** The player's cards (incl. just-flipped ones) a `boost` ability raises. */
+  readonly boost: readonly number[];
+  /** Opponent cards a `weaken` ability lowers; `destroys` when it takes the
+   *  card's effective value to 0 or below. */
+  readonly weaken: readonly { readonly cell: number; readonly destroys: boolean }[];
 }
 
 /** Exactly what placing `cardId` at `at` would change. The reducer applies this
@@ -249,13 +258,33 @@ export function spreadEffects(state: GameState, cardId: string, at: number, play
   const flip: number[] = [];
   const wrap = player === 0 && hasJoker(state.mods, 'circular');
   const blocked = blockedCells(state.mods);
-  for (const t of spreadTargets(cardId, at, player, wrap)) {
-    if (blocked.has(t)) continue;
+  const ability = card(cardId).ability;
+  const boost: number[] = [];
+  const weaken: { cell: number; destroys: boolean }[] = [];
+  const targets = spreadTargets(cardId, at, player, wrap).filter((t) => !blocked.has(t));
+  for (const t of targets) {
     const c = state.cells[t]!;
     if (c.card === null) claim.push(t);
     else if (state.rules.takeover && c.owner !== player && card(c.card).value < power) flip.push(t);
   }
-  return { claim, flip };
+  // Abilities act after claims and flips: a just-flipped card is now yours.
+  if (ability) {
+    const lane = Math.floor(at / COLS);
+    const reach =
+      ability.reach === 'lane'
+        ? Array.from({ length: COLS }, (_, c) => lane * COLS + c).filter((t) => t !== at)
+        : targets;
+    for (const t of reach) {
+      const c = state.cells[t]!;
+      if (c.card === null) continue;
+      const mine = c.owner === player || flip.includes(t);
+      if (ability.kind === 'boost' && mine) boost.push(t);
+      if (ability.kind === 'weaken' && !mine) {
+        weaken.push({ cell: t, destroys: cellValue(state, t) - ability.amount <= 0 });
+      }
+    }
+  }
+  return { claim, flip, boost, weaken };
 }
 
 export function canPlay(state: GameState, cardId: string, at: number): boolean {
@@ -301,12 +330,21 @@ export function reducer(state: GameState, action: Action): GameState {
     }
     const next = cells.slice();
     const placed = next[action.cell]!;
-    next[action.cell] = { ...placed, card: action.card };
-    const { claim, flip } = spreadEffects(state, action.card, action.cell, p);
+    // A fresh card starts clean: a pasted-over card's modifier goes with it.
+    next[action.cell] = { owner: placed.owner, budget: placed.budget, card: action.card };
+    const { claim, flip, boost, weaken } = spreadEffects(state, action.card, action.cell, p);
     for (const t of claim) {
       next[t] = { owner: p, budget: Math.min(MAX_BUDGET, next[t]!.budget + 1), card: null };
     }
     for (const t of flip) next[t] = { ...next[t]!, owner: p };
+    const amount = card(action.card).ability?.amount ?? 0;
+    for (const t of boost) next[t] = { ...next[t]!, mod: (next[t]!.mod ?? 0) + amount };
+    for (const w of weaken) {
+      const c = next[w.cell]!;
+      next[w.cell] = w.destroys
+        ? { owner: c.owner, budget: c.budget, card: null }
+        : { ...c, mod: (c.mod ?? 0) - amount };
+    }
     cells = next;
     const hand = hands[p].slice();
     hand.splice(hand.indexOf(action.card), 1);

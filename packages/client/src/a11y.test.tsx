@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
-import { cardLabel, spreadWords } from './a11y.js';
+import { abilityBadge, abilityWords, cardLabel, spreadWords } from './a11y.js';
+import { CardFace } from './CardFace.js';
 import { Game } from './Game.js';
 
 // Apple's App Store accessibility labels list "Differentiate without colour alone"
@@ -18,6 +19,17 @@ describe('describing a card in words', () => {
   it('a card label says name, cost, value and spread', () => {
     expect(cardLabel('memo')).toBe('Memo, costs $, value 1, spreads left, right, 1 ahead');
     expect(cardLabel('stakeholder')).toBe('Stakeholder, costs $$, value 3, spreads ahead-left, 1 ahead, ahead-right');
+  });
+  it('ability cards say what their ability does, on the face and in the label', () => {
+    expect(abilityWords('memo')).toBeNull();
+    expect(abilityWords('teambuilding')).toBe('gives +2 to your cards it reaches');
+    expect(abilityWords('pip')).toBe('gives −2 to every rival card in its lane; a card at 0 is removed');
+    expect(abilityBadge('teambuilding')).toBe('+2');
+    expect(abilityBadge('pip')).toBe('−2 lane');
+    expect(cardLabel('pip')).toMatch(/spreads ahead-left, 1 ahead, ahead-right; gives −2 to every rival card in its lane/);
+    const { container } = render(<CardFace id="pip" />);
+    expect(container.querySelector('[data-ability="weaken"]')!.textContent).toBe('−2 lane');
+    cleanup();
   });
 });
 

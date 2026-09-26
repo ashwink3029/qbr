@@ -300,7 +300,9 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    | Hostile Takeover | beat the VP | Vision Statement | $$$ v8, forward fan |
    | Golden Parachute | get promoted | Headcount | $$ v8, no spread |
    | Water Cooler Gossip | finish 3 careers | a Standup | $ v1, sides + back diagonals |
-   Unlocks derive from the saved record (`progressOf`: best rung, careers) — no
+   | Team Building | promoted on stake 2 | Synergy | $$ v3, Synergy's + shape, **+2 to your cards it reaches** |
+   | Performance Improvement Plan | promoted on stake 3 | a Stakeholder | $$ v3, forward fan, **−2 to every rival card in its lane** |
+   Unlocks derive from the saved record (`progressOf`: best rung, careers, stakeCleared) — no
    second store. Your deck (`playerDeck`) is fixed when a career/year starts;
    opponents always play the starter deck (`Deck = {player, opponent}`). The
    career-end screen announces new unlocks. **Unlock bars (pre-registered in
@@ -314,6 +316,8 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    **Rule for future cards: in QBR cheap spreaders are king and $$$ cards are
    liabilities until the board has budget — price new cards accordingly.**
    Thin margin: Hostile Takeover +1.2pp (bar +1) — first to revisit.
+   With 8 specials (iteration 7): 3/3, smallest +1.2pp, collection **74.5%** — U3 now
+   has 0.5pp of room, so the NEXT special must be paid for by trimming another.
 6. ~~Deck view from Home~~ **DONE.** Home -> "Your deck" (`DeckView.tsx`):
    owned cards cheapest-first with copy counts, specials highlighted gold, and
    locked specials as silhouettes with how to unlock and what they replace.
@@ -425,6 +429,30 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    2% top, the ladder only fits 4 tiers. Also fixed: Home overflowed an iPhone SE by
    37px with Resume + picker; the logo shrinks to 56px under 760px height (verified:
    no scroll, Settings on screen). Tests first (`stakes.test.tsx`, run stake test).
+10e. ~~Card abilities~~ **DONE (/explore iteration 7, 2026-09-26; gap-analysis P1,
+   depth).** `CardDef.ability = {kind: 'boost'|'weaken', amount, reach?: 'spread'|'lane'}`.
+   Abilities resolve AFTER claims and takeover flips, inside `spreadEffects` (so the
+   preview, the reducer and the animation cannot disagree): boost adds to a per-cell
+   `Cell.mod` on your cards (incl. just-flipped ones); weaken subtracts from rival cards
+   not flipped by this move, and a card at effective value <= 0 is **destroyed** (the
+   cell empties, its owner keeps it). `cellValue` includes `mod`; paste-over drops it.
+   Content = the two stake-unlock specials in the table above. Client: a green "+2" /
+   red "−2 lane" badge on the card face (`CardFace`, so hand, deck view and unlocks),
+   ability words in the VoiceOver label (`abilityWords`), preview rings + "+2"/"−2"/"✕"
+   tags on affected cells with "boosts N / weakens N" in the formula bar, and move fx
+   (boost pulse, weaken shake, "✕" destroy overlay, all inside the 420ms budget, off
+   under reduced motion). Tests first: `abilities.test.ts` (5), motion + a11y + DeckView.
+   **Honest history (unlock bars, 2000 seeds):** Team Building as $$ v2 was +0.6pp and
+   PIP -1.0pp. Measured WHY before tuning (`played / landed` probe): boost landed on 100%
+   of plays, but spread-reach weaken landed on only **8%** — a forward spread rarely
+   touches a rival card that takeover hasn't already flipped, and weaken 2 -> 3 changed
+   the result by exactly 0.0pp. Lane reach made it land on 84% of plays, but as a $$ v2
+   single-forward body it was **-3.8pp**: the ability can't pay for a worse body.
+   Destroyed-cell ownership (keep vs neutral) measured identical, so the simpler rule
+   stayed. Final: both are **strict upgrades of the card they replace** (same body +
+   ability) — +1.9pp and +1.6pp. **Rule for future ability cards: an ability is a
+   rider on a full-value body, never a substitute for one, and check that it LANDS
+   (the probe) before tuning its size.**
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
@@ -477,7 +505,7 @@ Priorities drive the next /explore iterations — work top-down.
 - P1 **Stakes after promotion** (Balatro's post-win difficulty tiers): each promotion
   unlocks a harder "fiscal year" of the same ladder, using the measured seniority levers
   (`oppEdge`, `oppHomeBoost`, boss draws). Cheap, and gives a goal after the CEO.
-- P1 **Card abilities** — the biggest depth gap vs Queen's Blood, whose decks are built on
+- ~~P1 **Card abilities**~~ DONE iteration 7 (10e); more ability cards need U3 room — the biggest depth gap vs Queen's Blood, whose decks are built on
   on-play buffs/debuffs and destroy triggers. QBR cards are vanilla (shape + value). Needs a
   small ability system in `shared` + sim bars before content.
 - P2 **Deck building**: choose which specials go in (today unlocks auto-apply).
