@@ -797,3 +797,14 @@ finding is either fixed or recorded as not worth optimizing.
 3. **Launch timing:** first paint ~70ms after navigation start once warm; the first launch
    after install spends 1-2s in WebKit process start-up — not reachable from our JS. JS
    bundle 224 KB (74 KB gzip): nothing to win there.
+4. **Real safe areas — VERIFIED, no change needed.** Headless Chrome cannot emulate the
+   Dynamic Island / home indicator, so a year was screenshotted on the Simulators: on the
+   17 Pro Max the window starts clear below the Dynamic Island and "Close out" sits above
+   the home indicator; on the SE (status bar, home button) the window clears the status bar
+   and the pass button is on screen. The joker tray lives inside `.app`, whose padding
+   includes `env(safe-area-inset-top)`, so it can't slide under the island either.
+   **Dev hook for this** (no tap automation — idb/cliclick not installed): build the client
+   with `VITE_QBR_START=year` (or `career`) and the app opens straight into one; unset in
+   every shipped build. Recipe: `VITE_QBR_START=year pnpm build && pnpm exec cap sync ios`,
+   then the Simulator build/install from "iOS Simulator" above, `xcrun simctl io <UDID>
+   screenshot`. Rebuild WITHOUT the variable before archiving.

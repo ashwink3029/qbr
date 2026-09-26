@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DAILY_STAKE,
   STAKES,
@@ -104,6 +104,14 @@ export function App({
     }));
     setScreen('play');
   };
+
+  // Dev hook for Simulator layout checks (there is no tap automation): a build made with
+  // VITE_QBR_START=year|career opens straight into one. Unset in every shipped build.
+  useEffect(() => {
+    const go = (import.meta as { env?: { [k: string]: string | undefined } }).env?.VITE_QBR_START;
+    if (go === 'year') start('quick');
+    if (go === 'career') start('run');
+  }, []);
 
   // Today's daily: the same seed for everyone, Budget freeze, the starter deck.
   // It counts as attempted the moment it starts — one try a day.
