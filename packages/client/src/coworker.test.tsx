@@ -79,6 +79,47 @@ describe('Play your coworker: two phones, one match', () => {
     expect(left).toEqual([]);
   });
 
+  it('after a year, both tap Rematch and a fresh year starts on both phones; each year is recorded once', async () => {
+    const [a, b] = loopbackPair();
+    const ends: string[] = [];
+    const host = document.createElement('div');
+    const guest = document.createElement('div');
+    document.body.append(host, guest);
+    render(<NetGame transport={a} name="Ada" deck={STARTER_DECK} token={900} seed={11} onEnd={(w) => ends.push(`host ${w}`)} onLeave={() => {}} />, { container: host });
+    render(<NetGame transport={b} name="Bo" deck={STARTER_DECK} token={100} onEnd={(w) => ends.push(`guest ${w}`)} onLeave={() => {}} />, { container: guest });
+    await flush();
+    // Everyone passes: each quarter ties (both lose a life), so the year ends flat.
+    for (let k = 0; k < 40 && !host.querySelector('[data-coworker-result]'); k++) {
+      for (const root of [host, guest]) {
+        const pass = root.querySelector<HTMLButtonElement>('[data-pass]');
+        if (pass && !pass.disabled) fireEvent.click(pass);
+        const btn = root.querySelector<HTMLButtonElement>('[data-dialog-button]');
+        if (btn) fireEvent.click(btn);
+      }
+      await flush();
+    }
+    for (const root of [host, guest]) {
+      const btn = root.querySelector<HTMLButtonElement>('[data-dialog-button]');
+      if (btn) fireEvent.click(btn);
+    }
+    await flush();
+    expect(host.querySelector('[data-coworker-result]')!.textContent).toMatch(/flat year with Bo/);
+    expect(guest.querySelector('[data-coworker-result]')!.textContent).toMatch(/flat year with Ada/);
+    expect(ends.sort()).toEqual(['guest null', 'host null']);
+    fireEvent.click(guest.querySelector('[data-rematch]')!);
+    await flush();
+    expect(guest.querySelector('[data-rematch]')!.textContent).toMatch(/Waiting for Ada/);
+    expect(host.querySelector('[data-coworker-result]')!.textContent).toMatch(/Bo wants a rematch/);
+    fireEvent.click(host.querySelector('[data-rematch]')!);
+    await flush();
+    // A fresh year on both: no result panel, full lives, a clean board.
+    expect(host.querySelector('[data-coworker-game]')).toBeTruthy();
+    expect(guest.querySelector('[data-coworker-game]')).toBeTruthy();
+    expect(host.querySelectorAll('.placed')).toHaveLength(0);
+    expect(host.querySelector('[data-title]')!.textContent).toMatch(/Q1/);
+    expect(ends).toHaveLength(2); // the new year hasn't recorded anything
+  });
+
   it('if the coworker leaves, the other phone is told', async () => {
     const { left, a } = twoPhones();
     await flush();

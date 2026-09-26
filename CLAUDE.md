@@ -610,7 +610,13 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    two physical iPhones — the Simulator cannot do Multipeer):** discovery, the invite
    election, and a real match over the air. Test: install the TestFlight build on two
    phones, open QBR on both, tap "Play your coworker" -> "Look for a coworker" on each.
-   v1 limits: plain years (no jokers/bosses — seat-bound), no rematch button, no reconnect.
+   v1 limits: plain years (no jokers/bosses — seat-bound), no reconnect. **Rematch DONE
+   (/explore iteration 17):** after a year, a post-match panel ("You beat Bo." / "A flat
+   year with Bo.") offers **Rematch** / Back to home; both must ask (`rematch` message,
+   `rematchAgreed`), then the host deals a fresh seed and both boards restart in lockstep
+   over the same connection; each year is recorded once. Tests: protocol (2: agreement
+   gating, stray `start` ignored) + two NetGames passing out a flat year, both tapping
+   Rematch -> fresh Q1 on both, two results recorded.
    Earlier engine notes (iteration 15) follow.
    **Engine half DONE (/explore iteration 15):** `shared/src/qbr/mirror.ts` —
    `mirrorMatch` / `mirrorAction` show seat 1 the match from its own chair (seats swap,

@@ -25,7 +25,9 @@ export type CoworkerMessage =
   | { t: 'join-no' }
   | { t: 'hello'; v: number; token: number; name: string; deck: readonly string[] }
   | { t: 'start'; seed: number }
-  | { t: 'act'; n: number; action: Action; hash: number };
+  | { t: 'act'; n: number; action: Action; hash: number }
+  /** After a finished year: "again?" Both must ask; then the host deals anew. */
+  | { t: 'rematch' };
 
 // ── Consent (ported from Cubes' pairingReducer) ────────────────────────────
 export type PairPhase = 'idle' | 'found' | 'asking' | 'invited' | 'declined' | 'joined';
@@ -105,6 +107,8 @@ export interface CoworkerState {
   readonly match: MatchState | null;
   /** Moves applied so far (both players'), i.e. the next move's number. */
   readonly n: number;
+  /** Who has asked for a rematch since the year ended. */
+  readonly rematch?: { readonly me: boolean; readonly them: boolean };
   readonly error?: string;
 }
 
@@ -113,7 +117,9 @@ export type CoworkerEvent =
   /** The local player's move (from the UI, already in REAL seat terms). */
   | { t: 'local'; action: Action }
   /** Host only: the seed to deal with (random at the call site, so this stays pure). */
-  | { t: 'seed'; seed: number };
+  | { t: 'seed'; seed: number }
+  /** The local player asks for a rematch (after the year is over). */
+  | { t: 'local-rematch' };
 
 export interface CoworkerResult {
   readonly state: CoworkerState;
@@ -148,8 +154,12 @@ function begin(s: CoworkerState, seed: number): CoworkerState {
   const host = s.seat === 0 ? s.me : s.peer!;
   const guest = s.seat === 0 ? s.peer! : s.me;
   const match = newMatch(seed, { player: host.deck, opponent: guest.deck }, DEFAULT_MATCH, MATCH_RULES);
-  return { ...s, phase: 'playing', match, n: 0 };
+  return { ...s, phase: 'playing', match, n: 0, rematch: { me: false, them: false } };
 }
+
+/** Both players asked for another year. */
+export const rematchAgreed = (s: CoworkerState): boolean =>
+  s.phase === 'over' && !!s.rematch?.me && !!s.rematch?.them;
 
 function isLegal(m: MatchState, a: Action): boolean {
   if (a.type === 'pass') return true;
@@ -160,8 +170,14 @@ export function coworkerReducer(s: CoworkerState, e: CoworkerEvent): CoworkerRes
   if (s.phase === 'error' || s.phase === 'desync') return { state: s, send: [] };
 
   if (e.t === 'seed') {
-    if (s.seat !== 0 || s.phase !== 'hello' || !s.peer) return { state: s, send: [] };
+    const first = s.phase === 'hello' && !!s.peer;
+    if (s.seat !== 0 || !(first || rematchAgreed(s))) return { state: s, send: [] };
     return { state: begin(s, e.seed), send: [{ t: 'start', seed: e.seed }] };
+  }
+
+  if (e.t === 'local-rematch') {
+    if (s.phase !== 'over' || s.rematch?.me) return { state: s, send: [] };
+    return { state: { ...s, rematch: { me: true, them: !!s.rematch?.them } }, send: [{ t: 'rematch' }] };
   }
 
   if (e.t === 'local') {
@@ -186,8 +202,13 @@ export function coworkerReducer(s: CoworkerState, e: CoworkerEvent): CoworkerRes
       return { state: { ...s, peer: { token: msg.token, name: msg.name, deck: msg.deck }, seat }, send: [] };
     }
     case 'start': {
-      if (s.phase !== 'hello' || s.seat !== 1 || !s.peer) return { state: s, send: [] };
+      if (s.seat !== 1 || !s.peer) return { state: s, send: [] };
+      if (s.phase !== 'hello' && !rematchAgreed(s)) return { state: s, send: [] }; // a stray start
       return { state: begin(s, msg.seed), send: [] };
+    }
+    case 'rematch': {
+      if (s.phase !== 'over') return { state: s, send: [] };
+      return { state: { ...s, rematch: { me: !!s.rematch?.me, them: true } }, send: [] };
     }
     case 'act': {
       const m = s.match;

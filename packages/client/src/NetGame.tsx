@@ -3,6 +3,7 @@ import {
   coworkerReducer,
   coworkerStart,
   matchHash,
+  rematchAgreed,
   mirrorAction,
   mirrorMatch,
   type Action,
@@ -32,8 +33,10 @@ export interface NetGameProps {
   readonly token: number;
   /** Host only: the deal (random at the call site, so this stays deterministic in tests). */
   readonly seed?: number;
-  /** The year is over (in MY terms: winner 0 = me) and the result was dismissed. */
+  /** A year is over (in MY terms: winner 0 = me): record it. Called once per year. */
   readonly onEnd: (winner: Player | null, results: readonly QuarterResult[]) => void;
+  /** Back to Home from the post-match panel. */
+  readonly onDone?: () => void;
   /** Leave: the coworker left, the boards diverged, or the player backed out. */
   readonly onLeave: (reason: string) => void;
 }
@@ -46,12 +49,15 @@ const initials = (name: string) =>
     .slice(0, 3)
     .toUpperCase() || 'CW';
 
-export function NetGame({ transport, name, deck, token, seed, onEnd, onLeave }: NetGameProps) {
+export function NetGame({ transport, name, deck, token, seed, onEnd, onDone, onLeave }: NetGameProps) {
   const cw = useRef<CoworkerState | null>(null);
   const [state, setState] = useState<CoworkerState | null>(null);
   // The first view of the match (Game keeps it from there) and the coworker's moves.
   const [start, setStart] = useState<MatchState | null>(null);
   const [incoming, setIncoming] = useState<{ id: number; action: Action } | null>(null);
+  // Each year is its own Game (keyed), and its result shows a rematch panel.
+  const [round, setRound] = useState(0);
+  const [result, setResult] = useState<Player | null | undefined>(undefined);
 
   const toView = (m: MatchState, seat: Player) => (seat === 0 ? m : mirrorMatch(m));
   const viewAction = (a: Action, seat: Player) => (seat === 0 ? a : mirrorAction(a));
@@ -65,14 +71,19 @@ export function NetGame({ transport, name, deck, token, seed, onEnd, onLeave }: 
     if (r.state !== prev) setState(r.state);
     const s = r.state;
     if (s.phase === 'desync' || s.phase === 'error') onLeave(s.error ?? 'The boards no longer match.');
-    // The match just began: hand Game its first view.
-    if (s.match && !prev.match) setStart(toView(s.match, s.seat!));
+    // A year just began (the first, or a rematch): hand a fresh Game its first view.
+    if (s.phase === 'playing' && prev.phase !== 'playing' && s.match) {
+      setStart(toView(s.match, s.seat!));
+      setIncoming(null);
+      setResult(undefined);
+      setRound((r) => r + 1);
+    }
     // The coworker moved: pass it to Game in view terms.
     if (e.t === 'recv' && e.msg.t === 'act' && s.n > prev.n) {
       setIncoming({ id: s.n, action: viewAction(e.msg.action, s.seat!) });
     }
-    // The host deals once both hellos are in.
-    if (s.seat === 0 && s.peer && !s.match && s.phase === 'hello') {
+    // The host deals once both hellos are in, and again once both want a rematch.
+    if (s.seat === 0 && s.peer && ((!s.match && s.phase === 'hello') || rematchAgreed(s))) {
       dispatch({ t: 'seed', seed: seed ?? ((Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0) });
     }
   };
@@ -107,9 +118,48 @@ export function NetGame({ transport, name, deck, token, seed, onEnd, onLeave }: 
 
   const peer = state.peer!;
   const seat = state.seat;
+  const them = peer.name || 'Your coworker';
+  if (result !== undefined) {
+    const asked = !!state.rematch?.me;
+    const theyAsked = !!state.rematch?.them;
+    return (
+      <div className="app home" data-coworker-result>
+        <div className="window start-window">
+          <div className="titlebar">
+            <span>Play your coworker</span>
+          </div>
+          <div className="start-body">
+            <p className="pitch">
+              {result === 0 ? `You beat ${them}.` : result === 1 ? `${them} won the year.` : `A flat year with ${them}.`}
+            </p>
+            {theyAsked && !asked && <p className="deck-hint">{them} wants a rematch.</p>}
+            <button
+              className="btn primary"
+              data-rematch
+              disabled={asked}
+              onClick={() => dispatch({ t: 'local-rematch' })}
+            >
+              {asked ? `Waiting for ${them}…` : 'Rematch'}
+            </button>
+            <button
+              className="btn"
+              data-coworker-home
+              onClick={() => {
+                transport.close();
+                onDone?.();
+              }}
+            >
+              Back to home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div data-coworker-game data-seat={seat}>
       <Game
+        key={round}
         initialMatch={start}
         opponentName={peer.name || 'Your coworker'}
         opponentInitials={initials(peer.name)}
@@ -118,7 +168,10 @@ export function NetGame({ transport, name, deck, token, seed, onEnd, onLeave }: 
           transport.close();
           onLeave('You left the meeting.');
         }}
-        onYearEnd={onEnd}
+        onYearEnd={(winner, results) => {
+          onEnd(winner, results);
+          setResult(winner);
+        }}
         remote={{
           incoming,
           onLocalAction: (a) => {

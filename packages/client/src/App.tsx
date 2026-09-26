@@ -163,12 +163,13 @@ export function App({
           name={settings.name}
           deck={playerDeck(progressOf(record), bench)}
           onName={(name) => changeSettings({ ...settings, name })}
-          onEnd={(winner) => {
-            const next = recordCoworker(record, winner);
-            setRecord(next);
-            saveRecord(next);
-            setScreen('home');
-          }}
+          onEnd={(winner) =>
+            setRecord((r) => {
+              const next = recordCoworker(r, winner);
+              saveRecord(next);
+              return next;
+            })
+          }
           onClose={() => setScreen('home')}
         />
       )}

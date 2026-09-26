@@ -21,7 +21,7 @@ export function CoworkerView({
   name: string;
   deck: readonly string[];
   onName: (name: string) => void;
-  /** Winner in MY terms (0 = me). */
+  /** A year ended — record it (winner in MY terms, 0 = me). May be called per rematch. */
   onEnd: (winner: Player | null, results: readonly QuarterResult[]) => void;
   onClose: () => void;
 }) {
@@ -40,6 +40,7 @@ export function CoworkerView({
         deck={deck}
         token={token}
         onEnd={onEnd}
+        onDone={onClose}
         onLeave={(reason) => setLeft(reason)}
       />
     );

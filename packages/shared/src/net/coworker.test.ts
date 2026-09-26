@@ -116,6 +116,36 @@ describe('lockstep over a loopback link', () => {
   });
 });
 
+describe('rematch', () => {
+  it('when both ask after a finished year, the host deals again and both restart in lockstep', () => {
+    const { A, B } = loopback(3, [smartPass(lookaheadPolicy), smartPass(greedyPolicy)]);
+    expect(A.phase).toBe('over');
+    // Guest asks first: nothing starts until the host asks too.
+    const b1 = coworkerReducer(B, { t: 'local-rematch' });
+    expect(b1.send).toEqual([{ t: 'rematch' }]);
+    let a = coworkerReducer(A, { t: 'recv', msg: b1.send[0]! }).state;
+    expect(a.phase).toBe('over');
+    expect(coworkerReducer(a, { t: 'seed', seed: 77 }).send).toEqual([]); // host can't deal alone
+    const a2 = coworkerReducer(a, { t: 'local-rematch' });
+    expect(a2.send).toEqual([{ t: 'rematch' }]);
+    a = a2.state;
+    const dealt = coworkerReducer(a, { t: 'seed', seed: 77 });
+    expect(dealt.send).toEqual([{ t: 'start', seed: 77 }]);
+    let b = coworkerReducer(b1.state, { t: 'recv', msg: a2.send[0]! }).state;
+    b = coworkerReducer(b, { t: 'recv', msg: dealt.send[0]! }).state;
+    expect(dealt.state.phase).toBe('playing');
+    expect(b.phase).toBe('playing');
+    expect(dealt.state.n).toBe(0);
+    expect(matchHash(b.match!)).toBe(matchHash(dealt.state.match!));
+    expect(matchHash(b.match!)).not.toBe(matchHash(A.match!));
+  });
+
+  it('a stray start after a finished year (nobody asked) is ignored', () => {
+    const { B } = loopback(4, [smartPass(greedyPolicy), smartPass(greedyPolicy)]);
+    expect(coworkerReducer(B, { t: 'recv', msg: { t: 'start', seed: 5 } }).state.phase).toBe('over');
+  });
+});
+
 describe('guards', () => {
   function playing(): { host: CoworkerState; guest: CoworkerState } {
     let host = coworkerStart(9, 'H', STARTER_DECK).state;
