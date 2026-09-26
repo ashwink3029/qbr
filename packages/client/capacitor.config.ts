@@ -14,6 +14,9 @@ const config: CapacitorConfig = {
     // Edge-to-edge: the teal desktop runs under the notch; App pays the safe
     // area back with env(safe-area-inset-*) padding.
     contentInset: 'never',
+    // The web view's own background before the page paints: the teal desktop, so the
+    // launch screen (also teal) hands over with no white frame in between.
+    backgroundColor: '#0f7b7b',
   },
 };
 

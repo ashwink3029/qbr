@@ -778,3 +778,22 @@ xcrun simctl launch <UDID> com.ashwink.qbr
 Verified building and launching 2026-09-25. No signing team / Xcode Cloud setup yet.
 Headless-Chrome screenshots below ~500px wide are cropped by Chrome's minimum window
 width — that is not a layout bug; check on the Simulator instead.
+
+## Simulator research + optimization (goal set 2026-09-26: "research and optimize in simulator")
+Measured on iOS Simulators (iPhone SE 3rd gen, 17 Pro, 17 Pro Max) and headlessly; each
+finding is either fixed or recorded as not worth optimizing.
+1. **AI think time — NOT a bottleneck** (`sim/src/thinktime.ts`, 11,000+ opponent moves,
+   every rung, hardest stake, full 4-joker desk): median <= 0.3ms, p99 <= 7.8ms, max 55ms
+   (JIT warm-up) for the lookahead rungs. Even at 3-4x slower on-device JS, p99 stays near
+   ~30ms inside the 450ms "thinking" delay. Do not move the AI to a worker for speed.
+2. **Launch showed a white screen with the stock Capacitor logo — FIXED.** The launch
+   storyboard was Capacitor's default `Splash` image on `systemBackgroundColor`; the first
+   frame after launch on the SE was plain white, then the teal desktop. Now
+   `LaunchScreen.storyboard` is a plain teal (#0f7b7b) view (same in dark mode) and
+   `capacitor.config.ts` sets `ios.backgroundColor` teal for the web view before the page
+   paints; the unused 2732px stock splash PNGs are removed. Verified by capturing frames
+   right after a cold launch on the SE: first frame teal, then Home — no white flash.
+   (iOS caches launch screens: uninstall before re-checking.)
+3. **Launch timing:** first paint ~70ms after navigation start once warm; the first launch
+   after install spends 1-2s in WebKit process start-up — not reachable from our JS. JS
+   bundle 224 KB (74 KB gzip): nothing to win there.
