@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { AI_DELAY_MS, Game } from './Game.js';
+import { FX_MAX_MS } from './motion.js';
 
 // Verified headlessly, like chain: mount the real component, make a real play
 // through the DOM, let the real AI reply on its timer, and assert the sheet
@@ -161,6 +162,26 @@ describe('move animation', () => {
     const claimed = fxCells('claim');
     expect(claimed.length).toBeGreaterThan(0);
     for (const c of claimed) expect(document.querySelector(`[data-cell="${c}"]`)!.classList.contains('mine')).toBe(true);
+  });
+
+  it('claim overlays are removed after the effect budget, even if the animation never ran', () => {
+    // A frozen or skipped CSS animation (e.g. a backgrounded page) must not leave
+    // half-visible overlays on the board: the DOM, not the animation, ends it.
+    vi.useFakeTimers();
+    try {
+      render(<Game seed={5} paused />);
+      fireEvent.click(document.querySelector<HTMLButtonElement>('[data-card][data-playable="true"]')!);
+      const target = cells().find((c) => c.classList.contains('legal'))!;
+      fireEvent.click(target);
+      fireEvent.click(target);
+      expect(fxCells('claim').length).toBeGreaterThan(0);
+      act(() => {
+        vi.advanceTimersByTime(FX_MAX_MS + 200);
+      });
+      expect(fxCells('claim')).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('Finance’s reply animates too, replacing yours, so you can see what it did', () => {

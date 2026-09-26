@@ -188,6 +188,27 @@
   .fx-claim { display: none; }
 }
 
+/* Ownership without colour (App Store "Differentiate Without Color Alone"):
+   your cells carry a chevron on their bottom edge pointing up — your direction
+   of play — and the opponent's a chevron on the top edge pointing down. Shape
+   and position, not hue, so it reads in greyscale and for colour-blind players. */
+.cell[data-owner='you']::before,
+.cell[data-owner='them']::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  pointer-events: none;
+}
+.cell[data-owner='you']::before { bottom: 2px; border-bottom: 6px solid var(--mine-ink); }
+.cell[data-owner='them']::before { top: 2px; border-top: 6px solid var(--theirs-ink); }
+.sum.win .you::after { content: ' ▲'; font-size: 9px; }
+.sum.lose .them::after { content: ' ▼'; font-size: 9px; }
+
 .cell.mine { background: var(--mine); color: var(--mine-ink); }
 .cell.theirs { background: var(--theirs); color: var(--theirs-ink); }
 .cell.legal { outline: 2px dashed #b08900; outline-offset: -4px; cursor: pointer; background: var(--legal); }

@@ -26,19 +26,18 @@ import {
   type QuarterResult,
   type RngState,
 } from '@qbr/shared';
+import { LANE_LETTERS, UNITS, cardLabel, cellLabel, laneLabel } from './a11y.js';
 import { AvatarImage } from './avatars.js';
 import { CardFace } from './CardFace.js';
 import * as feedback from './feedback.js';
 import { SCREEN_COLS, SCREEN_ROWS, fromScreen } from './layout.js';
-import { FX_STEP_MS, moveFx, type MoveFx } from './motion.js';
+import { FX_MAX_MS, FX_STEP_MS, moveFx, type MoveFx } from './motion.js';
 import { TipBubble } from './Mascot.js';
 import { loadSeenTips, markTipSeen, pickTip } from './tips.js';
 
 /** The AI "thinks" this long before replying, so its move reads as a move. */
 export const AI_DELAY_MS = 450;
 
-const UNITS = ['Sales', 'Ops', 'R&D'] as const;
-const LANE_LETTERS = ['A', 'B', 'C'] as const;
 const HUMAN = 0;
 
 function freshSeed(): number {
@@ -131,6 +130,15 @@ export function Game({
   // The last play's visible effects (drop / claim ripple / flip), for either
   // side — so the player can SEE what the opponent just did. A pass clears it.
   const [fx, setFx] = useState<MoveFx | null>(null);
+  // Once a move's effect budget has passed its overlays leave the DOM, so the
+  // board's end state never depends on a CSS animation actually running (a
+  // backgrounded page freezes them mid-way).
+  const [settledFx, setSettledFx] = useState(0);
+  useEffect(() => {
+    if (!fx) return;
+    const t = setTimeout(() => setSettledFx(fx.id), FX_MAX_MS + 100);
+    return () => clearTimeout(t);
+  }, [fx]);
 
   const apply = (m: MatchState, a: Action) => {
     setFx(moveFx(m.quarter, a));
@@ -219,7 +227,10 @@ export function Game({
 
   const pendingCard = pending === null ? null : game.cells[pending]!.card;
 
-  const claimOrder = useMemo(() => new Map((fx?.claim ?? []).map((c) => [c.cell, c.order])), [fx]);
+  const claimOrder = useMemo(
+    () => new Map((fx && fx.id !== settledFx ? fx.claim : []).map((c) => [c.cell, c.order])),
+    [fx, settledFx],
+  );
   const fxKind = (i: number): 'drop' | 'flip' | null =>
     !fx ? null : fx.placed === i ? 'drop' : fx.flip.includes(i) ? 'flip' : null;
   const qNo = summary ? summary.quarterNo : match.quarterNo;
@@ -408,6 +419,9 @@ export function Game({
                   key={i}
                   className={cls}
                   data-cell={i}
+                  data-owner={cell.owner === 0 ? 'you' : cell.owner === 1 ? 'them' : 'none'}
+                  role="gridcell"
+                  aria-label={cellLabel(game, i, { sr, sc }, who, blocked.has(i))}
                   data-sr={sr}
                   data-sc={sc}
                   onPointerEnter={(e) => e.pointerType === 'mouse' && setHover(i)}
@@ -446,6 +460,7 @@ export function Game({
               key={`s${sc}`}
               className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : ''}`}
               data-lane-total={sc}
+              aria-label={laneLabel(sc, row.totals[0], row.totals[1], who)}
             >
               <span className="you">{row.totals[0]}</span>
               <span className="vs">vs</span>
@@ -466,6 +481,10 @@ export function Game({
                 className={`card ${selected === id ? 'sel' : ''} ${short ? 'unaffordable' : ''} ${explain === id ? 'explained' : ''}`}
                 data-card={id}
                 data-playable={playable ? 'true' : 'false'}
+                aria-label={
+                  cardLabel(id) +
+                  (short ? ` — can't play: ${bestOpen < 0 ? 'no open cell' : `needs a ${'$'.repeat(card(id).cost)} cell`}` : '')
+                }
                 aria-disabled={!playable}
                 disabled={!humanTurn}
                 onClick={() => pickCard(id)}

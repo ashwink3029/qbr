@@ -362,6 +362,45 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    yours). Verified headlessly at 375x667 mid-animation (claim overlays visibly
    expanding while Finance "is typing") + clean Simulator build. **Not verified:**
    how it feels on a real iPhone at 60/120Hz; no sound yet for flips.
+10. ~~Accessibility: ownership without colour + VoiceOver labels~~ **DONE
+   (/explore iteration 3, 2026-09-26; gap-analysis P1).** Ownership, the most
+   important thing on the board, was red-vs-blue only. Now every cell has a
+   `data-owner` hook and a **chevron by shape and position**: yours on the bottom
+   edge pointing up (your direction of play), the opponent's on the top edge
+   pointing down; the `=SUM` lead adds ▲ / ▼. VoiceOver labels in spreadsheet
+   language (`client/src/a11y.ts`): cells "A5, your Coffee Run, value 2" /
+   "C1, Finance's cell, budget $" / "…, locked"; cards "Memo, costs $, value 1,
+   spreads left, right, 1 ahead" (+ "— can't play: needs a $$ cell"); lane totals
+   "Sales: you 3, Finance 1, you lead". Tests first (`a11y.test.tsx`, red then
+   green). **Verified** by rendering a mid-game board with Chrome's
+   `setEmulatedVisionDeficiency('achromatopsia')`: owners are unambiguous in full
+   greyscale. **Also fixed, found while verifying:** claim overlays' end state
+   depended on the CSS animation finishing — headless Chrome (a hidden page) froze
+   them at 55% opacity, which a backgrounded iPhone could do too. They now leave
+   the DOM after `FX_MAX_MS` + 100ms (`settledFx`; test "claim overlays are removed
+   … even if the animation never ran"). **Not verified:** real VoiceOver on
+   device; Larger Text (Dynamic Type) is not supported yet — sizes are fixed px.
+11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
+   Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
+   **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
+   — discovery in the background, a banner when a coworker is nearby, one tap on
+   each phone; consent via Cubes' pure `pairingReducer` (`join-req` / `join-ok` /
+   `join-no`, simultaneous-tap race handled). **Home: a line at the bottom like
+   "Play your coworker".** In game: both players get the normal game view, each
+   at the bottom of their own screen, with the opponent strip showing the OTHER
+   USER (their name + a player avatar — there is no "you" avatar yet). **Each
+   player brings their own deck**: the guest sends its `playerDeck` on join and
+   the host starts `newMatch(seed, {player: hostDeck, opponent: guestDeck})` —
+   the split `Deck` type already supports this. Design notes: host-authoritative
+   like Cubes (guest sends intents, host runs `matchReducer` and broadcasts), or
+   lockstep since the reducer is pure and seeded; the guest's view needs a
+   **seat-1 perspective** (today the client assumes the human is seat 0 —
+   `layout.ts` mirroring + `spreadEffects` player param already exist); v1 = plain
+   years, no jokers/bosses; a separate coworker record on Home. Validation needs
+   **two physical iPhones** (the Simulator can't do Multipeer) — keep pairing and
+   seat mapping as pure, unit-tested reducers, as Cubes did. Requires
+   `NSLocalNetworkUsageDescription` + `NSBonjourServices` in Info.plist and
+   `cap sync ios` + committing Package.swift for the plugin.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
