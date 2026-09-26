@@ -6,3 +6,5 @@ export * from './qbr/match.js';
 export * from './qbr/mods.js';
 export * from './qbr/run.js';
 export * from './qbr/daily.js';
+export * from './qbr/mirror.js';
+export * from './net/coworker.js';

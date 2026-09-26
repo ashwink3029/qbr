@@ -583,7 +583,28 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    `ALL=1` for all five). Caveat: no iOS status bar. **Needs the user:** a contact email in
    the policy, a public URL for it (e.g. GitHub Pages) and a Support URL, then entering the
    kit in App Store Connect; nothing was published or submitted.
-11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
+11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — IN PROGRESS.**
+   **Engine half DONE (/explore iteration 15):** `shared/src/qbr/mirror.ts` —
+   `mirrorMatch` / `mirrorAction` show seat 1 the match from its own chair (seats swap,
+   board flips left-right), so the guest can use every seat-0 screen unchanged. Proven
+   by a commutation property, `mirror(reduce(m, a)) === reduce(mirror(m), mirror(a))`,
+   over 200 whole random matches (>2,000 moves: both decks, abilities, takeovers,
+   quarter boundaries) + involution; refuses mods (jokers/bosses are seat-bound, so v1
+   coworker matches have none). `shared/src/net/coworker.ts` — **lockstep, not
+   host-authoritative** (the reducer is pure and seeded, so both phones hold the same
+   match and exchange only moves): Cubes' consent `pairingReducer` ported, then
+   `hello {v, token, name, deck}` (each brings their OWN deck; the larger token hosts
+   and is seat 0), `start {seed}`, and `act {n, action, hash}` — the receiver checks
+   turn, sequence and legality, applies, and compares state hashes: any divergence is
+   **`desync`**, never played through. Tests (`coworker.test.ts` 7): pairing race /
+   stray OK / decline; **40 whole matches over an in-memory loopback between two
+   reducers with real AI, boards identical after every move**, each seat drawing only
+   its own deck; version / deck / out-of-turn / out-of-sequence / illegal / bad-hash
+   guards. **Remaining (client + native):** port Cubes' `MultipeerPlugin.swift` +
+   `multipeerLink` + `useNearby` (service type e.g. `_qbr-cowork._tcp`), a nearby banner,
+   Home's "Play your coworker" line, a `NetGame` that renders `mirrorMatch` for the
+   guest, the coworker record, Info.plist keys — then the two-iPhone test (user). The
+   original notes follow.
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
    — discovery in the background, a banner when a coworker is nearby, one tap on
