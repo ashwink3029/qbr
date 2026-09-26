@@ -11,6 +11,7 @@ export interface HomeProps {
   readonly onStartQuick: () => void;
   readonly onResume: () => void;
   readonly onDeck: () => void;
+  readonly onSettings: () => void;
 }
 
 /**
@@ -18,7 +19,7 @@ export interface HomeProps {
  * same 90s-office frame as the game, so leaving a career feels like closing a
  * spreadsheet, not changing apps.
  */
-export function Home({ record, inProgress, onStartRun, onStartQuick, onResume, onDeck }: HomeProps) {
+export function Home({ record, inProgress, onStartRun, onStartQuick, onResume, onDeck, onSettings }: HomeProps) {
   const years = record.wins + record.losses + record.draws;
   const last =
     record.lastOutcome === 'win'
@@ -102,6 +103,9 @@ export function Home({ record, inProgress, onStartRun, onStartQuick, onResume, o
               </>
             )}
           </div>
+          <button className="link-btn" data-settings onClick={onSettings}>
+            Settings
+          </button>
         </div>
       </div>
     </div>

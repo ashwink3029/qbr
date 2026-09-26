@@ -3,10 +3,13 @@ import { playerDeck, type Player, type QuarterResult } from '@qbr/shared';
 import { DeckView } from './DeckView.js';
 import { Game } from './Game.js';
 import { Home } from './Home.js';
-import { loadRecord, progressOf, recordRun, recordYear, saveRecord, type Record } from './record.js';
+import { setFeedbackPrefs } from './feedback.js';
+import { EMPTY_RECORD, loadRecord, progressOf, recordRun, recordYear, saveRecord, type Record } from './record.js';
 import { Run, type RunResult } from './Run.js';
+import { loadSettings, resetProgress, resetTips, saveSettings, type Settings } from './settings.js';
+import { SettingsView } from './SettingsView.js';
 
-type Screen = 'home' | 'play' | 'deck';
+type Screen = 'home' | 'play' | 'deck' | 'settings';
 
 /** One thing in progress at a time: a career (a "run" in code) or one year. The
  *  deck is fixed when it starts, so unlocks earned mid-way apply next time. */
@@ -31,6 +34,17 @@ export function App({ seed }: { seed?: number } = {}) {
   const [screen, setScreen] = useState<Screen>('home');
   const [session, setSession] = useState<Session | null>(null);
   const [record, setRecord] = useState<Record>(loadRecord);
+  const [settings, setSettings] = useState<Settings>(() => {
+    const s = loadSettings();
+    setFeedbackPrefs(s);
+    return s;
+  });
+
+  const changeSettings = (s: Settings) => {
+    setSettings(s);
+    saveSettings(s);
+    setFeedbackPrefs(s);
+  };
 
   const start = (kind: Session['kind']) => {
     setSession((s) => ({ kind, id: (s?.id ?? 0) + 1, deck: playerDeck(progressOf(record)) }));
@@ -60,9 +74,22 @@ export function App({ seed }: { seed?: number } = {}) {
           onStartQuick={() => start('quick')}
           onResume={() => setScreen('play')}
           onDeck={() => setScreen('deck')}
+          onSettings={() => setScreen('settings')}
         />
       )}
       {screen === 'deck' && <DeckView progress={progressOf(record)} onClose={() => setScreen('home')} />}
+      {screen === 'settings' && (
+        <SettingsView
+          settings={settings}
+          onChange={changeSettings}
+          onResetTips={resetTips}
+          onResetProgress={() => {
+            resetProgress();
+            setRecord(EMPTY_RECORD);
+          }}
+          onClose={() => setScreen('home')}
+        />
+      )}
       {session && (
         <div className="game-host" hidden={screen !== 'play'}>
           {session.kind === 'run' ? (

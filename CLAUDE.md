@@ -380,6 +380,16 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    the DOM after `FX_MAX_MS` + 100ms (`settledFx`; test "claim overlays are removed
    … even if the animation never ran"). **Not verified:** real VoiceOver on
    device; Larger Text (Dynamic Type) is not supported yet — sizes are fixed px.
+10b. ~~Settings~~ **DONE (/explore iteration 4, 2026-09-26; gap-analysis P1).** Home ->
+   "Settings" (`SettingsView.tsx`, a 90s preferences dialog): **Sound effects** and
+   **Haptics** toggles (`settings.ts`, guarded localStorage `qbr.settings.v1`, applied
+   via `setFeedbackPrefs` — with sound off no audio engine is ever created, with
+   haptics off no native call is made), **Show tips again** (clears Bindy's seen
+   set), **Reset progress** behind an in-app second step ("Erase every career, year
+   and unlocked card?" / Keep / Erase — never a system dialog). Tests first
+   (`settings.test.tsx`: sound-off never constructs an AudioContext, toggles persist
+   across a remount, tips reset, reset needs the confirm tap then Home shows "No
+   years on record"). Verified at 375x667: Home and Settings fit with no scroll.
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**

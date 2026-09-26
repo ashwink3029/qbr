@@ -536,6 +536,34 @@
   .chart-window .logo { display: none; }
 }
 
+/* ── Settings ─────────────────────────────────────────────────────────── */
+.link-btn {
+  align-self: center;
+  min-height: 44px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--title);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.settings-body .group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px 10px;
+  border: 1px solid;
+  border-color: var(--lo) var(--hi) var(--hi) var(--lo);
+}
+.settings-body legend { padding: 0 4px; font-weight: 700; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.check input { width: 22px; height: 22px; accent-color: var(--title); }
+.row-buttons { display: flex; gap: 8px; }
+.row-buttons .btn { flex: 1 1 0; }
+.btn.danger { color: #fff; background: var(--theirs-ink); }
+
 /* ── Deck view + special cards ─────────────────────────────────────────── */
 .deck-window { max-width: 420px; max-height: 100%; }
 .deck-body { overflow-y: auto; }

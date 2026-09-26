@@ -12,6 +12,13 @@ import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 
 const IS_NATIVE = Capacitor.isNativePlatform();
 
+/** Sound and haptics switches from Settings. With sound off no audio engine
+ *  is ever created; with haptics off no native call is made. */
+let prefs = { sound: true, haptics: true };
+export function setFeedbackPrefs(p: { readonly sound: boolean; readonly haptics: boolean }): void {
+  prefs = { sound: p.sound, haptics: p.haptics };
+}
+
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 
@@ -34,11 +41,13 @@ function audio(): AudioContext | null {
 
 /** Call from the first user gesture: iOS keeps audio suspended until then. */
 export function primeAudio(): void {
+  if (!prefs.sound) return;
   const c = audio();
   if (c && c.state === 'suspended') void c.resume().catch(() => {});
 }
 
 function tone(freq: number, at: number, durMs: number, peak: number, type: OscillatorType, glideTo?: number): void {
+  if (!prefs.sound) return;
   const c = audio();
   if (!c || c.state !== 'running' || !master) return;
   const t0 = c.currentTime + at;
@@ -57,6 +66,7 @@ function tone(freq: number, at: number, durMs: number, peak: number, type: Oscil
 
 /** Band-passed noise burst: paper, a stamp's felt, a click. */
 function noise(at: number, durMs: number, peak: number, freq: number, q = 1.2): void {
+  if (!prefs.sound) return;
   const c = audio();
   if (!c || c.state !== 'running' || !master) return;
   const t0 = c.currentTime + at;
@@ -77,12 +87,12 @@ function noise(at: number, durMs: number, peak: number, freq: number, q = 1.2): 
 }
 
 function impact(style: ImpactStyle): void {
-  if (!IS_NATIVE) return;
+  if (!IS_NATIVE || !prefs.haptics) return;
   void Haptics.impact({ style }).catch(() => {});
 }
 
 function selectionTick(): void {
-  if (!IS_NATIVE) return;
+  if (!IS_NATIVE || !prefs.haptics) return;
   void Haptics.selectionStart()
     .then(() => Haptics.selectionChanged())
     .then(() => Haptics.selectionEnd())
@@ -90,7 +100,7 @@ function selectionTick(): void {
 }
 
 function warn(): void {
-  if (!IS_NATIVE) return;
+  if (!IS_NATIVE || !prefs.haptics) return;
   void Haptics.notification({ type: NotificationType.Warning }).catch(() => {});
 }
 
