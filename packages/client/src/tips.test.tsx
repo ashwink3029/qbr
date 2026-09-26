@@ -13,6 +13,8 @@ const base: TipContext = {
   lead: 0,
   mods: NO_MODS,
   who: 'Finance',
+  myCardsOnBoard: 0,
+  quarterNo: 1,
   hasUnaffordable: false,
 };
 const none: ReadonlySet<string> = new Set();
@@ -34,6 +36,16 @@ describe('pickTip', () => {
     expect(t.id).toBe('boss:auditor');
     expect(t.text).toMatch(/The Auditor/);
     expect(pickTip({ ...base, previewFlips: true }, none)?.id).toBe('takeover');
+  });
+
+  it('teaches lane scoring once your first card is on the sheet, and lives when Q2 begins', () => {
+    const lanes = pickTip({ ...base, myCardsOnBoard: 1 }, none);
+    expect(lanes?.id).toBe('lanes');
+    expect(lanes!.text).toMatch(/lane’s leader banks/);
+    expect(pickTip({ ...base, myCardsOnBoard: 0 }, none)).toBeNull();
+    const lives = pickTip({ ...base, quarterNo: 2 }, new Set(['lanes']));
+    expect(lives?.id).toBe('lives');
+    expect(lives!.text).toMatch(/lose two quarters/);
   });
 
   it('never repeats a tip that was already seen', () => {

@@ -390,6 +390,18 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    (`settings.test.tsx`: sound-off never constructs an AudioContext, toggles persist
    across a remount, tips reset, reset needs the confirm tap then Home shows "No
    years on record"). Verified at 375x667: Home and Settings fit with no scroll.
+10c. ~~Teach scoring and lives in play~~ **DONE (/explore iteration 5, 2026-09-26;
+   gap-analysis P1, part of the guided-first-quarter item).** The two rules that decide
+   who wins were only learned by losing. Two new one-time Bindy tips (`tips.ts`),
+   fired by game state, not a scripted tutorial: **`lanes`** right after your first
+   card lands ("…the cells your card reached are yours now. Each column is a lane:
+   when the quarter closes, each lane's leader banks its total.") and **`lives`** at
+   the start of your first Q2 ("Fresh sheet for Q2, but your hand carries over. Two
+   lives each: lose two quarters and the year goes to <opponent>."). Priority: boss >
+   place > lanes > lives > cost > takeover > close-out. Test first (`tips.test.tsx`).
+   Remaining for the full guided-first-quarter item: whether the first career should
+   skip the supply closet (3 screens before the first card today) — needs a real
+   first-time player on TestFlight to judge, not a guess.
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**

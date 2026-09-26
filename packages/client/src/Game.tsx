@@ -287,6 +287,8 @@ export function Game({
             lead: mine - theirs,
             mods,
             hasUnaffordable: humanTurn && game.hands[HUMAN].some((id) => !legal.some((a) => a.card === id)),
+            myCardsOnBoard: match.quarter.cells.filter((c) => c.owner === HUMAN && c.card !== null).length,
+            quarterNo: match.quarterNo,
           },
           seenTips,
         );

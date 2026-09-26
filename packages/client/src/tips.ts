@@ -40,6 +40,10 @@ export interface TipContext {
   readonly mods: Mods;
   /** Some card in your hand costs more than any open cell you own. */
   readonly hasUnaffordable: boolean;
+  /** Your cards currently on the sheet this quarter. */
+  readonly myCardsOnBoard: number;
+  /** 1-based quarter of the current year. */
+  readonly quarterNo: number;
 }
 
 export interface Tip {
@@ -59,6 +63,21 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
     candidates.push({
       id: 'place',
       text: 'Tap a card, then a yellow cell to preview its spread. Tap the same cell again to commit.',
+      mood: 'talk',
+    });
+  }
+  // The two rules that decide who wins, taught in play rather than by losing.
+  if (ctx.humanTurn && ctx.myCardsOnBoard >= 1 && !ctx.selected) {
+    candidates.push({
+      id: 'lanes',
+      text: 'Nice — the cells your card reached are yours now. Each column is a lane: when the quarter closes, each lane’s leader banks its total.',
+      mood: 'talk',
+    });
+  }
+  if (ctx.humanTurn && ctx.quarterNo === 2) {
+    candidates.push({
+      id: 'lives',
+      text: `Fresh sheet for Q2, but your hand carries over. Two lives each: lose two quarters and the year goes to ${ctx.who}.`,
       mood: 'talk',
     });
   }
