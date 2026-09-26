@@ -133,7 +133,23 @@ tested the card economy: **scarcity was the wrong lever** (5-card hands make
 passing matter LESS: 52-60%); **bigger between-quarter refills make it matter
 more** (a saved card is worth more when the next quarter re-arms you). 8 / +3/+2
 passes all four with margin; 10-card hands push seat balance to 55-56%.
-**Open design issue — conceding is worthless.** In every config, conceding a lost
+**RESOLVED BY DESIGN (/explore iteration 18) — conceding is correctly rare; do not
+re-open without a rules change that makes hands matter.** `sim/src/concedediag.ts`
+compares, on the SAME seeds, a concede plan vs the same plan never conceding, and looks
+only at games where the concede fired: **deficit triggers (trail by 1/3/6) fire in
+6-12% of games and on those games score ~20% vs ~47-49% for playing on** — the LOCKING
+pass hands tempo to the trailing player (the passer cannot answer), so conceding after
+Finance closes out throws a quarter you'd win half the time. A *correct* concede
+(`PassPlan.concede: 'hopeless'` — only if playing your hand out alone never takes the
+lead) fires in 1.9% and still scores 16.7% vs 17.9%: **saved cards don't help later
+because the board saturates** (~3 cards go unplayed per match) — the same reason card
+scarcity was a null. Pre-registered C1 (hopeless concede >= 53% vs never-concede): 51.6%
+vs 51.7%, **FAIL** — recorded as a null. QBR's pass skill is banking a lead (M2), not
+throwing a round. **Side finding, not acted on:** the shipped `DEFAULT_PASS_PLAN`
+(concedeAt 6) costs its user ~1.7pp vs never conceding (51.7%); Finance uses it, so
+fixing it strengthens every opponent and needs a full ladder re-tune (runbars, stakebars,
+daily re-vet) — a deliberate call, not a drive-by. Original note follows:
+Open design issue — conceding is worthless. In every config, conceding a lost
 quarter to save cards scores 47-50% against the same plan without it, i.e. the
 signature Gwent "throw a round" play does not pay yet. Boards reset and ~3
 cards go unplayed at the end, so a saved card rarely matters. Candidate levers

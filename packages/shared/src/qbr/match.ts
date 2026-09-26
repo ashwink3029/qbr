@@ -146,6 +146,27 @@ export interface PassPlan {
   /** Concede a non-deciding quarter when trailing by this much after the
    *  opponent has passed — keep your cards for later. */
   readonly concedeAt: number;
+  /** 'deficit' (default): concede once trailing by `concedeAt`. 'hopeless': concede
+   *  only if playing your hand out ALONE (the opponent has passed and cannot answer)
+   *  never takes the lead — measured in sim/src/concedediag.ts: a deficit trigger
+   *  throws quarters the trailing player wins ~47% of the time by playing on. */
+  readonly concede?: 'deficit' | 'hopeless';
+}
+
+/** With the opponent locked out, can `me` take the lead by playing on alone? */
+function canCatchUp(q: GameState, me: Player, p: Policy, rng: RngState): boolean {
+  let s = q;
+  let r = rng;
+  for (let step = 0; step < 16; step++) {
+    const rev = revenue(s);
+    if (rev[me] > rev[me === 0 ? 1 : 0]) return true;
+    if (s.over || s.toMove !== me || legalPlays(s).length === 0) return false;
+    let a: Action;
+    [r, a] = p(s, r);
+    if (a.type === 'pass') return false;
+    s = reducer(s, a);
+  }
+  return false;
 }
 
 export const DEFAULT_PASS_PLAN: PassPlan = { bankLead: 5, concedeAt: 6 };
@@ -169,7 +190,10 @@ export function smartPass(p: Policy, plan: PassPlan = DEFAULT_PASS_PLAN): MatchP
     const deciding = m.lives[me] === 1 || m.lives[them] === 1;
     if (q.passed[them]) {
       if (lead > 0) return [rng, PASS];
-      if (!deciding && lead <= -plan.concedeAt) return [rng, PASS];
+      if (!deciding && lead < 0) {
+        const hopeless = plan.concede === 'hopeless' ? !canCatchUp(q, me, p, rng) : lead <= -plan.concedeAt;
+        if (hopeless) return [rng, PASS];
+      }
       return p(q, rng);
     }
     if (!deciding && lead >= plan.bankLead && q.hands[me].length <= q.hands[them].length) {
