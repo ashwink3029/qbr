@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BOSSES,
   DEFAULT_MATCH,
@@ -92,6 +92,14 @@ export interface GameProps {
   /** Your deck (starter upgraded by unlocked specials); the opponent always
    *  plays the plain starter deck. */
   readonly deck?: readonly string[];
+  /** Start from this match instead of dealing one (a coworker match: the view). */
+  readonly initialMatch?: MatchState;
+  /** A coworker match: my moves are reported instead of answered by an AI, and
+   *  the coworker's arrive as `incoming` (each id applied once), in view terms. */
+  readonly remote?: {
+    readonly onLocalAction: (a: Action) => void;
+    readonly incoming: { readonly id: number; readonly action: Action } | null;
+  };
 }
 
 export function Game({
@@ -105,10 +113,14 @@ export function Game({
   opponentInitials: whoInitials = 'FIN',
   meetingName,
   deck = STARTER_DECK,
+  initialMatch,
+  remote,
 }: GameProps = {}) {
   const opponent = useMemo(() => opponentPolicy(opponentKind), [opponentKind]);
-  const [match, setMatch] = useState<MatchState>(() =>
-    newMatch(seed ?? freshSeed(), { player: deck, opponent: STARTER_DECK }, DEFAULT_MATCH, MATCH_RULES, mods),
+  const [match, setMatch] = useState<MatchState>(
+    () =>
+      initialMatch ??
+      newMatch(seed ?? freshSeed(), { player: deck, opponent: STARTER_DECK }, DEFAULT_MATCH, MATCH_RULES, mods),
   );
   const blocked = useMemo(() => blockedCells(mods), [mods]);
   const boss = mods.boss ? BOSSES[mods.boss] : undefined;
@@ -155,9 +167,18 @@ export function Game({
     setMatch(next);
   };
 
+  // A coworker's move: applied exactly once per id, through the same path.
+  const appliedRemote = useRef(0);
+  useEffect(() => {
+    const inc = remote?.incoming;
+    if (!inc || inc.id <= appliedRemote.current) return;
+    appliedRemote.current = inc.id;
+    apply(match, inc.action);
+  }, [remote?.incoming?.id]);
+
   // The opponent replies on a timer, never synchronously inside a click.
   useEffect(() => {
-    if (paused || summary || match.over || match.quarter.toMove === HUMAN) return;
+    if (remote || paused || summary || match.over || match.quarter.toMove === HUMAN) return;
     const t = setTimeout(() => {
       const [next, action] = opponent(match, aiRng);
       setAiRng(next);
@@ -173,6 +194,7 @@ export function Game({
   const [hover, setHover] = useState<number | null>(null);
 
   const act = (a: Action) => {
+    remote?.onLocalAction(a);
     apply(match, a);
     setSelected(null);
     setPending(null);

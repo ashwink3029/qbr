@@ -11,7 +11,9 @@ import {
   type QuarterResult,
 } from '@qbr/shared';
 import { loadBench, saveBench } from './bench.js';
+import { CoworkerView } from './CoworkerView.js';
 import { DeckView } from './DeckView.js';
+import { createNetLink, nearbySupported, type NetLink } from './net/multipeerLink.js';
 import { Game } from './Game.js';
 import { Home } from './Home.js';
 import { setFeedbackPrefs } from './feedback.js';
@@ -20,6 +22,7 @@ import {
   loadRecord,
   progressOf,
   recordDailyEnd,
+  recordCoworker,
   recordDailyStart,
   recordRun,
   recordYear,
@@ -30,7 +33,7 @@ import { Run, type RunResult } from './Run.js';
 import { loadSettings, resetProgress, resetTips, saveSettings, type Settings } from './settings.js';
 import { SettingsView } from './SettingsView.js';
 
-type Screen = 'home' | 'play' | 'deck' | 'settings';
+type Screen = 'home' | 'play' | 'deck' | 'settings' | 'coworker';
 
 /** One thing in progress at a time: a career (a "run" in code) or one year. The
  *  deck is fixed when it starts, so unlocks earned mid-way apply next time. */
@@ -55,7 +58,16 @@ function freshSeed(): number {
  * and the opponent never moves in the background. Starting something new
  * replaces it.
  */
-export function App({ seed, today = dayKey(new Date()) }: { seed?: number; today?: string } = {}) {
+export function App({
+  seed,
+  today = dayKey(new Date()),
+  nearby = nearbySupported() ? createNetLink : undefined,
+}: {
+  seed?: number;
+  today?: string;
+  /** The nearby link for "Play your coworker" (Multipeer in the iOS app; absent on the web). */
+  nearby?: (() => NetLink) | undefined;
+} = {}) {
   const [screen, setScreen] = useState<Screen>('home');
   const [session, setSession] = useState<Session | null>(null);
   const [record, setRecord] = useState<Record>(loadRecord);
@@ -136,6 +148,7 @@ export function App({ seed, today = dayKey(new Date()) }: { seed?: number; today
             setScreen('deck');
           }}
           onSettings={() => setScreen('settings')}
+          {...(nearby ? { onCoworker: () => setScreen('coworker') } : {})}
           stake={chosenStake}
           maxStake={maxStake}
           onStake={setStake}
@@ -143,6 +156,21 @@ export function App({ seed, today = dayKey(new Date()) }: { seed?: number; today
       )}
       {screen === 'deck' && (
         <DeckView progress={progressOf(record)} benched={bench} onBench={changeBench} onClose={() => setScreen(deckReturn)} />
+      )}
+      {screen === 'coworker' && nearby && (
+        <CoworkerView
+          makeLink={nearby}
+          name={settings.name}
+          deck={playerDeck(progressOf(record), bench)}
+          onName={(name) => changeSettings({ ...settings, name })}
+          onEnd={(winner) => {
+            const next = recordCoworker(record, winner);
+            setRecord(next);
+            saveRecord(next);
+            setScreen('home');
+          }}
+          onClose={() => setScreen('home')}
+        />
       )}
       {screen === 'settings' && (
         <SettingsView

@@ -19,6 +19,8 @@ export interface Record {
   readonly stakeCleared: number;
   /** The last daily career attempted (one a day), or null. */
   readonly daily: Daily | null;
+  /** Years against a coworker's phone ("Play your coworker"), kept apart. */
+  readonly coworker: { readonly wins: number; readonly losses: number; readonly draws: number };
 }
 
 export interface Daily {
@@ -42,6 +44,7 @@ export const EMPTY_RECORD: Record = {
   bestMeetings: 0,
   stakeCleared: 0,
   daily: null,
+  coworker: { wins: 0, losses: 0, draws: 0 },
 };
 
 function loadDaily(d: unknown): Daily | null {
@@ -98,6 +101,11 @@ export function loadRecord(): Record {
       bestMeetings: Number(r.bestMeetings) || 0,
       stakeCleared: Number(r.stakeCleared) || 0,
       daily: loadDaily(r.daily),
+      coworker: {
+        wins: Number(r.coworker?.wins) || 0,
+        losses: Number(r.coworker?.losses) || 0,
+        draws: Number(r.coworker?.draws) || 0,
+      },
     };
   } catch {
     return EMPTY_RECORD;
@@ -139,5 +147,18 @@ export function recordRun(r: Record, promoted: boolean, meetingsWon: number, sta
     promotions: r.promotions + (promoted ? 1 : 0),
     bestMeetings: Math.max(r.bestMeetings, meetingsWon),
     stakeCleared: promoted ? Math.max(r.stakeCleared, stake) : r.stakeCleared,
+  };
+}
+
+/** Fold one finished coworker year into the record (winner 0 = me). */
+export function recordCoworker(r: Record, winner: Player | null): Record {
+  const c = r.coworker;
+  return {
+    ...r,
+    coworker: {
+      wins: c.wins + (winner === 0 ? 1 : 0),
+      losses: c.losses + (winner === 1 ? 1 : 0),
+      draws: c.draws + (winner === null ? 1 : 0),
+    },
   };
 }

@@ -24,6 +24,13 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>QBR uses the local network to find a coworker's phone nearby, so you can play each other.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_qbr-cowork._tcp</string>
+		<string>_qbr-cowork._udp</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

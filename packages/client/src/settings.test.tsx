@@ -66,7 +66,7 @@ describe('Settings from Home', () => {
     expect(haptics.checked).toBe(true);
     fireEvent.click(sound);
     fireEvent.click(haptics);
-    expect(loadSettings()).toEqual({ sound: false, haptics: false });
+    expect(loadSettings()).toMatchObject({ sound: false, haptics: false });
     cleanup();
     render(<App seed={5} />);
     fireEvent.click(q('[data-settings]')!);

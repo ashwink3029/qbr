@@ -4,9 +4,11 @@
 export interface Settings {
   readonly sound: boolean;
   readonly haptics: boolean;
+  /** Shown to coworkers across the table ("Play your coworker"). */
+  readonly name: string;
 }
 
-export const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true };
+export const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true, name: '' };
 
 const KEY = 'qbr.settings.v1';
 
@@ -18,6 +20,7 @@ export function loadSettings(): Settings {
     return {
       sound: typeof s.sound === 'boolean' ? s.sound : DEFAULT_SETTINGS.sound,
       haptics: typeof s.haptics === 'boolean' ? s.haptics : DEFAULT_SETTINGS.haptics,
+      name: typeof s.name === 'string' ? s.name.slice(0, 24) : DEFAULT_SETTINGS.name,
     };
   } catch {
     return DEFAULT_SETTINGS;

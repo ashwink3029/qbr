@@ -23,12 +23,21 @@ record and unlocks at any time.
 ## What the app does not do
 
 - No account, sign-in, or registration.
-- No network requests of any kind: no servers, no analytics, no advertising, no crash
-  reporting, no tracking, no third-party SDKs.
+- No servers, no analytics, no advertising, no crash reporting, no tracking, no
+  third-party SDKs. The app never talks to the internet.
 - No access to your contacts, photos, location, camera, microphone or other apps.
 
 The **daily career** is the same for every player because it is computed from the date on
 your device — not downloaded from a server.
+
+## Play your coworker (nearby play)
+
+Only if you open **Play your coworker** and tap **Look for a coworker**, the app uses your
+phone's **local network** (Apple's MultipeerConnectivity — Wi-Fi / Bluetooth, device to
+device) to find a phone nearby running QBR. iOS asks your permission first. When you both
+agree to play, your phones exchange, **directly and only with each other**: the name you
+typed, your deck, and your moves. Nothing is sent to us or to any server, and nothing is
+kept after the match except your own win/loss record on your device.
 
 ## Children
 
@@ -36,9 +45,8 @@ QBR does not collect personal information from anyone, including children.
 
 ## Changes
 
-If a future version ever changes any of the above (for example, a nearby two-player mode),
-this policy will be updated before that version ships, and the App Store privacy details
-will be updated with it.
+If a future version ever changes any of the above, this policy will be updated before
+that version ships, and the App Store privacy details will be updated with it.
 
 ## Contact
 

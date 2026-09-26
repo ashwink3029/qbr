@@ -583,7 +583,35 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    `ALL=1` for all five). Caveat: no iOS status bar. **Needs the user:** a contact email in
    the policy, a public URL for it (e.g. GitHub Pages) and a Support URL, then entering the
    kit in App Store Connect; nothing was published or submitted.
-11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — IN PROGRESS.**
+11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — BUILT; awaiting the
+   two-iPhone test (user).** **Client + native half DONE (/explore iteration 16):** Home's
+   bottom row now reads **Settings · Play your coworker** (shown only in the iOS app —
+   `nearbySupported()`; App takes an injectable `nearby` link factory for tests).
+   `CoworkerView`: your name (saved in settings) -> **"Look for a coworker"** — discovery
+   and so iOS's local-network prompt start only on that tap (a change from Cubes, whose
+   background start risks a sticky, uncontextual denial) -> "A coworker is nearby / Play
+   them" / "Bo wants to play / Let's go · Not now" / "Waiting…" (the ported
+   `pairingReducer`) -> **`NetGame`**, which runs the lockstep `coworkerReducer` and
+   renders `Game` from this phone's chair (the guest gets `mirrorMatch`); `Game` gained
+   `initialMatch` + `remote {onLocalAction, incoming}` — no AI, the coworker's moves go
+   through the same apply path, so animation, sounds, results and stamps all work. Separate
+   `record.coworker` ("Coworkers NW · NL" on Home). Native: `MultipeerPlugin.swift`
+   (Cubes', service `qbr-cowork`), `QBRViewController.swift` (registers it through the
+   reflected bridge — Cubes' documented Capacitor 8 workaround; storyboard now uses it),
+   Info.plist `NSLocalNetworkUsageDescription` + `NSBonjourServices _qbr-cowork._tcp/_udp`,
+   both files added to `project.pbxproj`. Tests first: `remote.test.tsx` (2),
+   **`coworker.test.tsx` (3): two NetGames in one page over a loopback — each shows the
+   other's name across the table, a card placed on one lands mirrored on the other as the
+   opponent's, turns hand over, a disconnect is reported**; `coworkerFlow.test.tsx` (3):
+   the whole Home -> ask -> accept -> match flow with a scripted coworker running the real
+   protocol. **Verified:** Simulator build SUCCEEDED, app launches, Home shows the row, no
+   bridge-registration failure in the log. **Privacy docs updated** (nearby play sends name,
+   deck, moves only to the other phone — still Data Not Collected). **Not verified (needs
+   two physical iPhones — the Simulator cannot do Multipeer):** discovery, the invite
+   election, and a real match over the air. Test: install the TestFlight build on two
+   phones, open QBR on both, tap "Play your coworker" -> "Look for a coworker" on each.
+   v1 limits: plain years (no jokers/bosses — seat-bound), no rematch button, no reconnect.
+   Earlier engine notes (iteration 15) follow.
    **Engine half DONE (/explore iteration 15):** `shared/src/qbr/mirror.ts` —
    `mirrorMatch` / `mirrorAction` show seat 1 the match from its own chair (seats swap,
    board flips left-right), so the guest can use every seat-0 screen unchanged. Proven

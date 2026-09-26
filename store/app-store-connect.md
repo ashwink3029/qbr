@@ -14,8 +14,13 @@ local-only keys (`qbr.record.v1`, `qbr.settings.v1`, `qbr.tips.v1`, `qbr.bench.v
 - **Tracking:** none (no ATT prompt needed).
 - **Privacy Policy URL:** required. Host `store/privacy-policy.md` somewhere public (e.g.
   GitHub Pages on the repo) and paste the URL. _Needs: a contact email in the policy._
-- Re-check this section before shipping multiplayer (backlog 11): Multipeer uses the local
-  network (Info.plist `NSLocalNetworkUsageDescription`) but still sends nothing off-device.
+- **Play your coworker (iteration 16) — re-checked:** nearby play uses MultipeerConnectivity
+  (Info.plist `NSLocalNetworkUsageDescription`, `NSBonjourServices` `_qbr-cowork._tcp/_udp`)
+  and sends the typed name, deck and moves **only to the other nearby phone** — never to the
+  developer or a server. Apple defines "collect" as transmitting data off the device in a
+  way that lets the developer or partners access it, so this remains **Data Not
+  Collected**; the privacy policy now says so explicitly. Discovery starts only after the
+  player taps "Look for a coworker", so the permission prompt has context.
 
 ## Accessibility (App Store Accessibility Nutrition Labels, 2025)
 

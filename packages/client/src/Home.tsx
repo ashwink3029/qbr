@@ -18,6 +18,8 @@ export interface HomeProps {
   readonly onResume: () => void;
   readonly onDeck: () => void;
   readonly onSettings: () => void;
+  /** "Play your coworker" — only where nearby play exists (the iOS app). */
+  readonly onCoworker?: () => void;
   /** Career difficulty (see STAKES): the chosen stake, the highest open one. */
   readonly stake?: number;
   readonly maxStake?: number;
@@ -40,6 +42,7 @@ export function Home({
   onResume,
   onDeck,
   onSettings,
+  onCoworker,
   stake = 1,
   maxStake = 1,
   onStake,
@@ -183,9 +186,22 @@ export function Home({
               </>
             )}
           </div>
-          <button className="link-btn" data-settings onClick={onSettings}>
-            Settings
-          </button>
+          {record.coworker.wins + record.coworker.losses + record.coworker.draws > 0 && (
+            <span className="record" data-coworker-record>
+              Coworkers <b>{record.coworker.wins}</b>W · <b>{record.coworker.losses}</b>L
+              {record.coworker.draws ? ` · ${record.coworker.draws}D` : ''}
+            </span>
+          )}
+          <div className="home-links">
+            <button className="link-btn" data-settings onClick={onSettings}>
+              Settings
+            </button>
+            {onCoworker && (
+              <button className="link-btn" data-coworker onClick={onCoworker}>
+                Play your coworker
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

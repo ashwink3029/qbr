@@ -589,6 +589,12 @@
 .stake-text small { color: #555; font-size: 11px; }
 
 /* ── Settings ─────────────────────────────────────────────────────────── */
+/* Settings and "Play your coworker" share one row: Home has no height to spare on an SE. */
+.home-links { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
+.coworker-name { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; }
+.coworker-name input {
+  font: inherit; font-weight: 400; font-size: 16px; padding: 8px; border: 2px inset #ddd; background: #fff;
+}
 .link-btn {
   align-self: center;
   min-height: 44px;
