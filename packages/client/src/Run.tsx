@@ -33,6 +33,8 @@ export interface RunProps {
   readonly seed: number;
   /** Career stake (1 = Standard); see STAKES. */
   readonly stake?: number;
+  /** Today's daily career (a shared seed): named in the org chart title. */
+  readonly daily?: boolean;
   /** Your deck for this whole career (fixed at the start). */
   readonly deck?: readonly string[];
   /** Your progress before this career — to announce what it unlocks. */
@@ -69,7 +71,7 @@ export function careerEndProgress(progress: Progress, run: RunState): Progress {
  * first meeting and after every win, and it is the career-end screen too. Each
  * meeting's Game is keyed by rung so it starts clean.
  */
-export function Run({ seed, stake = 1, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
+export function Run({ seed, stake = 1, daily = false, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
   // A brand-new player's first career skips the closet and starts with a Coffee Mug.
   const [run, setRun] = useState<RunState>(() => newRun(seed, stake, { firstCareer: progress.careers === 0 }));
 
@@ -140,6 +142,7 @@ export function Run({ seed, stake = 1, deck, progress = { bestRung: 0, careers: 
           <div className="titlebar">
             <span>
               Org chart — {yourTitle(run.meeting)}
+              {daily ? ' · Daily' : ''}
               {run.stake > 1 ? ` · ${STAKES[run.stake - 1]!.name}` : ''}
             </span>
             <CloseButton onExit={onExit} />

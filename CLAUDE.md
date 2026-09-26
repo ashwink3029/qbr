@@ -486,6 +486,33 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    iteration 7: the career-end unlock announcement ignored `stakeCleared`, so Team
    Building / PIP would unlock silently (`careerEndProgress`, tested). Verified at
    375x667 and 402x874: chart fits with no scroll.
+10h. ~~Daily career~~ **DONE (/explore iteration 10, 2026-09-26; gap-analysis P2,
+   variety).** Home -> **Daily career** (after the first career): one shared seed per
+   calendar day (`shared/src/qbr/daily.ts` `dailySeed(dayKey(new Date()))`), so everyone
+   gets the same VP boss, closet offers and deals; **starter deck** (comparable, unlocks
+   set aside) at **Budget freeze** (`DAILY_STAKE = 2`); **one attempt a day** — it counts
+   the moment it starts (walking out forfeits it), and a **streak** counts consecutive
+   days (`record.daily`, `recordDailyStart` / `recordDailyEnd` / `liveStreak`). Home shows
+   "Daily career · streak N", then "Today's career: beat the Manager · streak N" /
+   "promoted!" / "walked out"; while it is the session in progress, Resume reads "Resume
+   today's career" instead (a status line there overflowed an iPhone SE by 38px). A daily
+   still counts as a career (record, unlocks, stake clear). **Pre-registered bars
+   (`sim/src/dailybars.ts`, 365 dates x 20 draft orderings), first run on raw date
+   hashes at Standard: D1 16.4% PASS, D2 31.2% FAIL, D3 72 FAIL.** D2 was a real
+   finding: on 69% of dates every draft lost — **the deals decide a career more than the
+   drafts do** (still only 63.6% winnable when play varies too). Fix, bars unchanged:
+   **vetted seeds** — `sim/src/dailyvet.ts` takes, per day, the first candidate
+   `hash(date#k)` a smart-lookahead player promotes with >= 1 draft ordering; `DAILY_K`
+   ships the k's as 1,096 base-36 digits (2026-10-01..2029-09-30, ~5 min to regenerate;
+   later days fall back to the raw hash — **extend the table before 2029-09**). Vetting
+   made days too easy at Standard (D1 46.7%), hence Budget freeze (33.3%; Restructuring
+   23.3%). **Final: D1 37.0% PASS, D2 100% PASS (by construction — the vetting uses D2's
+   criterion; the independent varied-play diagnostic rose 63.6% -> 91.2%), D3 71 FAIL.**
+   D3 was mis-designed and stays a recorded FAIL: 4 jokers x 3 bosses allow at most 72
+   (boss, offer) setups, so ">= 300" was impossible — days differ through their deals.
+   Tests first (`daily.test.tsx` 6, run tests 2). Verified at 375x667 / 402x874: Home
+   fits in the worst case (picker + Resume). **Not built:** a shared leaderboard (needs a
+   server — off-thesis), sharing a result card.
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
@@ -543,7 +570,7 @@ Priorities drive the next /explore iterations — work top-down.
   on-play buffs/debuffs and destroy triggers. QBR cards are vanilla (shape + value). Needs a
   small ability system in `shared` + sim bars before content.
 - P2 **Deck building**: choose which specials go in (today unlocks auto-apply).
-- P2 **Daily seeded career** (same seed for everyone — native to the deterministic sim).
+- ~~P2 **Daily seeded career**~~ DONE iteration 10 (10h): vetted daily seeds, Budget freeze, streaks.
 - P2 More jokers/bosses (4 + 4 today vs Balatro's 150 jokers); the filed ones below.
 
 **Polish / App Store**

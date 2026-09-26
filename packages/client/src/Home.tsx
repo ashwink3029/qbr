@@ -1,7 +1,7 @@
-import { STAKES } from '@qbr/shared';
+import { MEETINGS, STAKES } from '@qbr/shared';
 import { yourTitle } from './OrgChart.js';
 import { BinderClip } from './Mascot.js';
-import type { Record } from './record.js';
+import { liveStreak, type Record } from './record.js';
 import { homeLine } from './tips.js';
 
 export interface HomeProps {
@@ -10,6 +10,11 @@ export interface HomeProps {
   readonly inProgress: 'run' | 'quick' | null;
   readonly onStartRun: () => void;
   readonly onStartQuick: () => void;
+  /** Today (`YYYY-MM-DD`) and starting today's daily career. */
+  readonly today?: string;
+  readonly onDaily?: () => void;
+  /** Today's daily is the session in progress (resumable), not abandoned. */
+  readonly dailyLive?: boolean;
   readonly onResume: () => void;
   readonly onDeck: () => void;
   readonly onSettings: () => void;
@@ -29,6 +34,9 @@ export function Home({
   inProgress,
   onStartRun,
   onStartQuick,
+  today,
+  onDaily,
+  dailyLive = false,
   onResume,
   onDeck,
   onSettings,
@@ -46,6 +54,20 @@ export function Home({
           ? 'Last year: flat'
           : null;
   const furthest = record.runs > 0 ? yourTitle(record.bestMeetings) : null;
+  // The daily opens after the first career (the first one teaches the ladder).
+  const showDaily = record.runs > 0 && today !== undefined && onDaily !== undefined;
+  const todays = record.daily && record.daily.day === today ? record.daily : null;
+  const streak = today ? liveStreak(record, today) : 0;
+  const dailyResult = (beaten: number | null, promoted: boolean): string =>
+    beaten === null
+      ? dailyLive
+        ? 'in progress'
+        : 'walked out'
+      : promoted
+        ? 'promoted!'
+        : beaten === 0
+          ? 'lost to the Intern'
+          : `beat ${MEETINGS[beaten - 1]!.role.replace(/^The /, 'the ')}`;
 
   return (
     <div className="app home" data-home>
@@ -76,7 +98,7 @@ export function Home({
 
           {inProgress && (
             <button className="btn primary" data-resume onClick={onResume}>
-              {inProgress === 'run' ? 'Resume career' : 'Resume year'}
+              {inProgress === 'run' ? (dailyLive ? 'Resume today’s career' : 'Resume career') : 'Resume year'}
             </button>
           )}
           {maxStake > 1 && (
@@ -110,6 +132,20 @@ export function Home({
           <button className={`btn ${inProgress ? '' : 'primary'}`} data-start-run onClick={onStartRun}>
             {inProgress === 'run' ? 'Start a new career' : 'Start career'}
           </button>
+          {showDaily &&
+            !dailyLive &&
+            // With something to resume, today's status waits (an iPhone SE has no row to spare).
+            !(todays && inProgress) &&
+            (todays ? (
+              <p className="daily-status" data-daily-status>
+                Today’s career: {dailyResult(todays.beaten, todays.promoted)}
+                {todays.beaten !== null ? ` · streak ${todays.streak}` : ''}
+              </p>
+            ) : (
+              <button className="btn" data-daily onClick={onDaily}>
+                Daily career{streak > 0 ? ` · streak ${streak}` : ''}
+              </button>
+            ))}
           <button className="btn" data-start onClick={onStartQuick}>
             Play one year
           </button>

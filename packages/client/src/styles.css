@@ -569,6 +569,12 @@
 }
 
 /* ── Stake picker (Home, after the first promotion) ───────────────────── */
+/* Today's daily career, once attempted: a one-line status in place of its button. */
+.daily-status {
+  margin: 0; padding: 7px 8px; font-size: 13px; text-align: center;
+  background: #fff8c4; border: 1px solid #d8c56a;
+}
+
 .stake-picker {
   display: flex;
   align-items: stretch;

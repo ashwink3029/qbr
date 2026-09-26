@@ -5,3 +5,4 @@ export * from './qbr/policies.js';
 export * from './qbr/match.js';
 export * from './qbr/mods.js';
 export * from './qbr/run.js';
+export * from './qbr/daily.js';

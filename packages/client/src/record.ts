@@ -17,6 +17,18 @@ export interface Record {
   readonly bestMeetings: number;
   /** Highest career stake promoted at (0 = none). Stake N+1 is open to play. */
   readonly stakeCleared: number;
+  /** The last daily career attempted (one a day), or null. */
+  readonly daily: Daily | null;
+}
+
+export interface Daily {
+  /** `YYYY-MM-DD`, local. */
+  readonly day: string;
+  /** Rungs beaten (5 = promoted); null while that day's career is in progress. */
+  readonly beaten: number | null;
+  readonly promoted: boolean;
+  /** Consecutive days with a daily attempted, ending at `day`. */
+  readonly streak: number;
 }
 
 export const EMPTY_RECORD: Record = {
@@ -29,7 +41,44 @@ export const EMPTY_RECORD: Record = {
   promotions: 0,
   bestMeetings: 0,
   stakeCleared: 0,
+  daily: null,
 };
+
+function loadDaily(d: unknown): Daily | null {
+  if (!d || typeof d !== 'object') return null;
+  const x = d as Partial<Daily>;
+  if (typeof x.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(x.day)) return null;
+  return {
+    day: x.day,
+    beaten: x.beaten === null || x.beaten === undefined ? null : Number(x.beaten) || 0,
+    promoted: x.promoted === true,
+    streak: Math.max(1, Number(x.streak) || 1),
+  };
+}
+
+/** The calendar day after `day` (both `YYYY-MM-DD`). */
+export function nextDay(day: string): string {
+  const [y, m, d] = day.split('-').map(Number) as [number, number, number];
+  const t = new Date(Date.UTC(y, m - 1, d + 1));
+  return t.toISOString().slice(0, 10);
+}
+
+/** Today's daily is starting: it counts as attempted from this moment. */
+export function recordDailyStart(r: Record, day: string): Record {
+  const streak = r.daily && nextDay(r.daily.day) === day ? r.daily.streak + 1 : r.daily?.day === day ? r.daily.streak : 1;
+  return { ...r, daily: { day, beaten: null, promoted: false, streak } };
+}
+
+/** Today's daily finished (also folded into the career record by recordRun). */
+export function recordDailyEnd(r: Record, day: string, beaten: number, promoted: boolean): Record {
+  return { ...r, daily: { day, beaten, promoted, streak: r.daily?.day === day ? r.daily.streak : 1 } };
+}
+
+/** The streak still alive on `today` (attempted today or yesterday), else 0. */
+export function liveStreak(r: Record, today: string): number {
+  if (!r.daily) return 0;
+  return r.daily.day === today || nextDay(r.daily.day) === today ? r.daily.streak : 0;
+}
 
 const KEY = 'qbr.record.v1';
 
@@ -48,6 +97,7 @@ export function loadRecord(): Record {
       promotions: Number(r.promotions) || 0,
       bestMeetings: Number(r.bestMeetings) || 0,
       stakeCleared: Number(r.stakeCleared) || 0,
+      daily: loadDaily(r.daily),
     };
   } catch {
     return EMPTY_RECORD;

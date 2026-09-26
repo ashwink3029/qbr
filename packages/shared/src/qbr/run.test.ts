@@ -7,6 +7,8 @@ import {
   STARTER_JOKER,
   bossFor,
   currentMeeting,
+
+
   finishMeeting,
   leaveChart,
   meetingMods,
@@ -15,6 +17,7 @@ import {
   skipDraft,
   type RunState,
 } from './run.js';
+import { DAILY_FROM, DAILY_K, dailyCandidate, dailySeed, dayKey } from './daily.js';
 
 /** Chart -> draft (pick the first offer, if any) -> meeting. */
 function toMeeting(r: RunState): RunState {
@@ -22,6 +25,31 @@ function toMeeting(r: RunState): RunState {
   if (s.status === 'draft') s = pickJoker(s, s.offer[0]!);
   return s;
 }
+
+describe('daily career', () => {
+  it('one seed per calendar day: the same for everyone, different day to day', () => {
+    expect(dailySeed('2026-09-26')).toBe(dailySeed('2026-09-26'));
+    expect(dailySeed('2026-09-26')).not.toBe(dailySeed('2026-09-27'));
+    expect(Number.isInteger(dailySeed('2026-09-26'))).toBe(true);
+    expect(dailySeed('2026-09-26')).toBeGreaterThanOrEqual(0);
+    expect(() => dailySeed('26/09/2026')).toThrow();
+  });
+
+  it('uses the vetted candidate for days in the table, the plain hash outside it', () => {
+    expect(DAILY_K).toMatch(/^[0-9a-z]{1096}$/); // one vetted base-36 k per day, three years
+    const first = DAILY_K[0]!;
+    expect(dailySeed(DAILY_FROM)).toBe(dailyCandidate(DAILY_FROM, parseInt(first, 36)));
+    const i = DAILY_K.search(/[1-9a-z]/); // a day whose plain hash was rejected
+    const day = dayKey(new Date(2026, 9, 1 + i));
+    expect(dailySeed(day)).toBe(dailyCandidate(day, parseInt(DAILY_K[i]!, 36)));
+    expect(dailySeed(day)).not.toBe(dailyCandidate(day, 0));
+    expect(dailySeed('2020-01-01')).toBe(dailyCandidate('2020-01-01', 0)); // before the table
+  });
+
+  it('dayKey is the local calendar date, zero-padded', () => {
+    expect(dayKey(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05');
+  });
+});
 
 describe('career ladder', () => {
   it('climbs Intern -> Manager -> Finance -> VP -> CEO', () => {
