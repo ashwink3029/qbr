@@ -365,6 +365,46 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
+## Goal gap analysis (/explore iteration 2, research, 2026-09-26)
+User goal (set 2026-09-26): **a polished game that is complete, accessible to new users,
+gives variety for tenured users, and would be competitive in the iOS App Store.** Sourced
+research (onboarding/retention guides from Playio, Hubapps, Segwise; Marvel Snap's bot-led
+new-player journey; Balatro reviews on unlocks + stakes; Queen's Blood deck/ability guides;
+Apple's 2025 App Store Accessibility Nutrition Labels) mapped onto what QBR has today.
+Priorities drive the next /explore iterations — work top-down.
+
+**New users (accessibility)**
+- P1 **Differentiate without colour alone + VoiceOver labels.** Ownership, claims and flips
+  are shown ONLY as red vs blue; board cells have no accessible names. Both are listed App
+  Store accessibility labels. Add a non-colour ownership cue (e.g. corner marker / pattern)
+  and `aria-label`s for cells, cards and buttons.
+- P1 **Settings: sound on/off, haptics on/off, reset progress.** Table stakes; none exists.
+- P1 **Guided first quarter (interactive FTUE).** Guides say: core play inside ~60s, the
+  "aha" inside ~90s, teach by doing not reading, a reward in session one. QBR today: Home ->
+  org chart -> supply closet -> first meeting = 3 screens before the first card, and the
+  scoring rule (a lane's leader banks its total), lives and closing out are only learned by
+  losing. Proposal: the very first career skips the closet and runs a scripted Onboarding
+  sync vs the Intern with Bindy stepping through place -> spread -> win a lane -> close out.
+  The Intern's 82% beat rate already plays Marvel Snap's "keep new players winning" role.
+- Have: tips (Bindy), grey-card explanations, reduced motion, first-career reward (Coffee
+  Run on beating the Intern).
+
+**Tenured users (variety)**
+- P1 **Stakes after promotion** (Balatro's post-win difficulty tiers): each promotion
+  unlocks a harder "fiscal year" of the same ladder, using the measured seniority levers
+  (`oppEdge`, `oppHomeBoost`, boss draws). Cheap, and gives a goal after the CEO.
+- P1 **Card abilities** — the biggest depth gap vs Queen's Blood, whose decks are built on
+  on-play buffs/debuffs and destroy triggers. QBR cards are vanilla (shape + value). Needs a
+  small ability system in `shared` + sim bars before content.
+- P2 **Deck building**: choose which specials go in (today unlocks auto-apply).
+- P2 **Daily seeded career** (same seed for everyone — native to the deterministic sim).
+- P2 More jokers/bosses (4 + 4 today vs Balatro's 150 jokers); the filed ones below.
+
+**Polish / App Store**
+- P2 Sound + small animations for flips, row wins, quarter results, promotion, unlocks.
+- P3 (user-side) commissioned art to replace placeholder-in-code art, App Store screenshots,
+  privacy policy / product page; real-device verification via TestFlight.
+
 ## Next up (not yet built)
 - Balatro depth: helpers (keycap consumables Ctrl+C/V/X/Z, sticky notes), more
   jokers (Paste Special = paste over your own card, Pivot Table, Newton's
