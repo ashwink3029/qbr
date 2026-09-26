@@ -402,6 +402,29 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Remaining for the full guided-first-quarter item: whether the first career should
    skip the supply closet (3 screens before the first card today) — needs a real
    first-time player on TestFlight to judge, not a guess.
+10d. ~~Career stakes~~ **DONE (/explore iteration 6, 2026-09-26; gap-analysis P1,
+   variety).** Balatro-style post-win tiers: promoting at stake N opens N+1
+   (`record.stakeCleared`, never decreases). `run.ts` `STAKES`, applied to EVERY rung on
+   top of the rung's own levers via `meetingMods`:
+   | stake | name | opponents' extra cards / qtr | opponents' $$ home cells |
+   |---|---|---|---|
+   | 1 | Standard | 0 | 0 |
+   | 2 | Budget freeze | +1 | 0 |
+   | 3 | Restructuring | +1 | 1 |
+   | 4 | Hostile board | +2 | 2 |
+   Home shows a ◀ Stake N: name ▶ picker (with the stake's one-line rule) only after
+   the first promotion; the org chart title names the stake. **Pre-registered bars
+   (`sim/src/stakebars.ts`), 2000 careers each: 3/3** — S1 each stake >= 2pp harder
+   (random-draft promotion 14.0% > 9.0% > 5.7% > 3.4%), S2 top stake winnable (3.4% >=
+   2%), S3 Standard untouched (exactly 14.0%). **Honest history:** first design had 5
+   stakes including "Hiring freeze" (the PLAYER draws 1 fewer card a quarter) — it
+   collapsed promotion from 9.0% to **0.5%** (the fixed hand is QBR's binding
+   constraint, again), making stakes 3-5 unwinnable. Replaced with opponent-only
+   levers; then "Headcount review" (+2 cards, 1 cell) measured 5.3% ≈ Restructuring's
+   5.7% (card-edge saturation, again) and was cut: with >= 2pp steps from 14% and a >=
+   2% top, the ladder only fits 4 tiers. Also fixed: Home overflowed an iPhone SE by
+   37px with Resume + picker; the logo shrinks to 56px under 760px height (verified:
+   no scroll, Settings on screen). Tests first (`stakes.test.tsx`, run stake test).
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   CARDS,
   SPECIALS,
+  STAKES,
   newlyUnlocked,
   type Progress,
   JOKERS,
@@ -29,6 +30,8 @@ export interface RunResult {
 
 export interface RunProps {
   readonly seed: number;
+  /** Career stake (1 = Standard); see STAKES. */
+  readonly stake?: number;
   /** Your deck for this whole career (fixed at the start). */
   readonly deck?: readonly string[];
   /** Your progress before this career — to announce what it unlocks. */
@@ -54,8 +57,8 @@ function CloseButton({ onExit }: { onExit: () => void }) {
  * first meeting and after every win, and it is the career-end screen too. Each
  * meeting's Game is keyed by rung so it starts clean.
  */
-export function Run({ seed, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
-  const [run, setRun] = useState<RunState>(() => newRun(seed));
+export function Run({ seed, stake = 1, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
+  const [run, setRun] = useState<RunState>(() => newRun(seed, stake));
 
   const meetingOver = (winner: Player | null) => setRun((r) => finishMeeting(r, winner === 0));
 
@@ -117,7 +120,10 @@ export function Run({ seed, deck, progress = { bestRung: 0, careers: 0 }, paused
       <div className="app home" data-chart>
         <div className="window start-window chart-window">
           <div className="titlebar">
-            <span>Org chart — {yourTitle(run.meeting)}</span>
+            <span>
+              Org chart — {yourTitle(run.meeting)}
+              {run.stake > 1 ? ` · ${STAKES[run.stake - 1]!.name}` : ''}
+            </span>
             <CloseButton onExit={onExit} />
           </div>
           <div className="start-body">

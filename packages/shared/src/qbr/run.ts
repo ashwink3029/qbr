@@ -59,6 +59,26 @@ export const DRAWABLE_BOSSES: readonly string[] = Object.keys(BOSSES).filter(
   (b) => !MEETINGS.some((m) => m.boss === b),
 );
 
+/**
+ * Career stakes (Balatro's post-win difficulty tiers): promoting at stake N
+ * unlocks N+1. Each stake is a set of seniority levers applied to EVERY rung on
+ * top of the rung's own, cumulative by construction. Measured in
+ * sim/src/stakebars.ts against pre-registered bars before shipping.
+ */
+export interface Stake {
+  readonly name: string;
+  readonly blurb: string;
+  readonly oppEdge: number;
+  readonly oppHomeBoost: number;
+}
+
+export const STAKES: readonly Stake[] = [
+  { name: 'Standard', blurb: 'The org chart as it is.', oppEdge: 0, oppHomeBoost: 0 },
+  { name: 'Budget freeze', blurb: 'Every opponent draws +1 card a quarter.', oppEdge: 1, oppHomeBoost: 0 },
+  { name: 'Restructuring', blurb: 'Opponents draw +1 card a quarter and start with a $$ home cell.', oppEdge: 1, oppHomeBoost: 1 },
+  { name: 'Hostile board', blurb: 'Opponents draw +2 cards a quarter and start with two $$ home cells.', oppEdge: 2, oppHomeBoost: 2 },
+];
+
 export const OFFER_SIZE = 3;
 
 /** 'chart' = on the org chart before the next meeting; 'draft' = in the supply
@@ -67,6 +87,8 @@ export type RunStatus = 'chart' | 'draft' | 'meeting' | 'won' | 'lost';
 
 export interface RunState {
   readonly seed: number;
+  /** 1-based index into STAKES. */
+  readonly stake: number;
   /** Index into MEETINGS of the current (or next) rung. */
   readonly meeting: number;
   readonly jokers: readonly string[];
@@ -84,13 +106,14 @@ function draft(rng: RngState, owned: readonly string[]): [RngState, string[]] {
   return [next, order.slice(0, OFFER_SIZE)];
 }
 
-export function newRun(seed: number): RunState {
+export function newRun(seed: number, stake = 1): RunState {
+  if (stake < 1 || stake > STAKES.length) throw new Error(`no stake ${stake}`);
   let rng: RngState = (seed ^ 0x9e3779b9) >>> 0;
   let b: number;
   [rng, b] = nextInt(rng, DRAWABLE_BOSSES.length);
   let offer: string[];
   [rng, offer] = draft(rng, []);
-  return { seed, meeting: 0, jokers: [], boss: DRAWABLE_BOSSES[b]!, offer, status: 'chart', rngState: rng };
+  return { seed, stake, meeting: 0, jokers: [], boss: DRAWABLE_BOSSES[b]!, offer, status: 'chart', rngState: rng };
 }
 
 /** Leave the org chart: to the supply closet, or straight to the meeting when
@@ -131,7 +154,13 @@ export function bossFor(run: RunState, rung: number): string | null {
 
 export function meetingMods(run: RunState): Mods {
   const m = currentMeeting(run);
-  return { jokers: run.jokers, boss: bossFor(run, run.meeting), oppEdge: m.edge, oppHomeBoost: m.homeBoost };
+  const s = STAKES[run.stake - 1]!;
+  return {
+    jokers: run.jokers,
+    boss: bossFor(run, run.meeting),
+    oppEdge: m.edge + s.oppEdge,
+    oppHomeBoost: Math.min(3, m.homeBoost + s.oppHomeBoost),
+  };
 }
 
 /** A distinct, reproducible deal for each meeting of a career. */

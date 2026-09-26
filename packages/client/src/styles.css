@@ -536,6 +536,20 @@
   .chart-window .logo { display: none; }
 }
 
+/* ── Stake picker (Home, after the first promotion) ───────────────────── */
+.stake-picker {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid;
+  border-color: var(--lo) var(--hi) var(--hi) var(--lo);
+}
+.stake-arrow { min-width: 44px; padding: 0; }
+.stake-text { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; text-align: center; line-height: 1.25; }
+.stake-text small { color: #555; font-size: 11px; }
+
 /* ── Settings ─────────────────────────────────────────────────────────── */
 .link-btn {
   align-self: center;
@@ -642,9 +656,13 @@
   .clipper.talk, .tip { animation: none; }
 }
 .home-clip { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.3; color: #333; }
-/* The desktop icons are decoration; on short phones the start window needs the room. */
+/* The desktop icons are decoration; on short phones the start window needs the room.
+   The logo shrinks too: with Resume + the stake picker showing, Home overflowed an
+   iPhone SE by 37px and pushed Settings below the fold. */
 @media (max-height: 760px) {
   .desktop-icons { display: none; }
+  .start-window .logo { width: 56px; height: 56px; background-size: 14px 14px; }
+  .start-window .logo span { font-size: 18px; }
 }
 
 /* Safety net: if a screen is ever too short for the window, it scrolls instead

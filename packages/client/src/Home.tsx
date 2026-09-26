@@ -1,3 +1,4 @@
+import { STAKES } from '@qbr/shared';
 import { yourTitle } from './OrgChart.js';
 import { BinderClip } from './Mascot.js';
 import type { Record } from './record.js';
@@ -12,6 +13,10 @@ export interface HomeProps {
   readonly onResume: () => void;
   readonly onDeck: () => void;
   readonly onSettings: () => void;
+  /** Career difficulty (see STAKES): the chosen stake, the highest open one. */
+  readonly stake?: number;
+  readonly maxStake?: number;
+  readonly onStake?: (s: number) => void;
 }
 
 /**
@@ -19,7 +24,18 @@ export interface HomeProps {
  * same 90s-office frame as the game, so leaving a career feels like closing a
  * spreadsheet, not changing apps.
  */
-export function Home({ record, inProgress, onStartRun, onStartQuick, onResume, onDeck, onSettings }: HomeProps) {
+export function Home({
+  record,
+  inProgress,
+  onStartRun,
+  onStartQuick,
+  onResume,
+  onDeck,
+  onSettings,
+  stake = 1,
+  maxStake = 1,
+  onStake,
+}: HomeProps) {
   const years = record.wins + record.losses + record.draws;
   const last =
     record.lastOutcome === 'win'
@@ -62,6 +78,34 @@ export function Home({ record, inProgress, onStartRun, onStartQuick, onResume, o
             <button className="btn primary" data-resume onClick={onResume}>
               {inProgress === 'run' ? 'Resume career' : 'Resume year'}
             </button>
+          )}
+          {maxStake > 1 && (
+            <div className="stake-picker" data-stake-picker>
+              <button
+                className="btn stake-arrow"
+                data-stake-prev
+                aria-label="Easier stake"
+                disabled={stake <= 1}
+                onClick={() => onStake?.(stake - 1)}
+              >
+                ◀
+              </button>
+              <span className="stake-text">
+                <b>
+                  Stake {stake}: {STAKES[stake - 1]!.name}
+                </b>
+                <small>{STAKES[stake - 1]!.blurb}</small>
+              </span>
+              <button
+                className="btn stake-arrow"
+                data-stake-next
+                aria-label="Harder stake"
+                disabled={stake >= maxStake}
+                onClick={() => onStake?.(stake + 1)}
+              >
+                ▶
+              </button>
+            </div>
           )}
           <button className={`btn ${inProgress ? '' : 'primary'}`} data-start-run onClick={onStartRun}>
             {inProgress === 'run' ? 'Start a new career' : 'Start career'}

@@ -15,6 +15,8 @@ export interface Record {
   readonly promotions: number;
   /** Most meetings won in a single run (3 = promoted). */
   readonly bestMeetings: number;
+  /** Highest career stake promoted at (0 = none). Stake N+1 is open to play. */
+  readonly stakeCleared: number;
 }
 
 export const EMPTY_RECORD: Record = {
@@ -26,6 +28,7 @@ export const EMPTY_RECORD: Record = {
   runs: 0,
   promotions: 0,
   bestMeetings: 0,
+  stakeCleared: 0,
 };
 
 const KEY = 'qbr.record.v1';
@@ -44,6 +47,7 @@ export function loadRecord(): Record {
       runs: Number(r.runs) || 0,
       promotions: Number(r.promotions) || 0,
       bestMeetings: Number(r.bestMeetings) || 0,
+      stakeCleared: Number(r.stakeCleared) || 0,
     };
   } catch {
     return EMPTY_RECORD;
@@ -78,11 +82,12 @@ export function progressOf(r: Record): Progress {
 }
 
 /** Fold one finished run into the record. */
-export function recordRun(r: Record, promoted: boolean, meetingsWon: number): Record {
+export function recordRun(r: Record, promoted: boolean, meetingsWon: number, stake = 1): Record {
   return {
     ...r,
     runs: r.runs + 1,
     promotions: r.promotions + (promoted ? 1 : 0),
     bestMeetings: Math.max(r.bestMeetings, meetingsWon),
+    stakeCleared: promoted ? Math.max(r.stakeCleared, stake) : r.stakeCleared,
   };
 }

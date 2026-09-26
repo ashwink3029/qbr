@@ -3,6 +3,7 @@ import { BOSSES, JOKERS } from './mods.js';
 import {
   DRAWABLE_BOSSES,
   MEETINGS,
+  STAKES,
   bossFor,
   currentMeeting,
   finishMeeting,
@@ -83,6 +84,17 @@ describe('career ladder', () => {
     const notOffered = Object.keys(JOKERS).find((j) => !d.offer.includes(j))!;
     expect(() => pickJoker(d, notOffered)).toThrow();
     expect(skipDraft(d).status).toBe('meeting');
+  });
+
+  it('a stake adds its seniority levers to every rung, on top of the rung’s own', () => {
+    for (const [i, s] of STAKES.entries()) {
+      const r = leaveChart(newRun(5, i + 1));
+      const m = meetingMods(r.status === 'draft' ? pickJoker(r, r.offer[0]!) : r);
+      expect(m.oppEdge).toBe(MEETINGS[0]!.edge + s.oppEdge);
+      expect(m.oppHomeBoost).toBe(Math.min(3, MEETINGS[0]!.homeBoost + s.oppHomeBoost));
+    }
+    expect(newRun(5).stake).toBe(1);
+    expect(() => newRun(5, STAKES.length + 1)).toThrow();
   });
 
   it('is deterministic per seed and draws every drawable boss across seeds', () => {

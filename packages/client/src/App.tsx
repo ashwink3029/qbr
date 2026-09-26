@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { playerDeck, type Player, type QuarterResult } from '@qbr/shared';
+import { STAKES, playerDeck, type Player, type QuarterResult } from '@qbr/shared';
 import { DeckView } from './DeckView.js';
 import { Game } from './Game.js';
 import { Home } from './Home.js';
@@ -17,6 +17,8 @@ interface Session {
   readonly kind: 'run' | 'quick';
   readonly id: number;
   readonly deck: readonly string[];
+  /** A career's stake (1 = Standard); fixed when it starts. */
+  readonly stake: number;
 }
 
 function freshSeed(): number {
@@ -46,8 +48,18 @@ export function App({ seed }: { seed?: number } = {}) {
     setFeedbackPrefs(s);
   };
 
+  // Stakes open to play: everything up to one past the highest promotion.
+  const maxStake = Math.min(STAKES.length, record.stakeCleared + 1);
+  const [stake, setStake] = useState(1);
+  const chosenStake = Math.min(stake, maxStake);
+
   const start = (kind: Session['kind']) => {
-    setSession((s) => ({ kind, id: (s?.id ?? 0) + 1, deck: playerDeck(progressOf(record)) }));
+    setSession((s) => ({
+      kind,
+      id: (s?.id ?? 0) + 1,
+      deck: playerDeck(progressOf(record)),
+      stake: kind === 'run' ? chosenStake : 1,
+    }));
     setScreen('play');
   };
 
@@ -60,7 +72,7 @@ export function App({ seed }: { seed?: number } = {}) {
 
   const yearEnded = (winner: Player | null, results: readonly QuarterResult[]) =>
     finish(recordYear(record, winner, results));
-  const runEnded = (r: RunResult) => finish(recordRun(record, r.promoted, r.meetingsWon));
+  const runEnded = (r: RunResult) => finish(recordRun(record, r.promoted, r.meetingsWon, session?.stake ?? 1));
 
   const sessionSeed = (id: number) => (seed !== undefined ? seed + id - 1 : freshSeed());
 
@@ -75,6 +87,9 @@ export function App({ seed }: { seed?: number } = {}) {
           onResume={() => setScreen('play')}
           onDeck={() => setScreen('deck')}
           onSettings={() => setScreen('settings')}
+          stake={chosenStake}
+          maxStake={maxStake}
+          onStake={setStake}
         />
       )}
       {screen === 'deck' && <DeckView progress={progressOf(record)} onClose={() => setScreen('home')} />}
@@ -97,6 +112,7 @@ export function App({ seed }: { seed?: number } = {}) {
               key={session.id}
               seed={sessionSeed(session.id)}
               deck={session.deck}
+              stake={session.stake}
               progress={progressOf(record)}
               paused={screen !== 'play'}
               onExit={() => setScreen('home')}
