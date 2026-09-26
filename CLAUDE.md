@@ -569,6 +569,20 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Hostile board went 2/2 (1.9%, S2 FAIL) -> 2/1 (6.2%) -> 3/1 (7.0% — card edge saturates,
    again) -> **1 card / 2 $$ cells: 2.6%**. stakebars S3's "L2 = 14.0%" literal now follows
    L2 (0.1915), as the bar defines. Tests first (mods 4, run 1 rewritten).
+10l. **App Store kit — DRAFTED (/explore iteration 14, 2026-09-26; gap-analysis P3).**
+   `store/`: **`privacy-policy.md`** (no data collected; everything stays on device) and
+   **`app-store-connect.md`** (App Privacy = **Data Not Collected**, verified in code: no
+   fetch/XHR/WebSocket/beacon, no external URLs, only React + Capacitor core + Haptics, four
+   local keys; accessibility labels to claim — Differentiate Without Color Alone + Reduced
+   Motion yes, **VoiceOver not until tested on device**; age 4+; Games → Card / Strategy;
+   name / subtitle / promo / description / keywords, character counts checked — the first
+   name draft was 31 chars, one over). **`store/screenshots/6.9/`**: five 1320x2868 PNGs of
+   real game states (Home, the org chart with avatars and the VP's boss, a Hostile Takeover
+   preview flipping 2, an APPROVED Q1 vs the Intern, the deck view), re-render with
+   `store/screenshots/render.mjs` (a temp preview server on 5188 + headless Chrome on 9333;
+   `ALL=1` for all five). Caveat: no iOS status bar. **Needs the user:** a contact email in
+   the policy, a public URL for it (e.g. GitHub Pages) and a Support URL, then entering the
+   kit in App Store Connect; nothing was published or submitted.
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
@@ -632,7 +646,7 @@ Priorities drive the next /explore iterations — work top-down.
 **Polish / App Store**
 - ~~P2 Sound for flips, quarter results, promotion, unlocks~~ DONE iteration 9 (10g).
   ~~Animations for row wins / quarter results / promotion / unlocks~~ DONE iteration 12 (10j).
-- P3 (user-side) commissioned art to replace placeholder-in-code art, App Store screenshots,
+- P3 App Store kit DRAFTED iteration 14 (10l): screenshots, privacy policy, listing copy. Still user-side: commissioned art to replace placeholder-in-code art,
   privacy policy / product page; real-device verification via TestFlight.
 
 ## Next up (not yet built)
