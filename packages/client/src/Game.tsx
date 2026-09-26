@@ -30,6 +30,7 @@ import { AvatarImage } from './avatars.js';
 import { CardFace } from './CardFace.js';
 import * as feedback from './feedback.js';
 import { SCREEN_COLS, SCREEN_ROWS, fromScreen } from './layout.js';
+import { FX_STEP_MS, moveFx, type MoveFx } from './motion.js';
 import { TipBubble } from './Mascot.js';
 import { loadSeenTips, markTipSeen, pickTip } from './tips.js';
 
@@ -127,7 +128,12 @@ export function Game({
 
   const humanTurn = !summary && !match.over && match.quarter.toMove === HUMAN;
 
+  // The last play's visible effects (drop / claim ripple / flip), for either
+  // side — so the player can SEE what the opponent just did. A pass clears it.
+  const [fx, setFx] = useState<MoveFx | null>(null);
+
   const apply = (m: MatchState, a: Action) => {
+    setFx(moveFx(m.quarter, a));
     const next = matchReducer(m, a);
     if (next.results.length > m.results.length) {
       setSummary({ quarterNo: m.quarterNo, board: reducer(m.quarter, a), result: next.results.at(-1)! });
@@ -212,6 +218,10 @@ export function Game({
   const flipCells = useMemo(() => new Set(effects.flip), [effects]);
 
   const pendingCard = pending === null ? null : game.cells[pending]!.card;
+
+  const claimOrder = useMemo(() => new Map((fx?.claim ?? []).map((c) => [c.cell, c.order])), [fx]);
+  const fxKind = (i: number): 'drop' | 'flip' | null =>
+    !fx ? null : fx.placed === i ? 'drop' : fx.flip.includes(i) ? 'flip' : null;
   const qNo = summary ? summary.quarterNo : match.quarterNo;
   const theyPassed = !summary && match.quarter.passed[1];
   const iPassed = !summary && match.quarter.passed[0];
@@ -302,7 +312,10 @@ export function Game({
           match.config.drawAfter[summary.quarterNo - 1] ?? 0
         } and keep your hand.`,
         button: `Start Q${summary.quarterNo + 1}`,
-        onClick: () => setSummary(null),
+        onClick: () => {
+          setSummary(null);
+          setFx(null); // the next quarter starts on a still, fresh sheet
+        },
       };
     }
   }
@@ -402,12 +415,26 @@ export function Game({
                   onClick={() => tapCell(i)}
                 >
                   {cell.card ? (
-                    <span className="placed">
+                    <span
+                      className="placed"
+                      // A per-move key re-mounts the span so its animation replays.
+                      key={fxKind(i) ? `fx-${fx!.id}` : 'still'}
+                      data-fx={fxKind(i) ?? undefined}
+                    >
                       <span className="pname">{card(cell.card).name}</span>
                       <CellValue printed={card(cell.card).value} actual={cellValue(game, i)} />
                     </span>
                   ) : (
                     <span className="budget">{'$'.repeat(cell.budget)}</span>
+                  )}
+                  {claimOrder.has(i) && (
+                    <i
+                      key={`claim-${fx!.id}`}
+                      className={`fx-claim ${fx!.by === HUMAN ? 'by-you' : 'by-them'}`}
+                      data-fx="claim"
+                      style={{ animationDelay: `${claimOrder.get(i)! * FX_STEP_MS}ms` }}
+                      aria-hidden
+                    />
                   )}
                 </div>
               );

@@ -344,6 +344,24 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    16x16 and its palette (a typo'd row fails CI, not the eye). Caught in review:
    Finance's glasses first rendered as solid bars (frame and pupil shared a
    colour) and read as a second VP in shades.
+9. ~~Move animation~~ **DONE (/explore iteration 1, 2026-09-26).** Found: every
+   placement, spread and takeover flip snapped instantly, so a new player could
+   not SEE what Finance just did — cells simply changed colour. Now
+   `client/src/motion.ts` `moveFx(before, action)` derives each play's visible
+   effects from the shared `spreadEffects` (so animation can never disagree with
+   the rules): the placed card **drops in** (260ms), claimed cells **ripple
+   outward** in grid-step rings (260ms, 70ms per ring, tinted by who claimed),
+   taken-over cards **turn over** (380ms). Applies to Finance's moves too — the
+   last play's effects stay marked until the next one; a pass clears them; a new
+   quarter starts still. Per-move React keys replay the CSS animation on the same
+   cell. Everything ends by `FX_MAX_MS` = 420ms, inside the 450ms AI delay, so
+   turns are no slower; `prefers-reduced-motion` switches it off. Tests written
+   first and confirmed red: `motion.test.ts` (placed/claim/flip sets, nearest-first
+   ordering, pass = none, budget <= 450ms) and Game "move animation" (your play
+   drops + claims, preview does not animate, Finance's reply animates and replaces
+   yours). Verified headlessly at 375x667 mid-animation (claim overlays visibly
+   expanding while Finance "is typing") + clean Simulator build. **Not verified:**
+   how it feels on a real iPhone at 60/120Hz; no sound yet for flips.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

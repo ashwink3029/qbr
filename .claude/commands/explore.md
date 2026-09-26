@@ -48,10 +48,10 @@ Do not just plan.
     or do worse that QBR already avoids? Ground it in QBR's own measured identity (spread
     shapes, budget `$` economy, locking pass, org-chart ladder, "cheap spreaders are king")
     rather than generic "add feature X" advice.
-  - **Juice / animation**: placements, spreads, takeover flips, row wins and quarter ends
-    currently **snap** with no animation. Is there one moment that should get a real
-    transition (card slides in, claimed cells fill, a flip turns over, the `=SUM` row ticks
-    up) without slowing the AI's turn or breaking the phone layout?
+  - **Juice / animation**: placements, claims and takeover flips animate (`motion.ts`,
+    all inside the 450ms AI delay); row wins, the `=SUM` row, quarter results, promotions
+    and unlocks still **snap**. Is there one moment that should get a real transition
+    without slowing the AI's turn or breaking the phone layout?
   - **Sound / haptics**: is every action that "registers" wired to a cue in `feedback.ts`
     (tap / place / confirm / denied exist; flips, row wins, quarter results, promotions,
     unlocks do not yet)? Native haptics only via `@capacitor/haptics` — `navigator.vibrate`

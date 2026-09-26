@@ -142,3 +142,50 @@ describe('the app', () => {
     }
   });
 });
+
+describe('move animation', () => {
+  const fxCells = (kind: string) =>
+    Array.from(document.querySelectorAll<HTMLElement>(`[data-fx="${kind}"]`)).map(
+      (e) => e.closest<HTMLElement>('[data-cell]')!.dataset.cell,
+    );
+
+  it('your confirmed play drops in and its claimed cells fill; nothing else animates', () => {
+    render(<Game seed={5} />);
+    expect(document.querySelector('[data-fx]')).toBeNull(); // a fresh board is still
+    fireEvent.click(document.querySelector<HTMLButtonElement>('[data-card][data-playable="true"]')!);
+    const target = cells().find((c) => c.classList.contains('legal'))!;
+    fireEvent.click(target);
+    expect(document.querySelector('[data-fx]')).toBeNull(); // previewing is not playing
+    fireEvent.click(target);
+    expect(fxCells('drop')).toEqual([target.dataset.cell]);
+    const claimed = fxCells('claim');
+    expect(claimed.length).toBeGreaterThan(0);
+    for (const c of claimed) expect(document.querySelector(`[data-cell="${c}"]`)!.classList.contains('mine')).toBe(true);
+  });
+
+  it('Finance’s reply animates too, replacing yours, so you can see what it did', () => {
+    vi.useFakeTimers();
+    try {
+      render(<Game seed={5} />);
+      fireEvent.click(document.querySelector<HTMLButtonElement>('[data-card][data-playable="true"]')!);
+      const target = cells().find((c) => c.classList.contains('legal'))!;
+      fireEvent.click(target);
+      fireEvent.click(target);
+      const mine = fxCells('drop')[0];
+      act(() => {
+        vi.advanceTimersByTime(AI_DELAY_MS + 10);
+      });
+      const theirs = fxCells('drop');
+      if (theirs.length) {
+        expect(theirs).toHaveLength(1);
+        expect(theirs[0]).not.toBe(mine);
+        expect(document.querySelector(`[data-cell="${theirs[0]}"]`)!.classList.contains('theirs')).toBe(true);
+      } else {
+        // Finance closed out instead: nothing new should animate.
+        expect(document.querySelector('[data-fx]')).toBeNull();
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
