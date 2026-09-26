@@ -453,6 +453,22 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    ability) — +1.9pp and +1.6pp. **Rule for future ability cards: an ability is a
    rider on a full-value body, never a substitute for one, and check that it LANDS
    (the probe) before tuning its size.**
+10g. ~~Cues for the moments that resolve~~ **DONE (/explore iteration 9, 2026-09-26;
+   gap-analysis P2, polish).** `feedback.ts` covered only tap / place / confirm / denied;
+   everything a play or a year RESOLVES to was silent. New cues, all synthesized, all
+   behind the Settings switches: `moveResolved(fx, human)` for either side's move —
+   takeover swish gliding up when you take a card and down (+ light haptic) when you
+   lose one, a sparkle for boost, a deflating blat for weaken, crumpled paper (+ heavy
+   haptic) for a destroy, timed a beat after the drop to land with the flip animation;
+   `quarterEnded` (two-note up / down / flat); `yearEnded` (cash-register fanfare +
+   success haptic / buzzer + error haptic / shrug) — the deciding quarter plays the
+   year's cue instead of its own; `careerEnded(promoted, unlocks)` (fanfare, then one
+   chime per special unlocked, max 3). Wired in `Game.apply()` (so the AI's moves sound
+   too) and a once-only effect in `Run`. Tests first (`feedback.test.tsx`: move report
+   for both seats, quarter/year cues from a closed-out year, career cue with its unlock
+   count — which caught that a 3rd career unlocks Gossip, i.e. the count is live).
+   Verified the real synthesis in headless Chrome on a running AudioContext: every cue,
+   zero exceptions. Haptics remain real-device-only.
 10f. ~~Faster first career~~ **DONE (/explore iteration 8, 2026-09-26; gap-analysis P1,
    guided first quarter — the "time to first card" half; 10c was the teaching half).**
    A brand-new player (`progress.careers === 0`) goes Home -> org chart -> **straight
@@ -531,7 +547,8 @@ Priorities drive the next /explore iterations — work top-down.
 - P2 More jokers/bosses (4 + 4 today vs Balatro's 150 jokers); the filed ones below.
 
 **Polish / App Store**
-- P2 Sound + small animations for flips, row wins, quarter results, promotion, unlocks.
+- ~~P2 Sound for flips, quarter results, promotion, unlocks~~ DONE iteration 9 (10g). Still
+  open: *animations* for row wins / quarter results / promotion / unlocks (they snap).
 - P3 (user-side) commissioned art to replace placeholder-in-code art, App Store screenshots,
   privacy policy / product page; real-device verification via TestFlight.
 

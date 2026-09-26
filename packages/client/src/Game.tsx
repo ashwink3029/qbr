@@ -141,10 +141,16 @@ export function Game({
   }, [fx]);
 
   const apply = (m: MatchState, a: Action) => {
-    setFx(moveFx(m.quarter, a));
+    const moved = moveFx(m.quarter, a);
+    setFx(moved);
+    if (moved) feedback.moveResolved(moved, HUMAN);
     const next = matchReducer(m, a);
     if (next.results.length > m.results.length) {
       setSummary({ quarterNo: m.quarterNo, board: reducer(m.quarter, a), result: next.results.at(-1)! });
+      // The deciding quarter gets the year's cue instead of its own.
+      const outcome = (w: Player | null) => (w === HUMAN ? 'won' : w === null ? 'tie' : 'lost');
+      if (next.over) feedback.yearEnded(outcome(next.winner));
+      else feedback.quarterEnded(outcome(next.results.at(-1)!.winner));
     }
     setMatch(next);
   };

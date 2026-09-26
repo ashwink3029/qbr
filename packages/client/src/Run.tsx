@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CARDS,
   SPECIALS,
@@ -18,6 +18,7 @@ import {
   type RunState,
 } from '@qbr/shared';
 import { CardFace } from './CardFace.js';
+import * as feedback from './feedback.js';
 import { Game } from './Game.js';
 import { OrgChart, yourTitle } from './OrgChart.js';
 
@@ -71,6 +72,14 @@ export function careerEndProgress(progress: Progress, run: RunState): Progress {
 export function Run({ seed, stake = 1, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
   // A brand-new player's first career skips the closet and starts with a Coffee Mug.
   const [run, setRun] = useState<RunState>(() => newRun(seed, stake, { firstCareer: progress.careers === 0 }));
+
+  // One cue when the career ends: a promotion fanfare, and a chime per unlock.
+  const ended = run.status === 'won' || run.status === 'lost';
+  useEffect(() => {
+    if (!ended) return;
+    feedback.careerEnded(run.status === 'won', newlyUnlocked(progress, careerEndProgress(progress, run)).length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once, when the career ends
+  }, [ended]);
 
   const meetingOver = (winner: Player | null) => setRun((r) => finishMeeting(r, winner === 0));
 

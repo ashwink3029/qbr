@@ -1,5 +1,7 @@
 // Sound + haptics for the three moments of a play — tap a card, place it
-// (preview), confirm it (commit) — plus a "can't afford that" variant of the tap.
+// (preview), confirm it (commit) — plus a "can't afford that" variant of the tap,
+// and the moments a play or a year resolves to: takeover flips, ability hits,
+// quarter and year results, and the end of a career (promotion, unlocks).
 //
 // Audio is WebAudio synthesis (no asset files), borrowed in shape from cubes /
 // rushie: one shared context, primed on the first user gesture (iOS will not
@@ -9,6 +11,8 @@
 // forget and must never throw into the game.
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+
+import type { MoveFx } from './motion.js';
 
 const IS_NATIVE = Capacitor.isNativePlatform();
 
@@ -133,4 +137,71 @@ export function cardConfirmed(): void {
   tone(95, 0, 120, 0.12, 'sine', 60);
   tone(880, 0.07, 110, 0.045, 'triangle');
   tone(1320, 0.12, 150, 0.035, 'triangle');
+}
+
+function notify(type: NotificationType): void {
+  if (!IS_NATIVE || !prefs.haptics) return;
+  void Haptics.notification({ type }).catch(() => {});
+}
+
+/** A rising (or falling) run of notes. */
+function notes(freqs: readonly number[], at: number, stepMs: number, peak: number, type: OscillatorType): void {
+  freqs.forEach((f, i) => tone(f, at + (i * stepMs) / 1000, stepMs * 1.6, peak, type));
+}
+
+/** What a committed move resolved to, after its own place/confirm cues. Timed to
+ *  land with the flip animation (a beat after the drop). */
+export function moveResolved(fx: MoveFx, human: 0 | 1): void {
+  const mine = fx.by === human;
+  if (fx.flip.length > 0) {
+    // A card changing hands: a paper swish, gliding up when you take it, down when you lose it.
+    if (!mine) impact(ImpactStyle.Light);
+    noise(0.12, 120, 0.35, mine ? 2600 : 1400, 0.7);
+    tone(mine ? 520 : 700, 0.12, 160, 0.05, 'triangle', mine ? 780 : 420);
+  }
+  if (fx.boost.length > 0) notes([990, 1320, 1760], 0.16, 45, 0.03, 'sine'); // sparkle
+  if (fx.weaken.length > 0) tone(300, 0.16, 140, 0.06, 'sawtooth', 200); // a deflating blat
+  if (fx.destroy.length > 0) {
+    if (mine) impact(ImpactStyle.Heavy);
+    noise(0.18, 200, 0.6, 700, 0.6); // crumpled paper
+  }
+}
+
+/** A quarter that does not decide the year is booked. */
+export function quarterEnded(outcome: 'won' | 'lost' | 'tie'): void {
+  if (outcome === 'won') {
+    impact(ImpactStyle.Medium);
+    notes([660, 880], 0, 90, 0.05, 'triangle');
+  } else if (outcome === 'lost') {
+    impact(ImpactStyle.Light);
+    notes([520, 390], 0, 110, 0.05, 'triangle');
+  } else {
+    tone(600, 0, 160, 0.04, 'triangle');
+  }
+}
+
+/** The year (match) is decided: a cash-register fanfare, a flat buzzer, or a shrug. */
+export function yearEnded(outcome: 'won' | 'lost' | 'tie'): void {
+  if (outcome === 'won') {
+    notify(NotificationType.Success);
+    noise(0, 60, 0.4, 3000, 1.5); // the drawer's bell-strike
+    notes([523, 659, 784, 1047], 0.05, 90, 0.06, 'triangle');
+  } else if (outcome === 'lost') {
+    notify(NotificationType.Error);
+    tone(220, 0, 380, 0.07, 'square', 150);
+  } else {
+    notify(NotificationType.Warning);
+    notes([587, 587], 0, 140, 0.04, 'triangle');
+  }
+}
+
+/** A career is over: a promotion fanfare, then a chime per special unlocked. */
+export function careerEnded(promoted: boolean, unlocked: number): void {
+  if (promoted) {
+    notify(NotificationType.Success);
+    notes([523, 659, 784, 1047, 1319], 0, 110, 0.07, 'triangle');
+  }
+  for (let i = 0; i < Math.min(unlocked, 3); i++) {
+    notes([1568, 2093], (promoted ? 0.7 : 0.1) + i * 0.28, 70, 0.04, 'sine');
+  }
 }
