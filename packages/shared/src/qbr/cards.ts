@@ -166,9 +166,12 @@ export function deckWith(specialIds: readonly string[]): string[] {
   return deck;
 }
 
-/** The player's deck: the starter deck upgraded by every unlocked special. */
-export function playerDeck(p: Progress): string[] {
-  return deckWith(unlockedSpecials(p));
+/** The player's deck: the starter deck upgraded by every unlocked special they
+ *  have not benched. Benching is a real, boss-dependent choice, not a downgrade:
+ *  measured in sim/src/deckboss.ts (vs Micromanager, benching Water Cooler Gossip
+ *  +5.2pp; vs Legacy System, benching Budget Cut +4.0pp). */
+export function playerDeck(p: Progress, benched: readonly string[] = []): string[] {
+  return deckWith(unlockedSpecials(p).filter((id) => !benched.includes(id)));
 }
 
 export function card(id: string): CardDef {

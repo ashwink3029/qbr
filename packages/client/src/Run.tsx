@@ -35,8 +35,10 @@ export interface RunProps {
   readonly stake?: number;
   /** Today's daily career (a shared seed): named in the org chart title. */
   readonly daily?: boolean;
-  /** Your deck for this whole career (fixed at the start). */
+  /** Your deck (live from the bench until the career's first meeting, then fixed). */
   readonly deck?: readonly string[];
+  /** Open Your deck from the opening org chart, where the VP's boss is known. */
+  readonly onEditDeck?: () => void;
   /** Your progress before this career — to announce what it unlocks. */
   readonly progress?: Progress;
   readonly paused?: boolean;
@@ -71,9 +73,13 @@ export function careerEndProgress(progress: Progress, run: RunState): Progress {
  * first meeting and after every win, and it is the career-end screen too. Each
  * meeting's Game is keyed by rung so it starts clean.
  */
-export function Run({ seed, stake = 1, daily = false, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
+export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
   // A brand-new player's first career skips the closet and starts with a Coffee Mug.
   const [run, setRun] = useState<RunState>(() => newRun(seed, stake, { firstCareer: progress.careers === 0 }));
+  // The deck follows the bench on the opening chart (you can see the VP's boss
+  // there) and is fixed from the moment you walk out of it.
+  const [fixedDeck, setFixedDeck] = useState<readonly string[] | undefined>(undefined);
+  const careerDeck = fixedDeck ?? deck;
 
   // One cue when the career ends: a promotion fanfare, and a chime per unlock.
   const ended = run.status === 'won' || run.status === 'lost';
@@ -160,7 +166,19 @@ export function Run({ seed, stake = 1, daily = false, deck, progress = { bestRun
                 The supply closet opens after your first win.
               </p>
             )}
-            <button className="btn primary" data-chart-go onClick={() => setRun((r) => leaveChart(r))}>
+            {fresh && onEditDeck && (
+              <button className="btn" data-chart-deck onClick={onEditDeck}>
+                Your deck — tailor it to the VP’s boss
+              </button>
+            )}
+            <button
+              className="btn primary"
+              data-chart-go
+              onClick={() => {
+                if (fixedDeck === undefined) setFixedDeck(deck);
+                setRun((r) => leaveChart(r));
+              }}
+            >
               {run.offer.length > 0 ? 'Stop by the supply closet' : `Walk into the ${next.name}`}
             </button>
           </div>
@@ -210,7 +228,7 @@ export function Run({ seed, stake = 1, daily = false, deck, progress = { bestRun
       opponentName={meeting.role}
       opponentInitials={meeting.initials}
       meetingName={meeting.name}
-      {...(deck ? { deck } : {})}
+      {...(careerDeck ? { deck: careerDeck } : {})}
     />
   );
 }

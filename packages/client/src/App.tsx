@@ -1,5 +1,16 @@
 import { useState } from 'react';
-import { DAILY_STAKE, STAKES, STARTER_DECK, dailySeed, dayKey, playerDeck, type Player, type QuarterResult } from '@qbr/shared';
+import {
+  DAILY_STAKE,
+  STAKES,
+  STARTER_DECK,
+  dailySeed,
+  dayKey,
+  playerDeck,
+  unlockedSpecials,
+  type Player,
+  type QuarterResult,
+} from '@qbr/shared';
+import { loadBench, saveBench } from './bench.js';
 import { DeckView } from './DeckView.js';
 import { Game } from './Game.js';
 import { Home } from './Home.js';
@@ -48,6 +59,13 @@ export function App({ seed, today = dayKey(new Date()) }: { seed?: number; today
   const [screen, setScreen] = useState<Screen>('home');
   const [session, setSession] = useState<Session | null>(null);
   const [record, setRecord] = useState<Record>(loadRecord);
+  const [bench, setBench] = useState<string[]>(loadBench);
+  // Your deck opens from Home or from a career's opening org chart; close returns there.
+  const [deckReturn, setDeckReturn] = useState<'home' | 'play'>('home');
+  const changeBench = (b: string[]) => {
+    setBench(b);
+    saveBench(b);
+  };
   const [settings, setSettings] = useState<Settings>(() => {
     const s = loadSettings();
     setFeedbackPrefs(s);
@@ -69,7 +87,7 @@ export function App({ seed, today = dayKey(new Date()) }: { seed?: number; today
     setSession((s) => ({
       kind,
       id: (s?.id ?? 0) + 1,
-      deck: playerDeck(progressOf(record)),
+      deck: playerDeck(progressOf(record), bench),
       stake: kind === 'run' ? chosenStake : 1,
     }));
     setScreen('play');
@@ -113,14 +131,19 @@ export function App({ seed, today = dayKey(new Date()) }: { seed?: number; today
           onDaily={startDaily}
           dailyLive={session?.daily === today}
           onResume={() => setScreen('play')}
-          onDeck={() => setScreen('deck')}
+          onDeck={() => {
+            setDeckReturn('home');
+            setScreen('deck');
+          }}
           onSettings={() => setScreen('settings')}
           stake={chosenStake}
           maxStake={maxStake}
           onStake={setStake}
         />
       )}
-      {screen === 'deck' && <DeckView progress={progressOf(record)} onClose={() => setScreen('home')} />}
+      {screen === 'deck' && (
+        <DeckView progress={progressOf(record)} benched={bench} onBench={changeBench} onClose={() => setScreen(deckReturn)} />
+      )}
       {screen === 'settings' && (
         <SettingsView
           settings={settings}
@@ -139,9 +162,17 @@ export function App({ seed, today = dayKey(new Date()) }: { seed?: number; today
             <Run
               key={session.id}
               seed={session.daily ? dailySeed(session.daily) : sessionSeed(session.id)}
-              deck={session.deck}
+              deck={session.daily ? session.deck : playerDeck(progressOf(record), bench)}
               stake={session.stake}
               daily={session.daily !== undefined}
+              {...(session.daily || unlockedSpecials(progressOf(record)).length === 0
+                ? {}
+                : {
+                    onEditDeck: () => {
+                      setDeckReturn('play');
+                      setScreen('deck');
+                    },
+                  })}
               progress={progressOf(record)}
               paused={screen !== 'play'}
               onExit={() => setScreen('home')}

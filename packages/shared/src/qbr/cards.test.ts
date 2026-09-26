@@ -43,6 +43,13 @@ describe('special cards', () => {
     expect(() => deckWith(['nope'])).toThrow();
   });
 
+  it('a benched special gives its starter card back; benching a locked one does nothing', () => {
+    const p = { bestRung: 2, careers: 0 }; // Coffee Run + Performance Review
+    expect(playerDeck(p, ['coffeerun'])).toEqual(deckWith(['perfreview']));
+    expect(playerDeck(p, ['coffeerun', 'perfreview'])).toEqual([...STARTER_DECK]);
+    expect(playerDeck(p, ['parachute'])).toEqual(playerDeck(p)); // not unlocked yet
+  });
+
   it('a split deck deals the player their upgraded deck and the opponent the starter', () => {
     const player = deckWith(SPECIALS.map((s) => s.id));
     const s = newGame(4, { player, opponent: STARTER_DECK });

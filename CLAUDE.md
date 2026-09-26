@@ -513,6 +513,27 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Tests first (`daily.test.tsx` 6, run tests 2). Verified at 375x667 / 402x874: Home
    fits in the worst case (picker + Resume). **Not built:** a shared leaderboard (needs a
    server — off-thesis), sharing a result card.
+10i. ~~Deck building~~ **DONE (/explore iteration 11, 2026-09-26; gap-analysis P2,
+   variety).** Your deck -> "Specials in your deck": each unlocked special is **In deck** or
+   **Benched** (its starter card comes back; the deck stays 15). `playerDeck(progress,
+   benched)`; bench in guarded localStorage `qbr.bench.v1` (`client/src/bench.ts`). A
+   career's **opening org chart** — where the VP's boss is already shown — has "Your deck —
+   tailor it to the VP's boss" (only once something is unlocked; never on the daily, which
+   is always the starter deck); the deck follows the bench until you walk out of that chart,
+   then is fixed for the career (`Run` `fixedDeck`). **Pre-registered bars
+   (`sim/src/deckbars.ts`, all 256 builds screened at 400 seeds, top 5 at 2000): DB1 no
+   broken build — best is all-in 74.4% <= 75% PASS; DB2 a real choice (no boss) — best
+   benched 73.6% < all-in 74.4% FAIL.** Benching with no boss is only a downgrade, by
+   construction (iteration 5 made every special a strict upgrade). **Diagnostic that
+   changed the design (`sim/src/deckboss.ts`, 2000 seeds per build x boss):** against a
+   KNOWN boss it is a real choice — vs Micromanager benching Water Cooler Gossip **+5.2pp**
+   (72.3 -> 77.5%), vs Legacy System benching Budget Cut **+4.0pp**; vs Auditor and
+   Reply-All all-in stays best. Hence tailoring from the chart, not only from Home. **Caught
+   in review:** the first build fixed the deck at career start, BEFORE the boss is drawn,
+   so the hint "check the VP's boss first" was false and the measured choice unreachable.
+   Tests first (cards 1, DeckView 2, career 2). Verified at 375x667 / 402x874: chart with the
+   deck button fits (no scroll). **Not built:** telling the player which bench fits which
+   boss — discovering it is the point; a future Bindy tip could hint after a VP loss.
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
@@ -569,7 +590,7 @@ Priorities drive the next /explore iterations — work top-down.
 - ~~P1 **Card abilities**~~ DONE iteration 7 (10e); more ability cards need U3 room — the biggest depth gap vs Queen's Blood, whose decks are built on
   on-play buffs/debuffs and destroy triggers. QBR cards are vanilla (shape + value). Needs a
   small ability system in `shared` + sim bars before content.
-- P2 **Deck building**: choose which specials go in (today unlocks auto-apply).
+- ~~P2 **Deck building**~~ DONE iteration 11 (10i): bench specials, tailored to the VP's boss.
 - ~~P2 **Daily seeded career**~~ DONE iteration 10 (10h): vetted daily seeds, Budget freeze, streaks.
 - P2 More jokers/bosses (4 + 4 today vs Balatro's 150 jokers); the filed ones below.
 

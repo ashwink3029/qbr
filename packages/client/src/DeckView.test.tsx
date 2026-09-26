@@ -30,7 +30,41 @@ describe('deck view', () => {
   });
 });
 
+describe('deck building: bench a special', () => {
+  it('each unlocked special can be benched; its starter card comes back into the deck', () => {
+    let benched: string[] = [];
+    const { rerender } = render(
+      <DeckView progress={{ bestRung: 2, careers: 1 }} benched={benched} onBench={(b) => (benched = b)} onClose={() => {}} />,
+    );
+    expect(all('[data-bench]')).toHaveLength(2); // Coffee Run, Performance Review
+    expect(q('[data-bench="coffeerun"]')!.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(q('[data-bench="coffeerun"]')!);
+    expect(benched).toEqual(['coffeerun']);
+    rerender(<DeckView progress={{ bestRung: 2, careers: 1 }} benched={benched} onBench={(b) => (benched = b)} onClose={() => {}} />);
+    expect(q('[data-owned-card="coffeerun"]')).toBeNull();
+    expect(q('[data-owned-card="memo"] .copies')!.textContent).toBe('×2');
+    expect(q('[data-bench="coffeerun"]')!.getAttribute('aria-pressed')).toBe('true');
+    expect(q('[data-bench="coffeerun"]')!.textContent).toMatch(/Benched/);
+    expect(q('[data-deck-view] .titlebar')!.textContent).toMatch(/15 cards/);
+    fireEvent.click(q('[data-bench="coffeerun"]')!);
+    expect(benched).toEqual([]);
+  });
+});
+
 describe('Home -> Your deck', () => {
+  it('a benched special stays benched across launches', () => {
+    localStorage.setItem('qbr.record.v1', JSON.stringify({ runs: 1, bestMeetings: 1 }));
+    render(<App seed={5} />);
+    fireEvent.click(q('[data-deck]')!);
+    fireEvent.click(q('[data-bench="coffeerun"]')!);
+    expect(q('[data-owned-card="coffeerun"]')).toBeNull();
+    cleanup();
+    render(<App seed={5} />);
+    fireEvent.click(q('[data-deck]')!);
+    expect(q('[data-owned-card="coffeerun"]')).toBeNull();
+    expect(q('[data-bench="coffeerun"]')!.getAttribute('aria-pressed')).toBe('true');
+  });
+
   beforeEach(() => localStorage.clear());
 
   it('opens from Home, reflects the saved record, and closes back to Home', () => {
