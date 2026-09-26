@@ -31,7 +31,7 @@ describe('deck building after seeing the boss', () => {
     localStorage.setItem('qbr.record.v1', JSON.stringify({ runs: 3, bestMeetings: 5, promotions: 1 }));
     render(<App seed={5} />);
     fireEvent.click(q('[data-start-run]')!);
-    expect(q('[data-rung="3"]')!.textContent).toMatch(/Micromanager|Legacy|Auditor/); // the boss is known here
+    expect(q('[data-rung="3"]')!.textContent).toMatch(/Micromanager|Legacy|Auditor|Change Freeze/); // the boss is known here
     fireEvent.click(q('[data-chart-deck]')!);
     expect(q('[data-deck-view]')).toBeTruthy();
     fireEvent.click(q('[data-bench="coffeerun"]')!);

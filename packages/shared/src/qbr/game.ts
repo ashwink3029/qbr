@@ -200,7 +200,10 @@ export function freshBoard(mods: Mods = NO_MODS): Cell[] {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const owner: Player | null = c === 0 ? 0 : c === COLS - 1 ? 1 : null;
-      const boosted = owner === 1 && ((r === 1 && mods.boss === 'legacy') || r < (mods.oppHomeBoost ?? 0));
+      const boosted =
+        (owner === 1 && ((r === 1 && mods.boss === 'legacy') || r < (mods.oppHomeBoost ?? 0))) ||
+        // Ergonomic Chair (a joker): the player's Ops home starts at $$.
+        (owner === 0 && r === 1 && hasJoker(mods, 'chair'));
       const budget = owner === null ? 0 : boosted ? 2 : 1;
       cells.push({ owner, budget, card: null });
     }
@@ -261,11 +264,16 @@ export function spreadEffects(state: GameState, cardId: string, at: number, play
   const ability = card(cardId).ability;
   const boost: number[] = [];
   const weaken: { cell: number; destroys: boolean }[] = [];
-  const targets = spreadTargets(cardId, at, player, wrap).filter((t) => !blocked.has(t));
+  // Change Freeze (a boss): the player's spreads stop at the middle of the sheet.
+  const frozen = player === 0 && state.mods.boss === 'freeze';
+  const targets = spreadTargets(cardId, at, player, wrap).filter(
+    (t) => !blocked.has(t) && !(frozen && colOf(t) > Math.floor(COLS / 2)),
+  );
   for (const t of targets) {
     const c = state.cells[t]!;
     if (c.card === null) claim.push(t);
-    else if (state.rules.takeover && c.owner !== player && card(c.card).value < power) flip.push(t);
+    // Change Freeze: and the player's spreads take nothing over.
+    else if (state.rules.takeover && !frozen && c.owner !== player && card(c.card).value < power) flip.push(t);
   }
   // Abilities act after claims and flips: a just-flipped card is now yours.
   if (ability) {
@@ -296,7 +304,8 @@ export function canPlay(state: GameState, cardId: string, at: number): boolean {
     !blockedCells(state.mods).has(at) &&
     state.hands[p].includes(cardId) &&
     cell.owner === p &&
-    (cell.card === null || state.rules.pasteOver) &&
+    // Paste Special (a joker): the player may paste over their own card.
+    (cell.card === null || state.rules.pasteOver || (p === 0 && hasJoker(state.mods, 'paste'))) &&
     cell.budget >= card(cardId).cost
   );
 }

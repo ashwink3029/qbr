@@ -108,7 +108,7 @@ describe('a run', () => {
       expect(rungs[0]).toMatch(/The CEO/);
       expect(rungs.at(-1)).toMatch(/You[\s\S]*New hire/);
       expect(q('[data-rung="0"]')!.dataset.state).toBe('next');
-      expect(q('[data-rung="3"]')!.textContent).toMatch(/The VP[\s\S]*(Micromanager|Legacy|Auditor)/); // boss shown up front
+      expect(q('[data-rung="3"]')!.textContent).toMatch(/The VP[\s\S]*(Micromanager|Legacy|Auditor|Change Freeze)/); // boss shown up front
       fireEvent.click(q('[data-chart-go]')!);
 
       // Supply closet: three offers.

@@ -76,10 +76,14 @@ export const STAKES: readonly Stake[] = [
   { name: 'Standard', blurb: 'The org chart as it is.', oppEdge: 0, oppHomeBoost: 0 },
   { name: 'Budget freeze', blurb: 'Every opponent draws +1 card a quarter.', oppEdge: 1, oppHomeBoost: 0 },
   { name: 'Restructuring', blurb: 'Opponents draw +1 card a quarter and start with a $$ home cell.', oppEdge: 1, oppHomeBoost: 1 },
-  { name: 'Hostile board', blurb: 'Opponents draw +2 cards a quarter and start with two $$ home cells.', oppEdge: 2, oppHomeBoost: 2 },
+  { name: 'Hostile board', blurb: 'Opponents draw +1 card a quarter and start with two $$ home cells.', oppEdge: 1, oppHomeBoost: 2 },
 ];
 
 export const OFFER_SIZE = 3;
+/** Your desk holds this many jokers; with a full desk the closet stays shut. With
+ *  6 jokers a career could otherwise draft a 5th before the CEO, which made the CEO
+ *  easier than the VP (runbars L1: 78.2% vs 65.8%); the ladder was tuned at 4. */
+export const MAX_JOKERS = 4;
 
 /** 'chart' = on the org chart before the next meeting; 'draft' = in the supply
  *  closet; 'meeting' = playing; 'won' / 'lost' = the career is over. */
@@ -103,7 +107,7 @@ export interface RunState {
 function draft(rng: RngState, owned: readonly string[]): [RngState, string[]] {
   const pool = Object.keys(JOKERS).filter((j) => !owned.includes(j));
   const [next, order] = shuffle(rng, pool);
-  return [next, order.slice(0, OFFER_SIZE)];
+  return [next, owned.length >= MAX_JOKERS ? [] : order.slice(0, OFFER_SIZE)];
 }
 
 /** The joker a first career starts with instead of a closet. Measured in

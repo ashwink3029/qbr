@@ -5,6 +5,7 @@ import {
   MEETINGS,
   STAKES,
   STARTER_JOKER,
+  MAX_JOKERS,
   bossFor,
   currentMeeting,
 
@@ -106,10 +107,10 @@ describe('career ladder', () => {
     expect(r.jokers.length).toBeLessThanOrEqual(Object.keys(JOKERS).length);
   });
 
-  it('with every joker owned, the chart goes straight to the meeting', () => {
-    let r = newRun(9);
-    for (let m = 0; m < MEETINGS.length - 1; m++) r = finishMeeting(toMeeting(r), true);
-    // 4 jokers, 5 rungs: by the CEO nothing is left to offer.
+  it('with a full desk (MAX_JOKERS), the chart goes straight to the meeting', () => {
+    expect(MAX_JOKERS).toBe(4);
+    const owned = { ...toMeeting(newRun(9)), jokers: Object.keys(JOKERS).slice(0, MAX_JOKERS) };
+    const r = finishMeeting(owned, true);
     expect(r.offer).toHaveLength(0);
     expect(leaveChart(r).status).toBe('meeting');
   });

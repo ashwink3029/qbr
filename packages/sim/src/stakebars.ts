@@ -7,8 +7,11 @@
 // stake, over the same seeds.
 //   S1. Each stake is harder:   promotion rate falls by >= 2pp from stake N to N+1.
 //   S2. The top stake is winnable: promotion rate at the top stake >= 2%.
-//   S3. Standard is untouched:  stake 1 equals the ladder baseline (L2 = 14.0% at
-//                               2000 seeds) — the stake plumbing must not move it.
+//   S3. Standard is untouched:  stake 1 equals the ladder baseline (runbars L2 at 2000
+//                               seeds) — the stake plumbing must not move it. L2 was
+//                               14.0%; iteration 13's bigger joker/boss pool moved L2
+//                               itself to 19.1%, so the reference follows L2 (the bar's
+//                               definition), not the old literal.
 // Usage: tsx src/stakebars.ts [seeds=2000]
 import {
   DEFAULT_MATCH,
@@ -73,4 +76,6 @@ for (let i = 1; i < rates.length; i++) if (rates[i]! > rates[i - 1]! - 0.02) fal
 console.log('\nPre-registered bar');
 console.log(`  S1. each stake harder    ${rates.map((r) => pct(r)).join(' > ')} (>= 2pp steps)   ${verdict(falls)}`);
 console.log(`  S2. top stake winnable   ${pct(rates.at(-1)!)} >= 2%                            ${verdict(rates.at(-1)! >= 0.02)}`);
-console.log(`  S3. standard untouched   ${pct(rates[0]!)} == 14.0% baseline                  ${verdict(Math.abs(rates[0]! - 0.14) < 0.0005)}`);
+console.log(`  (stake 1 exact: ${rates[0]!.toFixed(4)})`);
+const L2 = 0.1915; // runbars.ts L2 at 2000 seeds (iteration 13)
+console.log(`  S3. standard untouched   ${pct(rates[0]!)} == ${pct(L2)} baseline                  ${verdict(Math.abs(rates[0]! - L2) < 0.0005)}`);

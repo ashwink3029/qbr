@@ -547,6 +547,28 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    promotion, staggered reveal). Verified at 375x667 with focus emulation (headless pages
    freeze CSS animation otherwise): the stamp lands at full opacity over the Q1 result,
    no scroll.
+10k. ~~More jokers and a boss~~ **DONE (/explore iteration 13, 2026-09-26; gap-analysis P2,
+   variety).** Jokers 4 -> 6, drawable VP bosses 3 -> 4 (`mods.ts`, engine hooks in
+   `game.ts`, all via the shared `spreadEffects` / `canPlay` / `freshBoard`, so preview, AI
+   and reducer agree): **Paste Special** (you may play over your own card — the one
+   sanctioned exception to the user's no-filled-cells rule) +7.6pp; **Ergonomic Chair**
+   (your Ops home starts at $$ — the mirror of Legacy System) +19.1pp; boss **Change
+   Freeze** (your spreads stop at the middle row and take nothing over) -6.1pp. New rule
+   **`MAX_JOKERS = 4`**: a full desk keeps the closet shut. **Pre-registered bars, never
+   moved, final 2000 seeds: runbars 6/6** (J1 54.0%, J2 69.5%, B1 6.1pp, L1 82 > 83 > 71 >
+   66 > 60, L2 19.1%, L3 82.3%); **stakebars 3/3** (19.1 > 11.3 > 6.5 > 2.6%); **first
+   career 3/3** (84.1%, 22.9%, climbs); **daily re-vetted** (the pool change moves every
+   offer and VP draw): D1 20.0%, D2 100%, D3 249 setups (still a recorded FAIL, up from 71).
+   **Honest history:** (1) **Newton's Cradle** (claims gain +2 budget) measured **+33.7pp —
+   broken** (budget is what gates $$/$$$ cards) and cut; replaced by the Chair. (2) Change
+   Freeze v1 (no takeovers for you) only -3.2pp, v2 (+ their takeovers win ties) -3.7pp —
+   takeovers matter less than territory; v3 (spreads stop at the middle) -6.1pp. (3) With 6
+   jokers a career drafted a 5th before the CEO, making the CEO EASIER than the VP (78.2% vs
+   65.8%, L1 FAIL) — the ladder had been tuned with the 4-joker pool running dry; hence the
+   desk cap. (4) The bigger pool lifted Standard promotion 14.0% -> 19.1% (still in L2), so
+   Hostile board went 2/2 (1.9%, S2 FAIL) -> 2/1 (6.2%) -> 3/1 (7.0% — card edge saturates,
+   again) -> **1 card / 2 $$ cells: 2.6%**. stakebars S3's "L2 = 14.0%" literal now follows
+   L2 (0.1915), as the bar defines. Tests first (mods 4, run 1 rewritten).
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
@@ -605,7 +627,7 @@ Priorities drive the next /explore iterations — work top-down.
   small ability system in `shared` + sim bars before content.
 - ~~P2 **Deck building**~~ DONE iteration 11 (10i): bench specials, tailored to the VP's boss.
 - ~~P2 **Daily seeded career**~~ DONE iteration 10 (10h): vetted daily seeds, Budget freeze, streaks.
-- P2 More jokers/bosses (4 + 4 today vs Balatro's 150 jokers); the filed ones below.
+- P2 More jokers/bosses — first batch DONE iteration 13 (10k): 6 jokers + 5 bosses, desk cap 4. More remain (Pivot Table, helpers, "The Board").
 
 **Polish / App Store**
 - ~~P2 Sound for flips, quarter results, promotion, unlocks~~ DONE iteration 9 (10g).

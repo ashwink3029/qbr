@@ -7,13 +7,15 @@ import {
   cellValue,
   idx,
   newGame,
+  reducer,
   revenue,
   spreadEffects,
   type Cell,
   type GameState,
 } from './game.js';
 import { DEFAULT_MATCH, matchReducer, newMatch } from './match.js';
-import { NO_MODS, type Mods } from './mods.js';
+import { BOSSES, JOKERS, NO_MODS, type Mods } from './mods.js';
+import { DRAWABLE_BOSSES } from './run.js';
 
 const mods = (m: Partial<Mods>): Mods => ({ ...NO_MODS, ...m });
 
@@ -127,5 +129,56 @@ describe('bosses', () => {
     const ra = newMatch(1, STARTER_DECK, DEFAULT_MATCH, undefined, mods({ boss: 'replyall' }));
     expect(ra.quarter.hands[1].length).toBe(plain.quarter.hands[1].length + 2);
     expect(ra.quarter.hands[0].length).toBe(plain.quarter.hands[0].length);
+  });
+});
+
+describe('new jokers and a boss (iteration 13)', () => {
+  const noPaste = { ...DEFAULT_RULES, pasteOver: false };
+  function strictBoard(m: Mods, cells: [number, Cell][], hand: string[]): GameState {
+    const s = newGame(1, STARTER_DECK, noPaste, m);
+    const set = new Map(cells);
+    return { ...s, cells: s.cells.map((c, i) => set.get(i) ?? c), hands: [hand, []] };
+  }
+
+  it('Paste Special: you may play over your own card; Finance may not, and without it neither may you', () => {
+    const cells: [number, Cell][] = [
+      [idx(0, 0), { owner: 0, budget: 2, card: 'memo' }],
+      [idx(0, 4), { owner: 1, budget: 2, card: 'memo' }],
+    ];
+    expect(canPlay(strictBoard(NO_MODS, cells, ['reorg']), 'reorg', idx(0, 0))).toBe(false);
+    const paste = strictBoard(mods({ jokers: ['paste'] }), cells, ['reorg']);
+    expect(canPlay(paste, 'reorg', idx(0, 0))).toBe(true);
+    const theirs = { ...paste, toMove: 1 as const, hands: [[], ['reorg']] as [string[], string[]] };
+    expect(canPlay(theirs, 'reorg', idx(0, 4))).toBe(false);
+  });
+
+  it('Ergonomic Chair: your Ops home cell starts with $$ (the mirror of Legacy System)', () => {
+    const chair = newGame(1, STARTER_DECK, noPaste, mods({ jokers: ['chair'] }));
+    expect(chair.cells[idx(1, 0)]!.budget).toBe(2);
+    expect(chair.cells[idx(0, 0)]!.budget).toBe(1);
+    expect(chair.cells[idx(1, 4)]!.budget).toBe(1); // Finance's Ops home untouched
+  });
+
+  it('Change Freeze: your spreads stop at the middle and take nothing over; theirs are untouched', () => {
+    const cells: [number, Cell][] = [
+      [idx(0, 1), { owner: 0, budget: 2, card: null }],
+      [idx(0, 2), { owner: 1, budget: 1, card: 'memo' }],
+    ];
+    // Reorg reaches 1 and 2 ahead: col 2 (a weaker Finance card) and col 3.
+    expect(spreadEffects(board(NO_MODS, cells), 'reorg', idx(0, 1), 0)).toMatchObject({ flip: [idx(0, 2)], claim: [idx(0, 3)] });
+    expect(spreadEffects(board(mods({ boss: 'freeze' }), cells), 'reorg', idx(0, 1), 0)).toMatchObject({ flip: [], claim: [] });
+    const theirs: [number, Cell][] = [
+      [idx(0, 4), { owner: 1, budget: 2, card: null }],
+      [idx(0, 3), { owner: 0, budget: 1, card: 'memo' }],
+    ];
+    expect(spreadEffects(board(mods({ boss: 'freeze' }), theirs), 'reorg', idx(0, 4), 1)).toMatchObject({ flip: [idx(0, 3)], claim: [idx(0, 2)] });
+  });
+
+  it('are listed with one-line blurbs, and the new boss can be drawn for the VP', () => {
+    expect(JOKERS.paste!.name).toBe('Paste Special');
+    expect(JOKERS.chair!.name).toBe('Ergonomic Chair');
+    expect(JOKERS.cradle).toBeUndefined(); // measured broken: +33.7pp (J2 cap +23)
+    expect(BOSSES.freeze!.name).toBe('Change Freeze');
+    expect(DRAWABLE_BOSSES).toContain('freeze');
   });
 });

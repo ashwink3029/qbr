@@ -43,6 +43,9 @@ export const JOKERS: Readonly<Record<string, ModDef>> = {
     blurb: 'Your spreads wrap around the sheet’s sides',
     glyph: '↻',
   },
+  paste: { id: 'paste', name: 'Paste Special', blurb: 'You may play over your own cards', glyph: '⌘V' },
+  // (Newton's Cradle — claims gain +2 budget — measured +33.7pp: broken. See CLAUDE.md.)
+  chair: { id: 'chair', name: 'Ergonomic Chair', blurb: 'Your Ops home cell starts with $$', glyph: 'EC' },
 };
 
 export const BOSSES: Readonly<Record<string, ModDef>> = {
@@ -54,6 +57,7 @@ export const BOSSES: Readonly<Record<string, ModDef>> = {
   },
   legacy: { id: 'legacy', name: 'Legacy System', blurb: 'Their Ops home cell starts with $$', glyph: 'LS' },
   auditor: { id: 'auditor', name: 'The Auditor', blurb: 'Your best card on the sheet counts half', glyph: 'AU' },
+  freeze: { id: 'freeze', name: 'Change Freeze', blurb: 'Your spreads stop at the middle row and take nothing over', glyph: 'CZ' },
   replyall: { id: 'replyall', name: 'Reply-All', blurb: 'Draws +2 extra cards every quarter', glyph: 'RE' },
 };
 
