@@ -808,3 +808,13 @@ finding is either fixed or recorded as not worth optimizing.
    every shipped build. Recipe: `VITE_QBR_START=year pnpm build && pnpm exec cap sync ios`,
    then the Simulator build/install from "iOS Simulator" above, `xcrun simctl io <UDID>
    screenshot`. Rebuild WITHOUT the variable before archiving.
+5. **Install size — 5.1 MB, nothing to optimize.** Capacitor's frameworks are 4.4 MB (fixed
+   cost); the app binary 408 KB; all game assets 256 KB; the asset catalog 32 KB (after
+   removing the stock splash).
+6. **Memory over a long session — no leaks.** 30 whole years played back to back in the same
+   client (headless Chrome, 402x874; forced GC before each sample): DOM nodes 84 -> 94 and
+   event listeners flat at 140 throughout; JS heap 2.4 MB -> 3.7 MB after the first 5 years
+   (warm-up: compiled code, first game state), then +0.36 MB over the next 25 (~14 KB/year,
+   measured on React's development build). Timers, audio and listeners all clean up.
+**Conclusion of the Simulator research:** one real defect (the white launch flash) — fixed;
+AI speed, safe areas, launch cost, install size and memory are all measured and fine.
