@@ -366,6 +366,15 @@ them together, build in that order.
 - No AI-generated shipped art or card text — the card-game audience punishes it.
   Plan on a commissioned pixel artist (32-64px, 16-colour VGA-era palette).
 
+## Exploration loop — `/explore`
+`.claude/commands/explore.md` (adapted from Rushie's, itself from nexus's) runs ONE
+iteration: orient from this file -> pick one hypothesis (open thread first; else
+research / juice / sound+haptics / balance / new content / UI clarity) -> state what
+would count as success and pre-register any bar -> do the work -> verify (tests,
+typecheck, headless phone-size check with a temporary preview server, Simulator build)
+-> record it here (DONE entry, "Next up", or a recorded null) -> commit and push once
+to `origin/main`. It lists the measured nulls and user decisions not to re-open.
+
 ## How to run
 ```
 pnpm install
