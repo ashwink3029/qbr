@@ -534,6 +534,19 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Tests first (cards 1, DeckView 2, career 2). Verified at 375x667 / 402x874: chart with the
    deck button fits (no scroll). **Not built:** telling the player which bench fits which
    boss — discovering it is the point; a future Bindy tip could hint after a VP loss.
+10j. ~~Result animations~~ **DONE (/explore iteration 12, 2026-09-26; gap-analysis P2,
+   polish).** The moments a player works toward snapped in. Now: every quarter / year /
+   meeting result dialog gets a **rubber stamp** slammed on (`data-stamp`: APPROVED green =
+   you won, REJECTED red = lost, TABLED grey = tie); while a quarter's result shows, the
+   **banked lanes' `=SUM` cells pulse** (staggered 120ms per lane); after a win the org
+   chart **stamps the tick** on the rung just beaten (`OrgChart justBeat`); a promotion
+   **lifts your tile** with a gold ring (`promoted`); career-end **unlocked cards turn over
+   one after another** (`data-fx="reveal"`, 300ms + 220ms each). CSS-only, all off under
+   `prefers-reduced-motion`; pairs with iteration 9's sounds. Tests first
+   (`results.test.tsx` 4: stamps + banked lanes over a closed-out year, chart tick /
+   promotion, staggered reveal). Verified at 375x667 with focus emulation (headless pages
+   freeze CSS animation otherwise): the stamp lands at full opacity over the Q1 result,
+   no scroll.
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
@@ -595,8 +608,8 @@ Priorities drive the next /explore iterations — work top-down.
 - P2 More jokers/bosses (4 + 4 today vs Balatro's 150 jokers); the filed ones below.
 
 **Polish / App Store**
-- ~~P2 Sound for flips, quarter results, promotion, unlocks~~ DONE iteration 9 (10g). Still
-  open: *animations* for row wins / quarter results / promotion / unlocks (they snap).
+- ~~P2 Sound for flips, quarter results, promotion, unlocks~~ DONE iteration 9 (10g).
+  ~~Animations for row wins / quarter results / promotion / unlocks~~ DONE iteration 12 (10j).
 - P3 (user-side) commissioned art to replace placeholder-in-code art, App Store screenshots,
   privacy policy / product page; real-device verification via TestFlight.
 

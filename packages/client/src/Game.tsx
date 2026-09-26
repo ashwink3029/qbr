@@ -319,7 +319,15 @@ export function Game({
           seenTips,
         );
 
-  let dialog: { title: string; body: string; button: string; onClick: () => void } | null = null;
+  let dialog: {
+    title: string;
+    body: string;
+    button: string;
+    onClick: () => void;
+    /** The rubber stamp slammed on the result, from the player's side. */
+    stamp: 'approved' | 'rejected' | 'tabled';
+  } | null = null;
+  const stampFor = (w: Player | null) => (w === HUMAN ? 'approved' : w === null ? 'tabled' : 'rejected');
   if (summary) {
     const [a, b] = summary.result.revenue;
     const w = summary.result.winner;
@@ -333,6 +341,7 @@ export function Game({
             } Quarters: ${quarters}`,
             button: 'Continue',
             onClick: finishYear,
+            stamp: stampFor(match.winner),
           }
         : {
             title: match.winner === 0 ? 'Promotion!' : match.winner === 1 ? 'Performance review' : 'Flat year',
@@ -341,6 +350,7 @@ export function Game({
             } Quarters: ${quarters}`,
             button: 'Back to home',
             onClick: finishYear,
+            stamp: stampFor(match.winner),
           };
     } else {
       dialog = {
@@ -351,6 +361,7 @@ export function Game({
           match.config.drawAfter[summary.quarterNo - 1] ?? 0
         } and keep your hand.`,
         button: `Start Q${summary.quarterNo + 1}`,
+        stamp: stampFor(w),
         onClick: () => {
           setSummary(null);
           setFx(null); // the next quarter starts on a still, fresh sheet
@@ -497,7 +508,11 @@ export function Game({
           {rows.map((row, sc) => (
             <div
               key={`s${sc}`}
-              className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : ''}`}
+              // While a quarter's result shows, the lanes that were banked pulse.
+              className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : ''} ${
+                summary && row.winner !== null ? 'banked' : ''
+              }`}
+              style={summary ? { animationDelay: `${sc * 120}ms` } : undefined}
               data-lane-total={sc}
               aria-label={laneLabel(sc, row.totals[0], row.totals[1], who)}
             >
@@ -561,6 +576,9 @@ export function Game({
                 <span>{dialog.title}</span>
               </div>
               <p>{dialog.body}</p>
+              <span className={`stamp ${dialog.stamp}`} data-stamp={dialog.stamp} aria-hidden>
+                {dialog.stamp.toUpperCase()}
+              </span>
               <button className="btn" data-dialog-button onClick={dialog.onClick}>
                 {dialog.button}
               </button>

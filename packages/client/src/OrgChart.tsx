@@ -26,14 +26,32 @@ function threat(run: RunState, i: number): string {
  * makes it hard; "You" sits just below whoever you face next.
  * `beaten` = how many rungs are behind you.
  */
-export function OrgChart({ run, beaten }: { run: RunState; beaten: number }) {
+export function OrgChart({
+  run,
+  beaten,
+  justBeat,
+  promoted = false,
+}: {
+  run: RunState;
+  beaten: number;
+  /** The rung won in the meeting just played: its tick is stamped on. */
+  justBeat?: number;
+  /** A promotion: your tile rises to the top of the chart. */
+  promoted?: boolean;
+}) {
   const rows = MEETINGS.map((m, i) => ({ m, i })).reverse();
   return (
     <ol className="orgchart" data-orgchart aria-label="Org chart">
       {rows.map(({ m, i }) => {
         const state = i < beaten ? 'beaten' : i === beaten ? 'next' : 'above';
         return (
-          <li key={m.role} className={`rung ${state}`} data-rung={i} data-state={state}>
+          <li
+            key={m.role}
+            className={`rung ${state}`}
+            data-rung={i}
+            data-state={state}
+            data-fx={i === justBeat ? 'beaten' : undefined}
+          >
             <span className="rung-avatar">
               <AvatarImage id={m.initials} size={34} />
             </span>
@@ -52,7 +70,7 @@ export function OrgChart({ run, beaten }: { run: RunState; beaten: number }) {
           </li>
         );
       })}
-      <li className="rung you" data-rung="you">
+      <li className="rung you" data-rung="you" data-fx={promoted ? 'promoted' : undefined}>
         <span className="rung-avatar" aria-hidden>
           YOU
         </span>

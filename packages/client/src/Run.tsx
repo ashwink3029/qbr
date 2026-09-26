@@ -107,15 +107,22 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
                 ? 'You beat the CEO in the Board meeting. Corner office secured.'
                 : `Your career ended at ${currentMeeting(run).role.replace(/^The /, 'the ')}'s ${currentMeeting(run).name}. Title: ${yourTitle(beaten)}.`}
             </p>
-            <OrgChart run={run} beaten={beaten} />
+            <OrgChart run={run} beaten={beaten} promoted={won} />
             {earned.length > 0 && (
               <div className="unlocked" data-unlocked>
                 <b>New card{earned.length > 1 ? 's' : ''} unlocked</b>
                 <div className="unlocked-cards">
-                  {earned.map((id) => {
+                  {earned.map((id, k) => {
                     const s = SPECIALS.find((x) => x.id === id)!;
                     return (
-                      <div key={id} className="unlocked-item" data-unlocked-card={id}>
+                      // Each new card turns over in turn, after the chart settles.
+                      <div
+                        key={id}
+                        className="unlocked-item"
+                        data-unlocked-card={id}
+                        data-fx="reveal"
+                        style={{ animationDelay: `${300 + k * 220}ms` }}
+                      >
                         <div className="card deck-card special">
                           <CardFace id={id} />
                         </div>
@@ -159,7 +166,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
                 ? 'Day one. Climb the org chart one meeting at a time — lose once and the career ends.'
                 : `Promoted to ${yourTitle(run.meeting)}. Next up: ${next.role.replace(/^The /, 'the ')}.`}
             </p>
-            <OrgChart run={run} beaten={run.meeting} />
+            <OrgChart run={run} beaten={run.meeting} {...(fresh ? {} : { justBeat: run.meeting - 1 })} />
             {fresh && run.offer.length === 0 && run.jokers.length > 0 && (
               <p className="starter-joker" data-starter-joker>
                 Your desk came with a <b>{JOKERS[run.jokers[0]!]!.name}</b>: {JOKERS[run.jokers[0]!]!.blurb.toLowerCase()}.
