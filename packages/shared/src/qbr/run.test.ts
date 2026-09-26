@@ -4,6 +4,7 @@ import {
   DRAWABLE_BOSSES,
   MEETINGS,
   STAKES,
+  STARTER_JOKER,
   bossFor,
   currentMeeting,
   finishMeeting,
@@ -36,6 +37,22 @@ describe('career ladder', () => {
     expect(DRAWABLE_BOSSES).not.toContain('replyall'); // the CEO's, fixed
     expect(r.offer).toHaveLength(3);
     expect(leaveChart(r).status).toBe('draft');
+  });
+
+  it('a first career skips the closet before the Intern, starting with a Coffee Mug; the closet opens after the first win', () => {
+    const r = newRun(1, 1, { firstCareer: true });
+    expect(r.status).toBe('chart');
+    expect(r.offer).toEqual([]);
+    expect(r.jokers).toEqual([STARTER_JOKER]);
+    expect(STARTER_JOKER).toBe('mug');
+    const m = leaveChart(r);
+    expect(m.status).toBe('meeting'); // chart -> Intern, no draft
+    const next = finishMeeting(m, true);
+    expect(next.offer).toHaveLength(3); // the closet is the reward for beating the Intern
+    expect(next.offer).not.toContain('mug');
+    expect(leaveChart(next).status).toBe('draft');
+    // Same VP boss as an ordinary career from the same seed.
+    expect(r.boss).toBe(newRun(1).boss);
   });
 
   it('bosses appear only at the VP (drawn) and the CEO (Reply-All)', () => {

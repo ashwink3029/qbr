@@ -95,6 +95,8 @@ describe('home screen', () => {
 
 describe('a run', () => {
   it('opens on the org chart, drafts, plays the Intern with the joker on the desk, survives × / Resume, and records the career', () => {
+    // A returning player (a first career skips the closet — see career.test.tsx).
+    localStorage.setItem('qbr.record.v1', JSON.stringify({ runs: 1, bestMeetings: 0 }));
     vi.useFakeTimers();
     try {
       render(<App seed={5} />);
@@ -147,8 +149,8 @@ describe('a run', () => {
 
       expect(home()).toBeTruthy();
       expect(q('[data-resume]')).toBeNull();
-      expect(q('[data-run-record]')!.textContent).toMatch(/Careers 1 · promoted 0 · best: New hire/);
-      expect(JSON.parse(localStorage.getItem('qbr.record.v1')!)).toMatchObject({ runs: 1, promotions: 0 });
+      expect(q('[data-run-record]')!.textContent).toMatch(/Careers 2 · promoted 0 · best: New hire/);
+      expect(JSON.parse(localStorage.getItem('qbr.record.v1')!)).toMatchObject({ runs: 2, promotions: 0 });
     } finally {
       vi.useRealTimers();
     }

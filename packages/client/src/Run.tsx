@@ -51,6 +51,17 @@ function CloseButton({ onExit }: { onExit: () => void }) {
   );
 }
 
+/** The unlock progress after a finished career: best rung, careers, and — on a
+ *  promotion — the stake cleared (so stake-unlock specials are announced). */
+export function careerEndProgress(progress: Progress, run: RunState): Progress {
+  const won = run.status === 'won';
+  return {
+    bestRung: Math.max(progress.bestRung, won ? MEETINGS.length : run.meeting),
+    careers: progress.careers + 1,
+    stakeCleared: won ? Math.max(progress.stakeCleared ?? 0, run.stake) : (progress.stakeCleared ?? 0),
+  };
+}
+
 /**
  * A career (a "run" in code): org chart -> supply closet -> meeting -> org chart
  * ... up the ladder from the Intern to the CEO. The org chart shows before the
@@ -58,17 +69,15 @@ function CloseButton({ onExit }: { onExit: () => void }) {
  * meeting's Game is keyed by rung so it starts clean.
  */
 export function Run({ seed, stake = 1, deck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
-  const [run, setRun] = useState<RunState>(() => newRun(seed, stake));
+  // A brand-new player's first career skips the closet and starts with a Coffee Mug.
+  const [run, setRun] = useState<RunState>(() => newRun(seed, stake, { firstCareer: progress.careers === 0 }));
 
   const meetingOver = (winner: Player | null) => setRun((r) => finishMeeting(r, winner === 0));
 
   if (run.status === 'won' || run.status === 'lost') {
     const won = run.status === 'won';
     const beaten = won ? MEETINGS.length : run.meeting;
-    const earned = newlyUnlocked(progress, {
-      bestRung: Math.max(progress.bestRung, beaten),
-      careers: progress.careers + 1,
-    });
+    const earned = newlyUnlocked(progress, careerEndProgress(progress, run));
     return (
       <div className="app home" data-run-end>
         <div className="window start-window chart-window">
@@ -133,6 +142,12 @@ export function Run({ seed, stake = 1, deck, progress = { bestRung: 0, careers: 
                 : `Promoted to ${yourTitle(run.meeting)}. Next up: ${next.role.replace(/^The /, 'the ')}.`}
             </p>
             <OrgChart run={run} beaten={run.meeting} />
+            {fresh && run.offer.length === 0 && run.jokers.length > 0 && (
+              <p className="starter-joker" data-starter-joker>
+                Your desk came with a <b>{JOKERS[run.jokers[0]!]!.name}</b>: {JOKERS[run.jokers[0]!]!.blurb.toLowerCase()}.
+                The supply closet opens after your first win.
+              </p>
+            )}
             <button className="btn primary" data-chart-go onClick={() => setRun((r) => leaveChart(r))}>
               {run.offer.length > 0 ? 'Stop by the supply closet' : `Walk into the ${next.name}`}
             </button>

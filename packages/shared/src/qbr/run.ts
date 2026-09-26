@@ -106,14 +106,26 @@ function draft(rng: RngState, owned: readonly string[]): [RngState, string[]] {
   return [next, order.slice(0, OFFER_SIZE)];
 }
 
-export function newRun(seed: number, stake = 1): RunState {
+/** The joker a first career starts with instead of a closet. Measured in
+ *  sim/src/firstcareer.ts: with NO joker the Intern fell to 69.8% (bar 75%) and
+ *  promotion to 6.8% (bar 10%); Coffee Mug keeps 84.1% / 15.8% and is the easiest
+ *  joker to read. */
+export const STARTER_JOKER = 'mug';
+
+/** `firstCareer`: a brand-new player's first career walks from the org chart
+ *  straight into the Intern with a Coffee Mug — no closet of jokers they cannot
+ *  read yet. The closet first opens after beating the Intern. */
+export function newRun(seed: number, stake = 1, opts: { firstCareer?: boolean } = {}): RunState {
   if (stake < 1 || stake > STAKES.length) throw new Error(`no stake ${stake}`);
   let rng: RngState = (seed ^ 0x9e3779b9) >>> 0;
   let b: number;
   [rng, b] = nextInt(rng, DRAWABLE_BOSSES.length);
   let offer: string[];
+  // Drawn even when discarded, so a seed's boss and later offers stay the same.
   [rng, offer] = draft(rng, []);
-  return { seed, stake, meeting: 0, jokers: [], boss: DRAWABLE_BOSSES[b]!, offer, status: 'chart', rngState: rng };
+  if (opts.firstCareer) offer = [];
+  const jokers = opts.firstCareer ? [STARTER_JOKER] : [];
+  return { seed, stake, meeting: 0, jokers, boss: DRAWABLE_BOSSES[b]!, offer, status: 'chart', rngState: rng };
 }
 
 /** Leave the org chart: to the supply closet, or straight to the meeting when

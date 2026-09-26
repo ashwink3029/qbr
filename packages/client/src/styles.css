@@ -509,6 +509,11 @@
 
 /* ── Org chart: CEO at the top, you at the bottom ─────────────────────── */
 .chart-window { max-width: 380px; }
+/* First career: the Coffee Mug that replaces the closet, as a desk note. */
+.starter-joker {
+  margin: 6px 0; padding: 6px 8px; font-size: 13px; line-height: 1.35;
+  background: #fff8c4; border: 1px solid #d8c56a;
+}
 .orgchart { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: stretch; }
 .rung {
   position: relative;
@@ -560,6 +565,7 @@
   .rung-avatar { width: 28px; height: 28px; font-size: 10px; }
   .chart-window .pitch { margin: 0; }
   .chart-window .logo { display: none; }
+  .starter-joker { margin: 4px 0; padding: 4px 6px; font-size: 12px; }
 }
 
 /* ── Stake picker (Home, after the first promotion) ───────────────────── */

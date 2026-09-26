@@ -453,6 +453,23 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    ability) — +1.9pp and +1.6pp. **Rule for future ability cards: an ability is a
    rider on a full-value body, never a substitute for one, and check that it LANDS
    (the probe) before tuning its size.**
+10f. ~~Faster first career~~ **DONE (/explore iteration 8, 2026-09-26; gap-analysis P1,
+   guided first quarter — the "time to first card" half; 10c was the teaching half).**
+   A brand-new player (`progress.careers === 0`) goes Home -> org chart -> **straight
+   into the Intern**: no supply closet of jokers they can't read yet. The desk comes with
+   a fixed `STARTER_JOKER` (Coffee Mug), said in a yellow note on the chart; the closet
+   first opens after beating the Intern, as the session-one reward (and offers the other
+   three). Two taps from Home to the first card, down from three screens + a choice.
+   The org chart stays (user decision: see progression before a career). **Pre-registered
+   bars (`sim/src/firstcareer.ts`), 2000 careers: 3/3** — F1 first-career Intern 84.1%
+   (>= 75%), F2 first-career promotion 15.8% (10-40%), L1 still climbs (84.1 > 83.2 >
+   70.6 > 60.1 > 53.0). Ordinary careers byte-identical (14.0%). **Honest history:** the
+   first design (no joker at all) FAILED both: Intern 69.8%, promotion 6.8% — one joker is
+   worth ~12pp against the Intern. All four jokers were measured as the starter (Stamp
+   only 75.1% / 11.6%); Mug passes and is the easiest to read. Also fixed a real bug from
+   iteration 7: the career-end unlock announcement ignored `stakeCleared`, so Team
+   Building / PIP would unlock silently (`careerEndProgress`, tested). Verified at
+   375x667 and 402x874: chart fits with no scroll.
 11. **Multiplayer: "Play your coworker" (user request 2026-09-26) — NOT STARTED.**
    Setup like Cubes (`cubes/CLAUDE.md` "Multiplayer dev/test"): nearby play over
    **MultipeerConnectivity** (Cubes' native plugin + `createNetLink`), **no lobby**
@@ -491,7 +508,8 @@ Priorities drive the next /explore iterations — work top-down.
   Store accessibility labels. Add a non-colour ownership cue (e.g. corner marker / pattern)
   and `aria-label`s for cells, cards and buttons.
 - P1 **Settings: sound on/off, haptics on/off, reset progress.** Table stakes; none exists.
-- P1 **Guided first quarter (interactive FTUE).** Guides say: core play inside ~60s, the
+- ~~P1 **Guided first quarter (interactive FTUE).**~~ DONE in two halves: 10c (teach
+  scoring + lives in play) and 10f (first career skips the closet, starts with a Mug). Guides say: core play inside ~60s, the
   "aha" inside ~90s, teach by doing not reading, a reward in session one. QBR today: Home ->
   org chart -> supply closet -> first meeting = 3 screens before the first card, and the
   scoring rule (a lane's leader banks its total), lives and closing out are only learned by
