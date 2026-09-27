@@ -8,6 +8,40 @@ keyboard shortcuts and sticky notes. Lore-light, vibe-heavy — the fiction is
 corporate spreadsheet hell, which every player already knows, so nothing needs
 explaining.
 
+## Product goal & polish playbook — read before every loop iteration
+**The goal is a user-friendly, polished experience**: a first-time player "gets" the game
+within seconds and feels the payoff of the core loop as fast as possible. Feature count is
+not the goal. Every `/explore` (or other loop) iteration should name which lever below it
+pulled and what a player now sees, feels, or waits for differently. If it changes none of
+those, say so plainly in its log entry. *(This playbook is shared by cubes, rushie and qbr;
+keep the four levers in sync across their CLAUDE.md files.)*
+
+1. **Research the competition first.** Before inventing a solution, check how shipped games
+   in the genre solve it. Look at top **iOS App Store** titles (their first-session flow,
+   screenshots, and especially 1-3★ reviews, which amount to a free complaint list) and
+   **Reddit** (r/iosgaming, the genre's subreddit, each competitor's own subreddit) for
+   what players praise, quit over, and ask for. Record the sources and the concrete
+   takeaway. A research-only pass that re-ranks the backlog is a valid iteration.
+2. **Speed and performance, meaning less friction.** Measure cold-launch-to-first-
+   interaction, the number of taps from launch into play, input-to-feedback latency, frame
+   drops during the busiest animation, and layout shift. Time it on the Simulator/device
+   before and after, and don't claim a speedup you didn't measure.
+3. **Onboarding by doing.** Teach each mechanic in context the first time a player meets it,
+   with progressive disclosure and no rules wall up front, then get out of the way.
+   Verify it as a brand-new player would meet it (fresh install / cleared storage), not
+   as someone who already knows the rules.
+4. **Juice the core loop.** Use tight animations, haptics and sound on the action players
+   repeat most, so the dopamine hit lands in the first ~30 seconds. Every core-loop event
+   gets visual, haptic and audio feedback, scaled to how much the event matters. Respect
+   Reduce Motion and the silent switch.
+
+**For qbr specifically:** the closest comps are *Queen's Blood* (FF7 Rebirth), *Gwent*,
+*Marvel Snap*, *Balatro*, *Inscryption* and *Slay the Spire*. Card-game rules are the least
+intuitive of the three sibling games, so lever 3 carries the most weight here: the first
+match should teach territory/placement by play, not by text. Lever 2 already has a
+measured baseline in *Simulator research + optimization* below; extend it rather than
+re-measuring from scratch. Stay inside the *IP guardrails* when borrowing from comps.
+
 ## Why this exists
 Origin (2026-09-25): the ask was "a Gwent / Queen's Blood for mobile". Market read:
 PvP live-service card games are contracting (Gwent is now community-run, Marvel
