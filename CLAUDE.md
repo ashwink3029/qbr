@@ -679,6 +679,27 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    seat mapping as pure, unit-tested reducers, as Cubes did. Requires
    `NSLocalNetworkUsageDescription` + `NSBonjourServices` in Info.plist and
    `cap sync ios` + committing Package.swift for the plugin.
+12. **Scoring you can read at a glance (user request 2026-09-27) — NOT STARTED.** Ask: a
+   quarter's score is the points from the lanes you're winning, nothing from lanes you're
+   losing, and it should be obvious at every moment who owns each lane — the lane score
+   filled red / blue for whoever leads, plain on a tie.
+   **Rule: already true, no engine change.** `revenue()` in `shared/src/qbr/game.ts` banks
+   only the leader's own total per lane; the trailing side banks 0 there; ties bank
+   nothing. Keep the reducer, sims and every pre-registered bar untouched.
+   **The gap is presentation**, measured against the current `=SUM` row in `Game.tsx`:
+   (a) each `=SUM` cell shows BOTH totals ("3 vs 1"), which reads as if both players score
+   from the lane; (b) the leader tint is the same pale `--mine` / `--theirs` used by owned
+   cells, so a lane's owner doesn't stand out from the board; (c) the running
+   "N you · M Finance" by the pass button isn't visibly tied to the lanes.
+   Plan: show the lane's banked value big in a **solid** blue (you lead) / red (they lead)
+   fill with white ink, plain grey on a tie; the loser's total small and dimmed (or
+   struck), since it scores nothing; tie the quarter score to it ("Q1: 7–4") so the sum of
+   the coloured cells visibly equals the score. Consider a faint lane-length tint or a
+   leader marker on the column header too. Keep the non-colour cue (▲/▼ or an owner word)
+   for colour-blind players and update `laneLabel` ("Sales: you lead, banking 5; Finance
+   3, banks nothing"). Bindy's `lanes` tip should say "only the leader scores the lane".
+   Tests first (lane cell shows the banked value + owner class; tie shows plain; score
+   equals the sum of won lanes). Verify at 375x667 and greyscale (achromatopsia).
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
