@@ -752,7 +752,8 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    (moved the exploit around). **P1 and P2 were only jointly feasible once the default deck
    fell to <= 72%** — a pre-registration mistake worth remembering: check bars for mutual
    consistency before running.
-   **Open, for the user:** the cap cuts the peak (88.4% uncapped -> 84.0%) and makes building a real
+   **User decision 2026-09-27: 84% is acceptable for now — paused; do not re-open without a new
+   ask.** Was open: the cap cuts the peak (88.4% uncapped -> 84.0%) and makes building a real
    choice, but a tuned deck still beats the starter-deck ladder ~84%. Counterweight options:
    VP/CEO or stakes play built decks; or measure "the ceiling" against a strong reference deck
    rather than the starter.
