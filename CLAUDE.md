@@ -854,15 +854,42 @@ Priorities drive the next /explore iterations — work top-down.
   toasters, no quoted Office Space lines or the red stapler as a direct homage.
 - No AI-generated shipped art or card text — the card-game audience punishes it.
   Plan on a commissioned pixel artist (32-64px, 16-colour VGA-era palette).
+- Art authored in this repo is **placeholder-in-code** (SVG/pixel maps like `avatars.tsx`,
+  `Mascot.tsx`, `icon/`), sized so a commissioned set can replace it 1:1. Say so when
+  recording it.
 
 ## Exploration loop — `/explore`
-`.claude/commands/explore.md` (adapted from Rushie's, itself from nexus's) runs ONE
-iteration: orient from this file -> pick one hypothesis (open thread first; else
-research / juice / sound+haptics / balance / new content / UI clarity) -> state what
-would count as success and pre-register any bar -> do the work -> verify (tests,
-typecheck, headless phone-size check with a temporary preview server, Simulator build)
--> record it here (DONE entry, "Next up", or a recorded null) -> commit and push once
-to `origin/main`. It lists the measured nulls and user decisions not to re-open.
+`.claude/commands/explore.md` runs ONE iteration: orient from this file, pick one hypothesis
+(open thread first, else a playbook lever or balance/content), pre-register any bar, do the
+work, verify it, record it here, and push once. **This file is canonical:** the command only
+holds the procedure, and the facts it relies on live here.
+
+**Push policy (standing user instruction):** commit and push every finished iteration to
+`origin/main`. From a worktree, fast-forward with `git push origin HEAD:main`, never force-
+push or rewrite history, and confirm with `git fetch origin main`. **Each push triggers an
+Xcode Cloud -> TestFlight build, so push once per iteration, not per micro-commit.**
+
+**Recording:** a finished backlog item is struck through and marked **DONE** in place (or
+gets its own numbered entry), covering what was found, what was checked first, what changed
+(file/function level), the numbers or test names, an **"Honest history"** line if the first
+attempt failed, and an explicit **not verified** line for any gap. Filed-but-unbuilt ideas
+go under "Next up". Rejected hypotheses are recorded too. No separate memory files.
+
+### Do not re-open without a stated new reason
+- **Measured nulls:** hand **scarcity** as the passing lever (smaller hands made passing
+  matter *less*); **adding** special cards to the deck (expensive specials were net negative,
+  so they replace starter cards instead); "Formatting needs both neighbours" (too weak);
+  symmetric Legacy-System concrete (it *helped* the player); CEO with 3 boosted home cells
+  (easier than 2, because the lever is not monotone).
+- **User decisions:** no placing a card on a filled cell except via a joker; player-facing
+  words are **career** / **one year**; the app icon is **one simple idea** (the mini
+  spreadsheet); the feedback loop is **TestFlight**, not a web server.
+- **Balance rules:** cheap spreaders are king and $$$ cards are liabilities, so price new
+  content accordingly. Bars are pre-registered in the harness header before the first run
+  and never moved; tune the content, not the bar. Judge at the registered seed count (2000
+  for run/unlock bars), since 1000-seed runs are noisy (~±1.6pp) and have produced false
+  fails here. App and sim share one source of truth (`opponentPolicy`, `spreadEffects`,
+  `playerDeck`), so never re-implement a rule inside a harness.
 
 ## How to run
 ```
@@ -877,11 +904,27 @@ pnpm match       # best-of-3 bars M1-M4: [seedsPerSeat=500]
 #                    tsx src/nopaste.ts (match bars with vs without paste-over)
 # from packages/sim: tsx src/passplan.ts (pass-plan thresholds),
 #                    tsx src/matchsweep.ts (hand size x between-quarter draws)
+# more bar harnesses in packages/sim/src (each states its pre-registered bar in its
+# header): unlockbars (U1-U3), stakebars, firstcareer, dailybars, deckbars,
+# collectionbars, thinktime, cardpower
 ```
+Reuse an existing harness before writing a new one; re-run the relevant bars after any
+rules change, because past tunings go stale when the option space moves (no-paste-over
+knocked the Micromanager under its bar).
+
+**Headless phone-layout check** (after any visual change): `pnpm --dir packages/client
+build`, serve it temporarily with `vite preview --port 5188`, and drive headless Chrome over
+CDP at **375x667 (SE)** and **402x874 (17 Pro)**. Confirm no overlap, no window scroll and the
+pass button on screen, and look at the screenshots. Then **stop the preview server**; never
+leave a dev server running. jsdom tests find playable cards by `data-playable="true"`.
 Worktrees: a background Claude session edits in `.claude/worktrees/<name>`
 (gitignored) and fast-forwards `main`; run a second dev server there on 5177.
 
 ## iOS Simulator
+After adding any Capacitor plugin, run `cap sync ios` and **commit
+`ios/App/CapApp-SPM/Package.swift`**, because Xcode Cloud only runs `cap copy`. Native
+haptics go through `@capacitor/haptics` only (`navigator.vibrate` does nothing on iPhone),
+and haptics and touch-triggered audio can only be verified on a real device.
 Same recipe as `rushie/CLAUDE.md` (formerly `chain/`) ("Dev workflow — running on the iOS Simulator"),
 with bundle id `com.ashwink.qbr`:
 ```
