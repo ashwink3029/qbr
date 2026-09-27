@@ -3,7 +3,8 @@ import {
   CARDS,
   SPECIALS,
   STAKES,
-  newlyUnlocked,
+  UNLOCKABLES,
+  newlyUnlockedCards,
   type Progress,
   JOKERS,
   MEETINGS,
@@ -64,6 +65,8 @@ export function careerEndProgress(progress: Progress, run: RunState): Progress {
     bestRung: Math.max(progress.bestRung, won ? MEETINGS.length : run.meeting),
     careers: progress.careers + 1,
     stakeCleared: won ? Math.max(progress.stakeCleared ?? 0, run.stake) : (progress.stakeCleared ?? 0),
+    promotions: (progress.promotions ?? 0) + (won ? 1 : 0),
+    meetings: (progress.meetings ?? 0) + (won ? MEETINGS.length : run.meeting),
   };
 }
 
@@ -85,7 +88,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
   const ended = run.status === 'won' || run.status === 'lost';
   useEffect(() => {
     if (!ended) return;
-    feedback.careerEnded(run.status === 'won', newlyUnlocked(progress, careerEndProgress(progress, run)).length);
+    feedback.careerEnded(run.status === 'won', newlyUnlockedCards(progress, careerEndProgress(progress, run)).length);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once, when the career ends
   }, [ended]);
 
@@ -94,7 +97,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
   if (run.status === 'won' || run.status === 'lost') {
     const won = run.status === 'won';
     const beaten = won ? MEETINGS.length : run.meeting;
-    const earned = newlyUnlocked(progress, careerEndProgress(progress, run));
+    const earned = newlyUnlockedCards(progress, careerEndProgress(progress, run));
     return (
       <div className="app home" data-run-end>
         <div className="window start-window chart-window">
@@ -113,7 +116,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
                 <b>New card{earned.length > 1 ? 's' : ''} unlocked</b>
                 <div className="unlocked-cards">
                   {earned.map((id, k) => {
-                    const s = SPECIALS.find((x) => x.id === id)!;
+                    const s = UNLOCKABLES.find((x) => x.id === id)!;
                     return (
                       // Each new card turns over in turn, after the chart settles.
                       <div
@@ -126,7 +129,11 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
                         <div className="card deck-card special">
                           <CardFace id={id} />
                         </div>
-                        <small>replaces a {CARDS[s.replaces]!.name.replace(/­/g, '')}</small>
+                        <small>
+                          {SPECIALS.some((x) => x.id === id)
+                            ? `replaces a ${CARDS[s.replaces]!.name.replace(/­/g, '')}`
+                            : `${s.copies ?? 1} added to your collection`}
+                        </small>
                       </div>
                     );
                   })}

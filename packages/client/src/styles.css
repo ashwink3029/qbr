@@ -639,38 +639,17 @@
   background: var(--title);
 }
 .deck-h { margin: 6px 0 0; font-size: 13px; }
-/* Deck building: each unlocked special, in deck or benched. */
+/* Deck building: tap a deck card to take it out, a collection card to add it. */
 .deck-hint { margin: 0; font-size: 12px; color: #444; }
-.bench-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.bench-row {
-  display: flex; align-items: center; gap: 8px; padding: 4px 6px;
-  background: #fff8c4; border: 1px solid #d8c56a;
-}
-.bench-row.off { background: #eee; border-color: #bbb; color: #666; }
-.bench-row .rung-text { flex: 1; min-width: 0; }
-.bench-toggle { flex: 0 0 auto; min-width: 84px; padding: 6px 8px; font-size: 13px; }
-.bench-row.off .bench-toggle { border-style: dashed; }
-.locked-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.locked {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  background: #e4e4e4;
-  border: 1px dashed var(--lo);
-}
-.lock-sil {
-  flex: 0 0 auto;
-  width: 34px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #bdbdbd;
-  color: #fff;
-  font-weight: 800;
-  font-size: 18px;
-}
+.deck-status { margin: 0; font-size: 13px; }
+.deck-status.short { color: var(--theirs-ink); font-weight: 700; }
+.deck-card { cursor: pointer; }
+.coll-card .left { font-size: 10px; color: #555; line-height: 1; }
+.coll-card:disabled { opacity: 0.45; }
+/* Locked: the real card, greyed, with how to earn it — the whole inventory is on show. */
+.locked-card { cursor: default; filter: grayscale(1); opacity: 0.6; border-style: dashed; background: #eee; }
+.lock-how { font-size: 9px; line-height: 1.15; text-align: center; color: #333; padding: 0 2px; }
+.lock-progress { white-space: nowrap; }
 .unlocked { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; background: #fffbe0; border: 2px solid #f2c14e; }
 .unlocked-cards { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .unlocked-item { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 80px; }

@@ -538,7 +538,7 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Tests first (`daily.test.tsx` 6, run tests 2). Verified at 375x667 / 402x874: Home
    fits in the worst case (picker + Resume). **Not built:** a shared leaderboard (needs a
    server — off-thesis), sharing a result card.
-10i. ~~Deck building~~ **DONE (/explore iteration 11, 2026-09-26; gap-analysis P2,
+10i. ~~Deck building~~ **DONE — superseded by item 13's builder (the bench is gone; old benches carry over as a built deck)**. Was: **DONE (/explore iteration 11, 2026-09-26; gap-analysis P2,
    variety).** Your deck -> "Specials in your deck": each unlocked special is **In deck** or
    **Benched** (its starter card comes back; the deck stays 15). `playerDeck(progress,
    benched)`; bench in guarded localStorage `qbr.bench.v1` (`client/src/bench.ts`). A
@@ -705,29 +705,43 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    3, banks nothing"). Bindy's `lanes` tip should say "only the leader scores the lane".
    Tests first (lane cell shows the banked value + owner class; tie shows plain; score
    equals the sum of won lanes). Verify at 375x667 and greyscale (achromatopsia).
-13. **Wins earn cards; you build your own 15 (user request 2026-09-27) — NOT STARTED.**
-   Ask: rather than upgrading cards on wins, a win should give you MORE cards, so the
-   player has to strategize which 15 make a good deck. Today (item 5 + 10i) each unlock
-   is an upgrade that REPLACES a fixed starter card, and deck building is only
-   bench/unbench of those swaps — there is nothing to compose.
-   Direction: a **collection** (starter cards + everything earned, with copies) and a
-   **deck builder** that picks exactly 15 from it (a copy limit, e.g. max 2 of a card /
-   1 of a special). Earning: unlock milestones grant cards into the collection, and
-   likely a "pick 1 of 3 cards" reward after meeting wins (Slay-the-Spire shaped) so
-   collections diverge. The builder replaces the 10i bench screen; the org chart's
-   "tailor it to the VP's boss" hook stays. Daily stays on the starter deck.
-   **What the measurements already say:** (a) when specials were ADDED on top of the
-   deck, $$$ cards were net NEGATIVE (-6pp) and a cheap one broken (+16pp) — in a
-   free-build model that is exactly the strategic content (the player must learn cheap
-   spreaders are king and budget for $$$), but it means a dominant "all cheap" build
-   is the main risk; (b) 10i found real boss-dependent choices (±4-5pp vs
-   Micromanager / Legacy), which is the depth to amplify; (c) the collection needs more
-   than 8 specials for building to be interesting — new commons, priced per the
-   "cheap spreaders are king" rule.
-   Pre-register before building (keep existing bars): no build beats the best starter-
-   swap deck by more than the U3 ceiling (75%); no single build is best against every
-   boss; a naive "take everything cheapest" build is not the best build; the
-   first-career / ladder bars unchanged. Tests first; verify the builder at 375x667.
+13. **Wins earn cards; you build your own 15 (user request 2026-09-27) — BUILT; C3 FAILS,
+   design decision pending (user).** Ask: rather than upgrading cards on wins, earn MORE
+   cards and strategize a 15-card deck; show every winnable card greyed out from the start.
+   **Built:** `shared/src/qbr/collection.ts` — `COLLECTIBLES` (16 new cards, defined in
+   `cards.ts`) + the 8 SPECIALS = `UNLOCKABLES` (24). Unlocks spread over many careers via
+   two new `Progress` counters, `meetings` (won, summed over careers) and `promotions`
+   (`record.meetings` seeded from `bestMeetings` for old saves): Win 3/6/10/15/20/30/45
+   meetings, finish 2/5/8/12/20 careers, get promoted 2/3/5 times, promoted on Hostile board.
+   `collectionOf` (starter + unlocked, `copies` each: cheap ones 2), `deckProblem` (exactly
+   15, within owned copies), `resolveDeck(saved, p)` (saved if legal, else the old default
+   `playerDeck(p)` = starter + unlocked specials swapped in — so a player who never builds is
+   unchanged and every older bar still holds). Client: `DeckView` is now a builder — tap a
+   deck card to take it out, a collection card to add it; a deck is saved only when full and
+   legal ("Add N more…" / "Your deck is full…"); **locked cards show their real face greyed
+   and dashed with 🔒 how + progress ("Win 20 meetings 7/20")**; "Default deck" resets.
+   `client/src/deck.ts` (`qbr.deck.v1`) replaces the bench, carrying an old bench over once.
+   The career-end screen announces collectibles ("2 added to your collection"). Spread
+   glyphs grow a row for 3-ahead reach; VoiceOver says "2 ahead-left". Verified at 375x667.
+   **Bars (`sim/src/collectionbars.ts`, pre-registered before the first run), 2000 seeds:**
+   C1 no collectible lifts > +10pp alone — **PASS**; C2 each helps >= +1pp in some context (no
+   boss or a boss) — **PASS** (e.g. Email Chain +1.4pp plain but +9.4pp vs Change Freeze);
+   **C3 hill-climbed best build <= 75% — FAIL, 93.6%**; C4 naive 15-cheapest 78.0% < builder.
+   **Honest history:** round 1 had Sticky Note broken (+11.5pp) and six cards with no use
+   (Out of Office, Red Pen, High Five, Pivot, Mentorship, Keynote); two tuning rounds fixed
+   C1/C2 (rules held: an ability rides on a full body; $$$ cards need a big body to matter).
+   **C3 diagnosis — it's free building itself, not the new cards:** with ONLY today's cards,
+   one legal swap (the last Cold Call -> the Standup Gossip displaced) takes the all-specials
+   deck 74.4% -> **88.3%**. Standup ($ v2, both side lanes) is far the strongest starter card:
+   swapping almost any card for one is +10..+16pp under greedy AND lookahead play; Cold Call
+   and $$$ cards are the weakest. The fixed upgrade model hid this. Tried and rejected: a
+   deck cost floor (swaps are cost-neutral, no effect); Standup v1 / Cold Call reach / both
+   (best build still 83-95%, and Cold Call reach broke seat balance to 57.5%). Single copies
+   of the Standup-like High Five / Summer Intern keep the new cards to ~+5pp over today's.
+   **Decision for the user (not taken):** (a) accept that a built deck is strong and lean on
+   stakes; (b) counterweight — VP/CEO (or stakes) play built decks too; (c) rebalance the
+   starter set so no card dominates (touches every bar: runbars, stakebars, firstcareer,
+   daily re-vet). Not built: "pick 1 of 3 cards" after a win.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

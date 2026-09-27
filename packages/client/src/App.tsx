@@ -5,12 +5,12 @@ import {
   STARTER_DECK,
   dailySeed,
   dayKey,
-  playerDeck,
-  unlockedSpecials,
+  resolveDeck,
+  unlockedCards,
   type Player,
   type QuarterResult,
 } from '@qbr/shared';
-import { loadBench, saveBench } from './bench.js';
+import { loadDeck, saveDeck } from './deck.js';
 import { CoworkerView } from './CoworkerView.js';
 import { DeckView } from './DeckView.js';
 import { createNetLink, nearbySupported, type NetLink } from './net/multipeerLink.js';
@@ -71,12 +71,13 @@ export function App({
   const [screen, setScreen] = useState<Screen>('home');
   const [session, setSession] = useState<Session | null>(null);
   const [record, setRecord] = useState<Record>(loadRecord);
-  const [bench, setBench] = useState<string[]>(loadBench);
+  // The deck built in Your deck (null = the default: starter + unlocked specials).
+  const [builtDeck, setBuiltDeck] = useState<string[] | null>(() => loadDeck(progressOf(loadRecord())));
   // Your deck opens from Home or from a career's opening org chart; close returns there.
   const [deckReturn, setDeckReturn] = useState<'home' | 'play'>('home');
-  const changeBench = (b: string[]) => {
-    setBench(b);
-    saveBench(b);
+  const changeDeck = (d: string[] | null) => {
+    setBuiltDeck(d);
+    saveDeck(d);
   };
   const [settings, setSettings] = useState<Settings>(() => {
     const s = loadSettings();
@@ -99,7 +100,7 @@ export function App({
     setSession((s) => ({
       kind,
       id: (s?.id ?? 0) + 1,
-      deck: playerDeck(progressOf(record), bench),
+      deck: resolveDeck(builtDeck, progressOf(record)),
       stake: kind === 'run' ? chosenStake : 1,
     }));
     setScreen('play');
@@ -163,13 +164,13 @@ export function App({
         />
       )}
       {screen === 'deck' && (
-        <DeckView progress={progressOf(record)} benched={bench} onBench={changeBench} onClose={() => setScreen(deckReturn)} />
+        <DeckView progress={progressOf(record)} saved={builtDeck} onSave={changeDeck} onClose={() => setScreen(deckReturn)} />
       )}
       {screen === 'coworker' && nearby && (
         <CoworkerView
           makeLink={nearby}
           name={settings.name}
-          deck={playerDeck(progressOf(record), bench)}
+          deck={resolveDeck(builtDeck, progressOf(record))}
           onName={(name) => changeSettings({ ...settings, name })}
           onEnd={(winner) =>
             setRecord((r) => {
@@ -189,6 +190,7 @@ export function App({
           onResetProgress={() => {
             resetProgress();
             setRecord(EMPTY_RECORD);
+            changeDeck(null);
           }}
           onClose={() => setScreen('home')}
         />
@@ -199,10 +201,10 @@ export function App({
             <Run
               key={session.id}
               seed={session.daily ? dailySeed(session.daily) : sessionSeed(session.id)}
-              deck={session.daily ? session.deck : playerDeck(progressOf(record), bench)}
+              deck={session.daily ? session.deck : resolveDeck(builtDeck, progressOf(record))}
               stake={session.stake}
               daily={session.daily !== undefined}
-              {...(session.daily || unlockedSpecials(progressOf(record)).length === 0
+              {...(session.daily || unlockedCards(progressOf(record)).length === 0
                 ? {}
                 : {
                     onEditDeck: () => {

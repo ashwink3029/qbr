@@ -27,14 +27,15 @@ describe('first career: org chart -> Intern, no closet', () => {
 });
 
 describe('deck building after seeing the boss', () => {
-  it('the opening org chart links to Your deck, which returns to the chart; the bench applies to this career', () => {
+  it('the opening org chart links to Your deck, which returns to the chart; the built deck applies to this career', () => {
     localStorage.setItem('qbr.record.v1', JSON.stringify({ runs: 3, bestMeetings: 5, promotions: 1 }));
     render(<App seed={5} />);
     fireEvent.click(q('[data-start-run]')!);
     expect(q('[data-rung="3"]')!.textContent).toMatch(/Micromanager|Legacy|Auditor|Change Freeze/); // the boss is known here
     fireEvent.click(q('[data-chart-deck]')!);
     expect(q('[data-deck-view]')).toBeTruthy();
-    fireEvent.click(q('[data-bench="coffeerun"]')!);
+    fireEvent.click(q('[data-deck-card="coffeerun"]')!); // take Coffee Run out
+    fireEvent.click(q('[data-coll-card="memo"]')!); // and put the second Memo back
     fireEvent.click(q('[data-deck-view] [data-exit]')!);
     expect(q('[data-chart]')).toBeTruthy(); // back to the chart, not Home
     expect(q('[data-home]')).toBeNull();
@@ -64,6 +65,8 @@ describe('career end', () => {
       bestRung: 5,
       careers: 4,
       stakeCleared: 2,
+      promotions: 1,
+      meetings: 5,
     });
     const lost = finishMeeting(leaveChart({ ...newRun(1, 3), offer: [] }), false);
     expect(careerEndProgress({ bestRung: 5, careers: 3, stakeCleared: 2 }, lost).stakeCleared).toBe(2);

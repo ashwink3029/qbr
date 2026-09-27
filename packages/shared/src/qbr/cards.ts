@@ -78,6 +78,38 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
     spread: [[-1, 1], fwd, [1, 1]],
     ability: { kind: 'weaken', amount: 2, reach: 'lane' },
   },
+
+  // ── Collectibles: earned over many careers, built into your own 15 (collection.ts) ──
+  stickynote: { id: 'stickynote', name: 'Sticky Note', cost: 1, value: 1, spread: [[0, 2]] },
+  ooo: { id: 'ooo', name: 'Out of Office', cost: 1, value: 5, spread: [] },
+  highfive: { id: 'highfive', name: 'High Five', cost: 1, value: 2, spread: [up, down], ability: { kind: 'boost', amount: 1 } },
+  emailchain: { id: 'emailchain', name: 'Email Chain', cost: 1, value: 1, spread: [fwd, [0, 2], [0, 3]] },
+  redpen: { id: 'redpen', name: 'Red Pen', cost: 1, value: 2, spread: [fwd], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
+  keynote: { id: 'keynote', name: 'Keynote', cost: 3, value: 7, spread: [up, down, fwd] },
+  whiteboard: { id: 'whiteboard', name: 'White­board', cost: 2, value: 2, spread: [up, down, fwd, [-1, 1], [1, 1]] },
+  pivot: { id: 'pivot', name: 'Pivot', cost: 2, value: 4, spread: [up, down, back] },
+  mentorship: { id: 'mentorship', name: 'Mentor­ship', cost: 2, value: 3, spread: [fwd, [0, 2]], ability: { kind: 'boost', amount: 2, reach: 'lane' } },
+  deadline: { id: 'deadline', name: 'Deadline', cost: 2, value: 4, spread: [fwd], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
+  hackathon: { id: 'hackathon', name: 'Hack­athon', cost: 2, value: 3, spread: [fwd, [0, 2], [-1, 2], [1, 2]] },
+  summerintern: { id: 'summerintern', name: 'Summer Intern', cost: 1, value: 1, spread: [up, down, fwd, back] },
+  ipo: { id: 'ipo', name: 'IPO', cost: 3, value: 10, spread: [] },
+  corneroffice: {
+    id: 'corneroffice',
+    name: 'Corner Office',
+    cost: 3,
+    value: 6,
+    spread: [up, down, fwd, back],
+    ability: { kind: 'boost', amount: 2, reach: 'lane' },
+  },
+  merger: {
+    id: 'merger',
+    name: 'Merger',
+    cost: 3,
+    value: 5,
+    spread: [[-1, 1], fwd, [1, 1], [0, 2]],
+    ability: { kind: 'weaken', amount: 1 },
+  },
+  bluesky: { id: 'bluesky', name: 'Blue-Sky Thinking', cost: 2, value: 2, spread: [[0, 2], [-1, 2], [1, 2], [0, 3]] },
 };
 
 /** Both seats play the same 15-card list (shuffled independently), so a seat
@@ -97,12 +129,18 @@ export interface Progress {
   readonly careers: number;
   /** Highest career stake promoted at (0 = none). */
   readonly stakeCleared?: number;
+  /** Careers that ended in promotion. */
+  readonly promotions?: number;
+  /** Meetings won, summed over every career. */
+  readonly meetings?: number;
 }
 
 export type UnlockCondition =
   | { readonly kind: 'rung'; readonly rungsBeaten: number }
   | { readonly kind: 'careers'; readonly count: number }
-  | { readonly kind: 'stake'; readonly cleared: number };
+  | { readonly kind: 'stake'; readonly cleared: number }
+  | { readonly kind: 'promotions'; readonly count: number }
+  | { readonly kind: 'meetings'; readonly count: number };
 
 export interface Special {
   readonly id: string;
@@ -131,7 +169,7 @@ export const SPECIALS: readonly Special[] = [
   { id: 'pip', replaces: 'stakeholder', unlock: { kind: 'stake', cleared: 3 }, how: 'Get promoted on Restructuring', flavor: 'Thirty days to turn it around.' },
 ];
 
-export function isUnlocked(s: Special, p: Progress): boolean {
+export function isUnlocked(s: { readonly unlock: UnlockCondition }, p: Progress): boolean {
   switch (s.unlock.kind) {
     case 'rung':
       return p.bestRung >= s.unlock.rungsBeaten;
@@ -139,6 +177,10 @@ export function isUnlocked(s: Special, p: Progress): boolean {
       return p.careers >= s.unlock.count;
     case 'stake':
       return (p.stakeCleared ?? 0) >= s.unlock.cleared;
+    case 'promotions':
+      return (p.promotions ?? 0) >= s.unlock.count;
+    case 'meetings':
+      return (p.meetings ?? 0) >= s.unlock.count;
   }
 }
 

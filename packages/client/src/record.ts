@@ -15,6 +15,8 @@ export interface Record {
   readonly promotions: number;
   /** Most meetings won in a single run (3 = promoted). */
   readonly bestMeetings: number;
+  /** Meetings won, summed over every career (unlocks collectibles). */
+  readonly meetings: number;
   /** Highest career stake promoted at (0 = none). Stake N+1 is open to play. */
   readonly stakeCleared: number;
   /** The last daily career attempted (one a day), or null. */
@@ -42,6 +44,7 @@ export const EMPTY_RECORD: Record = {
   runs: 0,
   promotions: 0,
   bestMeetings: 0,
+  meetings: 0,
   stakeCleared: 0,
   daily: null,
   coworker: { wins: 0, losses: 0, draws: 0 },
@@ -99,6 +102,8 @@ export function loadRecord(): Record {
       runs: Number(r.runs) || 0,
       promotions: Number(r.promotions) || 0,
       bestMeetings: Number(r.bestMeetings) || 0,
+      // Older records only kept the best career: at least that many were won.
+      meetings: Number(r.meetings) || Number(r.bestMeetings) || 0,
       stakeCleared: Number(r.stakeCleared) || 0,
       daily: loadDaily(r.daily),
       coworker: {
@@ -136,7 +141,13 @@ export function recordYear(r: Record, winner: Player | null, results: readonly Q
 /** What unlocks care about, from the record. A career's rungs beaten = its
  *  `meetingsWon`, so `bestMeetings` is the best rung reached. */
 export function progressOf(r: Record): Progress {
-  return { bestRung: r.bestMeetings, careers: r.runs, stakeCleared: r.stakeCleared };
+  return {
+    bestRung: r.bestMeetings,
+    careers: r.runs,
+    stakeCleared: r.stakeCleared,
+    promotions: r.promotions,
+    meetings: r.meetings,
+  };
 }
 
 /** Fold one finished run into the record. */
@@ -146,6 +157,7 @@ export function recordRun(r: Record, promoted: boolean, meetingsWon: number, sta
     runs: r.runs + 1,
     promotions: r.promotions + (promoted ? 1 : 0),
     bestMeetings: Math.max(r.bestMeetings, meetingsWon),
+    meetings: r.meetings + meetingsWon,
     stakeCleared: promoted ? Math.max(r.stakeCleared, stake) : r.stakeCleared,
   };
 }

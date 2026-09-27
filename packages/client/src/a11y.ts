@@ -14,7 +14,7 @@ function offsetWord(o: Offset): string {
   if (dx === 0) return dy < 0 ? `${-dy} ahead` : `${dy} behind`;
   const side = dx < 0 ? 'left' : 'right';
   if (dy === 0) return Math.abs(dx) > 1 ? `${Math.abs(dx)} ${side}` : side;
-  return `${dy < 0 ? 'ahead' : 'behind'}-${side}`;
+  return `${Math.abs(dy) > 1 ? `${Math.abs(dy)} ` : ''}${dy < 0 ? 'ahead' : 'behind'}-${side}`;
 }
 
 /** A card's spread in words, in the card's own order. */

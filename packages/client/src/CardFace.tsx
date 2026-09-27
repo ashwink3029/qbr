@@ -5,14 +5,12 @@ import { spreadToScreen } from './layout.js';
 /** A card's spread drawn as a 3-wide x 5-tall mini-grid centred on the card,
  *  oriented like the board: forward is up. */
 export function SpreadGlyph({ id }: { id: string }) {
-  const hits = new Set(
-    card(id).spread.map((o) => {
-      const { dx, dy } = spreadToScreen(o);
-      return `${dx},${dy}`;
-    }),
-  );
+  const offs = card(id).spread.map(spreadToScreen);
+  const hits = new Set(offs.map(({ dx, dy }) => `${dx},${dy}`));
+  // Usually 5 tall; a card that reaches 3 ahead (Email Chain) grows a row.
+  const top = Math.min(-2, ...offs.map((o) => o.dy));
   const cells = [];
-  for (let dy = -2; dy <= 2; dy++) {
+  for (let dy = top; dy <= 2; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
       const cls = dx === 0 && dy === 0 ? 'g self' : hits.has(`${dx},${dy}`) ? 'g hit' : 'g';
       cells.push(<i key={`${dx},${dy}`} className={cls} />);
