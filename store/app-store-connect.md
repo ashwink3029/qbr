@@ -61,7 +61,7 @@ spreadsheet. New every day: a Daily career that is the same for everyone.
 >
 > • Climb the org chart — beat the Intern, the Manager, Finance, the VP and the CEO, each
 >   smarter than the last, in a best-of-three meeting.
-> • Build your desk — pick jokers from the supply closet between meetings: an Ergonomic
+> • Build your desk — pick a desk upgrade between meetings: an Ergonomic
 >   Chair, Conditional Formatting, Circular Reference and more.
 > • Read the boss — the VP brings a rule-breaker (the Micromanager, the Auditor, a Change
 >   Freeze…) and you see it before the career starts. Tailor your deck to beat it.

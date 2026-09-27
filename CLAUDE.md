@@ -254,6 +254,10 @@ Player-facing words: a full run is a **career** ("Start career", "Resume career"
 "Resume year", "Years NW · NL"). Code keeps the older names — `run.ts`,
 `RunState`, `Run.tsx`, `record.runs`, session kind `'run'` / `'quick'` — so a
 "run" in code is a "career" on screen, and a "quick year" in code is "one year".
+**Joker draft = "desk upgrade" on screen (user decision 2026-09-27):** the chart's button
+reads "Pick a desk upgrade" and the draft screen is titled "Desk upgrade — before the …".
+"Stop by the supply closet" was too cute to read as the action that starts the career.
+Code, CSS and comments still say `closet` / `draft`.
 
 ## Backlog from TestFlight feedback (user, 2026-09-25) — prioritized
 Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).

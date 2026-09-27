@@ -19,9 +19,9 @@ describe('first career: org chart -> Intern, no closet', () => {
     expect(q('[data-tray] [data-joker="mug"]')).toBeTruthy();
   });
 
-  it('a returning player still starts in the supply closet', () => {
+  it('a returning player still starts by picking a desk upgrade', () => {
     render(<Run seed={3} deck={STARTER_DECK} progress={{ bestRung: 1, careers: 1 }} onExit={() => {}} onRunEnd={() => {}} />);
-    expect(q('[data-chart-go]')!.textContent).toMatch(/supply closet/);
+    expect(q('[data-chart-go]')!.textContent).toMatch(/Pick a desk upgrade/);
     expect(q('[data-starter-joker]')).toBeNull();
   });
 });

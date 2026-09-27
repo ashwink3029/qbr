@@ -68,7 +68,7 @@ export function careerEndProgress(progress: Progress, run: RunState): Progress {
 }
 
 /**
- * A career (a "run" in code): org chart -> supply closet -> meeting -> org chart
+ * A career (a "run" in code): org chart -> desk upgrade (the joker draft) -> meeting -> org chart
  * ... up the ladder from the Intern to the CEO. The org chart shows before the
  * first meeting and after every win, and it is the career-end screen too. Each
  * meeting's Game is keyed by rung so it starts clean.
@@ -170,7 +170,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
             {fresh && run.offer.length === 0 && run.jokers.length > 0 && (
               <p className="starter-joker" data-starter-joker>
                 Your desk came with a <b>{JOKERS[run.jokers[0]!]!.name}</b>: {JOKERS[run.jokers[0]!]!.blurb.toLowerCase()}.
-                The supply closet opens after your first win.
+                You pick more desk upgrades after your first win.
               </p>
             )}
             {fresh && onEditDeck && (
@@ -186,7 +186,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
                 setRun((r) => leaveChart(r));
               }}
             >
-              {run.offer.length > 0 ? 'Stop by the supply closet' : `Walk into the ${next.name}`}
+              {run.offer.length > 0 ? 'Pick a desk upgrade' : `Walk into the ${next.name}`}
             </button>
           </div>
         </div>
@@ -199,11 +199,11 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
       <div className="app home" data-draft>
         <div className="window start-window closet">
           <div className="titlebar">
-            <span>Supply closet — before the {currentMeeting(run).name}</span>
+            <span>Desk upgrade — before the {currentMeeting(run).name}</span>
             <CloseButton onExit={onExit} />
           </div>
           <div className="start-body">
-            <p className="pitch">Take one thing for your desk.</p>
+            <p className="pitch">Pick one to keep on your desk for the rest of the career.</p>
             <div className="offer">
               {run.offer.map((j) => (
                 <button key={j} className="joker offer-card" data-offer={j} onClick={() => setRun((r) => pickJoker(r, j))}>
