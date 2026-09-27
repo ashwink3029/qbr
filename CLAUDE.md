@@ -238,8 +238,13 @@ advantage" in marketing until this moves.
    draft screen and desk-object tray; helpers (keycaps / sticky notes); "The
    Board" final boss; Pivot Table / Newton's Cradle / Paste Special jokers.
 6. ~~Mascot~~ **DONE 2026-09-25 — "Bindy", an original binder clip**
-   (`client/src/Mascot.tsx`, inline SVG placeholder art: black plates, wire-handle
-   arms, the jaw is the face — shut idle, open talking, tilted worried). NOT
+   (`client/src/Mascot.tsx`, inline SVG placeholder art). **v2 (user feedback
+   2026-09-27: "it wasn't clear that was a binder"):** the v1 two-split-plates drawing
+   didn't read as a clip. Now the silhouette carries it — black body with a rolled top
+   edge, silver wire handles up like ears (dark-outlined so they hold on the grey tip
+   bubble), a ruled sheet of paper in its bite — and a cute face on the body (big
+   eyes, blush, the mouth carries the mood: smile / open / wavy with raised inner
+   brows). Checked at 160 / 56 / 48 / 44px on teal and grey. NOT
    Clippy/Clippit; it was briefly "Clipper" and renamed for being one letter-swap
    from Clippy. Bindy gives **one-time tips** (`tips.ts`, seen-set in guarded
    localStorage, tap to dismiss): how to place (first turn), what orange stripes
@@ -700,6 +705,29 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    3, banks nothing"). Bindy's `lanes` tip should say "only the leader scores the lane".
    Tests first (lane cell shows the banked value + owner class; tie shows plain; score
    equals the sum of won lanes). Verify at 375x667 and greyscale (achromatopsia).
+13. **Wins earn cards; you build your own 15 (user request 2026-09-27) — NOT STARTED.**
+   Ask: rather than upgrading cards on wins, a win should give you MORE cards, so the
+   player has to strategize which 15 make a good deck. Today (item 5 + 10i) each unlock
+   is an upgrade that REPLACES a fixed starter card, and deck building is only
+   bench/unbench of those swaps — there is nothing to compose.
+   Direction: a **collection** (starter cards + everything earned, with copies) and a
+   **deck builder** that picks exactly 15 from it (a copy limit, e.g. max 2 of a card /
+   1 of a special). Earning: unlock milestones grant cards into the collection, and
+   likely a "pick 1 of 3 cards" reward after meeting wins (Slay-the-Spire shaped) so
+   collections diverge. The builder replaces the 10i bench screen; the org chart's
+   "tailor it to the VP's boss" hook stays. Daily stays on the starter deck.
+   **What the measurements already say:** (a) when specials were ADDED on top of the
+   deck, $$$ cards were net NEGATIVE (-6pp) and a cheap one broken (+16pp) — in a
+   free-build model that is exactly the strategic content (the player must learn cheap
+   spreaders are king and budget for $$$), but it means a dominant "all cheap" build
+   is the main risk; (b) 10i found real boss-dependent choices (±4-5pp vs
+   Micromanager / Legacy), which is the depth to amplify; (c) the collection needs more
+   than 8 specials for building to be interesting — new commons, priced per the
+   "cheap spreaders are king" rule.
+   Pre-register before building (keep existing bars): no build beats the best starter-
+   swap deck by more than the U3 ceiling (75%); no single build is best against every
+   boss; a naive "take everything cheapest" build is not the best build; the
+   first-career / ladder bars unchanged. Tests first; verify the builder at 375x667.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
