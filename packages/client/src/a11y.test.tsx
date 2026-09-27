@@ -10,7 +10,7 @@ import { Game } from './Game.js';
 
 describe('describing a card in words', () => {
   it('spreads read in screen terms: ahead is up, lanes are left/right', () => {
-    expect(spreadWords('coldcall')).toBe('1 ahead');
+    expect(spreadWords('slidedeck')).toBe('1 ahead');
     expect(spreadWords('reorg')).toBe('1 ahead, 2 ahead');
     expect(spreadWords('standup')).toBe('left, right');
     expect(spreadWords('headcount')).toBe('nowhere');

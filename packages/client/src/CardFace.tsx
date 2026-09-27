@@ -1,4 +1,4 @@
-import { card } from '@qbr/shared';
+import { card, stars as starsOf } from '@qbr/shared';
 import { abilityBadge } from './a11y.js';
 import { spreadToScreen } from './layout.js';
 
@@ -21,7 +21,7 @@ export function SpreadGlyph({ id }: { id: string }) {
 
 /** The inside of a card — cost, name, spread, value — shared by the hand, the
  *  deck view and unlock announcements. */
-export function CardFace({ id }: { id: string }) {
+export function CardFace({ id, stars = false }: { id: string; /** Show the star rating (deck builder). */ stars?: boolean }) {
   const c = card(id);
   const badge = abilityBadge(id);
   return (
@@ -35,6 +35,11 @@ export function CardFace({ id }: { id: string }) {
         </span>
       )}
       <span className="cval">{c.value}</span>
+      {stars && (
+        <span className="cstars" data-stars={starsOf(id)} aria-label={`${starsOf(id)} stars`}>
+          {'★'.repeat(starsOf(id))}
+        </span>
+      )}
     </>
   );
 }

@@ -36,9 +36,9 @@ const back: Offset = [0, -1];
 
 export const CARDS: Readonly<Record<string, CardDef>> = {
   memo: { id: 'memo', name: 'Memo', cost: 1, value: 1, spread: [up, down, fwd] },
-  coldcall: { id: 'coldcall', name: 'Cold Call', cost: 1, value: 2, spread: [fwd] },
+  coldcall: { id: 'coldcall', name: 'Cold Call', cost: 1, value: 2, spread: [[-1, 1], fwd, [1, 1]] },
   cc: { id: 'cc', name: 'CC Everyone', cost: 1, value: 1, spread: [up, down, [-1, 1], [1, 1]] },
-  standup: { id: 'standup', name: 'Standup', cost: 1, value: 2, spread: [up, down] },
+  standup: { id: 'standup', name: 'Standup', cost: 1, value: 1, spread: [up, down] },
   synergy: { id: 'synergy', name: 'Synergy', cost: 2, value: 3, spread: [up, down, fwd, back] },
   offsite: { id: 'offsite', name: 'Offsite', cost: 2, value: 2, spread: [[-1, -1], [-1, 1], [1, -1], [1, 1]] },
   reorg: { id: 'reorg', name: 'Reorg', cost: 2, value: 4, spread: [fwd, [0, 2]] },
@@ -54,11 +54,11 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   },
 
   // ── Special cards: unlocked by climbing careers (see SPECIALS below) ──
-  coffeerun: { id: 'coffeerun', name: 'Coffee Run', cost: 1, value: 2, spread: [up, down, [0, 2]] },
-  perfreview: { id: 'perfreview', name: 'Performance Review', cost: 2, value: 5, spread: [fwd] },
-  budgetcut: { id: 'budgetcut', name: 'Budget Cut', cost: 1, value: 1, spread: [[-1, 1], fwd, [1, 1], [0, 2]] },
-  takeover: { id: 'takeover', name: 'Hostile Takeover', cost: 3, value: 8, spread: [[-1, 1], fwd, [1, 1]] },
-  parachute: { id: 'parachute', name: 'Golden Parachute', cost: 2, value: 8, spread: [] },
+  coffeerun: { id: 'coffeerun', name: 'Coffee Run', cost: 1, value: 3, spread: [up, down] },
+  perfreview: { id: 'perfreview', name: 'Performance Review', cost: 2, value: 2, spread: [fwd] },
+  budgetcut: { id: 'budgetcut', name: 'Budget Cut', cost: 1, value: 3, spread: [[-1, 1], fwd, [1, 1]] },
+  takeover: { id: 'takeover', name: 'Hostile Takeover', cost: 3, value: 9, spread: [[-1, 1], fwd, [1, 1]] },
+  parachute: { id: 'parachute', name: 'Golden Parachute', cost: 3, value: 9, spread: [] },
   gossip: { id: 'gossip', name: 'Water Cooler Gossip', cost: 1, value: 1, spread: [up, down, [-1, -1], [1, -1]] },
 
   // ── Ability specials (unlocked by clearing career stakes) ──
@@ -84,12 +84,12 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   ooo: { id: 'ooo', name: 'Out of Office', cost: 1, value: 5, spread: [] },
   highfive: { id: 'highfive', name: 'High Five', cost: 1, value: 2, spread: [up, down], ability: { kind: 'boost', amount: 1 } },
   emailchain: { id: 'emailchain', name: 'Email Chain', cost: 1, value: 1, spread: [fwd, [0, 2], [0, 3]] },
-  redpen: { id: 'redpen', name: 'Red Pen', cost: 1, value: 2, spread: [fwd], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
+  redpen: { id: 'redpen', name: 'Red Pen', cost: 1, value: 2, spread: [[-1, 1], fwd, [1, 1]], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
   keynote: { id: 'keynote', name: 'Keynote', cost: 3, value: 7, spread: [up, down, fwd] },
   whiteboard: { id: 'whiteboard', name: 'White­board', cost: 2, value: 2, spread: [up, down, fwd, [-1, 1], [1, 1]] },
   pivot: { id: 'pivot', name: 'Pivot', cost: 2, value: 4, spread: [up, down, back] },
-  mentorship: { id: 'mentorship', name: 'Mentor­ship', cost: 2, value: 3, spread: [fwd, [0, 2]], ability: { kind: 'boost', amount: 2, reach: 'lane' } },
-  deadline: { id: 'deadline', name: 'Deadline', cost: 2, value: 4, spread: [fwd], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
+  mentorship: { id: 'mentorship', name: 'Mentor­ship', cost: 2, value: 3, spread: [up, down], ability: { kind: 'boost', amount: 2, reach: 'lane' } },
+  deadline: { id: 'deadline', name: 'Deadline', cost: 2, value: 3, spread: [[-1, 1], fwd, [1, 1]], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
   hackathon: { id: 'hackathon', name: 'Hack­athon', cost: 2, value: 3, spread: [fwd, [0, 2], [-1, 2], [1, 2]] },
   summerintern: { id: 'summerintern', name: 'Summer Intern', cost: 1, value: 1, spread: [up, down, fwd, back] },
   ipo: { id: 'ipo', name: 'IPO', cost: 3, value: 10, spread: [] },

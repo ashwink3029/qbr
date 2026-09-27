@@ -646,6 +646,13 @@
 .deck-card { cursor: pointer; }
 .coll-card .left { font-size: 10px; color: #555; line-height: 1; }
 .coll-card:disabled { opacity: 0.45; }
+/* The power ceiling: every card's ★ rating, and the deck's total against the limit. */
+.cstars { font-size: 9px; line-height: 1; letter-spacing: -1px; color: #b8860b; }
+.star-meter { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+.star-bar { flex: 1; height: 10px; background: #fff; border: 1px solid var(--lo); }
+.star-bar i { display: block; height: 100%; background: #f2c14e; }
+.deck-body .tip { position: static; animation: none; }
+.star-hint { margin-top: -6px; font-size: 11px; color: #444; }
 /* Locked: the real card, greyed, with how to earn it — the whole inventory is on show. */
 .locked-card { cursor: default; filter: grayscale(1); opacity: 0.6; border-style: dashed; background: #eee; }
 .lock-how { font-size: 9px; line-height: 1.15; text-align: center; color: #333; padding: 0 2px; }

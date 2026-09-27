@@ -20,12 +20,12 @@ describe('portrait layout', () => {
     expect(seen.size).toBe(ROWS * COLS);
   });
 
-  it('a Cold Call claims the cell directly above it on screen', () => {
+  it('a Cold Call (forward fan) claims the cell directly above it on screen', () => {
     const s0 = { ...newGame(1, STARTER_DECK), hands: [['coldcall'], []] as [string[], string[]] };
     const at = idx(1, 0);
-    const [target] = spreadTargets('coldcall', at, 0);
     const from = toScreen(at);
-    expect(toScreen(target!)).toEqual({ sr: from.sr - 1, sc: from.sc });
+    const targets = spreadTargets('coldcall', at, 0).map(toScreen);
+    expect(targets).toContainEqual({ sr: from.sr - 1, sc: from.sc });
     const s1 = reducer(s0, { type: 'play', card: 'coldcall', cell: at });
     const above = s1.cells[fromScreen(from.sr - 1, from.sc)]!;
     expect(above.owner).toBe(0);

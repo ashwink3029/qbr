@@ -25,8 +25,9 @@ describe('org chart', () => {
     const run = newRun(2);
     render(<OrgChart run={run} beaten={0} />);
     expect(state(0)!.textContent).toMatch(/plays anything/);
-    expect(state(2)!.textContent).toMatch(/\+1 card each quarter/);
-    expect(state(4)!.textContent).toMatch(/Reply-All[\s\S]*\+2 cards each quarter[\s\S]*2 home cells start at \$\$/);
+    expect(state(2)!.textContent).toMatch(/plays it straight/);
+    expect(state(3)!.textContent).toMatch(/1 home cell starts at \$\$/);
+    expect(state(4)!.textContent).toMatch(/Reply-All[\s\S]*\+1 card each quarter[\s\S]*2 home cells start at \$\$/);
   });
 
   it('has a title for every step up, ending in Promoted', () => {

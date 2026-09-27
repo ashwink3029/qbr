@@ -259,6 +259,8 @@ Player-facing words: a full run is a **career** ("Start career", "Resume career"
 "Resume year", "Years NW · NL"). Code keeps the older names — `run.ts`,
 `RunState`, `Run.tsx`, `record.runs`, session kind `'run'` / `'quick'` — so a
 "run" in code is a "career" on screen, and a "quick year" in code is "one year".
+**Stars (2026-09-27):** a card's ★ rating is its measured power; a deck may hold at most
+`STAR_CAP` ★ — the player-facing power ceiling.
 **Joker draft = "desk upgrade" on screen (user decision 2026-09-27):** the chart's button
 reads "Pick a desk upgrade" and the draft screen is titled "Desk upgrade — before the …".
 "Stop by the supply closet" was too cute to read as the action that starts the career.
@@ -705,43 +707,55 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    3, banks nothing"). Bindy's `lanes` tip should say "only the leader scores the lane".
    Tests first (lane cell shows the banked value + owner class; tie shows plain; score
    equals the sum of won lanes). Verify at 375x667 and greyscale (achromatopsia).
-13. **Wins earn cards; you build your own 15 (user request 2026-09-27) — BUILT; C3 FAILS,
-   design decision pending (user).** Ask: rather than upgrading cards on wins, earn MORE
-   cards and strategize a 15-card deck; show every winnable card greyed out from the start.
-   **Built:** `shared/src/qbr/collection.ts` — `COLLECTIBLES` (16 new cards, defined in
-   `cards.ts`) + the 8 SPECIALS = `UNLOCKABLES` (24). Unlocks spread over many careers via
-   two new `Progress` counters, `meetings` (won, summed over careers) and `promotions`
-   (`record.meetings` seeded from `bestMeetings` for old saves): Win 3/6/10/15/20/30/45
-   meetings, finish 2/5/8/12/20 careers, get promoted 2/3/5 times, promoted on Hostile board.
-   `collectionOf` (starter + unlocked, `copies` each: cheap ones 2), `deckProblem` (exactly
-   15, within owned copies), `resolveDeck(saved, p)` (saved if legal, else the old default
-   `playerDeck(p)` = starter + unlocked specials swapped in — so a player who never builds is
-   unchanged and every older bar still holds). Client: `DeckView` is now a builder — tap a
-   deck card to take it out, a collection card to add it; a deck is saved only when full and
-   legal ("Add N more…" / "Your deck is full…"); **locked cards show their real face greyed
-   and dashed with 🔒 how + progress ("Win 20 meetings 7/20")**; "Default deck" resets.
-   `client/src/deck.ts` (`qbr.deck.v1`) replaces the bench, carrying an old bench over once.
-   The career-end screen announces collectibles ("2 added to your collection"). Spread
-   glyphs grow a row for 3-ahead reach; VoiceOver says "2 ahead-left". Verified at 375x667.
-   **Bars (`sim/src/collectionbars.ts`, pre-registered before the first run), 2000 seeds:**
-   C1 no collectible lifts > +10pp alone — **PASS**; C2 each helps >= +1pp in some context (no
-   boss or a boss) — **PASS** (e.g. Email Chain +1.4pp plain but +9.4pp vs Change Freeze);
-   **C3 hill-climbed best build <= 75% — FAIL, 93.6%**; C4 naive 15-cheapest 78.0% < builder.
-   **Honest history:** round 1 had Sticky Note broken (+11.5pp) and six cards with no use
-   (Out of Office, Red Pen, High Five, Pivot, Mentorship, Keynote); two tuning rounds fixed
-   C1/C2 (rules held: an ability rides on a full body; $$$ cards need a big body to matter).
-   **C3 diagnosis — it's free building itself, not the new cards:** with ONLY today's cards,
-   one legal swap (the last Cold Call -> the Standup Gossip displaced) takes the all-specials
-   deck 74.4% -> **88.3%**. Standup ($ v2, both side lanes) is far the strongest starter card:
-   swapping almost any card for one is +10..+16pp under greedy AND lookahead play; Cold Call
-   and $$$ cards are the weakest. The fixed upgrade model hid this. Tried and rejected: a
-   deck cost floor (swaps are cost-neutral, no effect); Standup v1 / Cold Call reach / both
-   (best build still 83-95%, and Cold Call reach broke seat balance to 57.5%). Single copies
-   of the Standup-like High Five / Summer Intern keep the new cards to ~+5pp over today's.
-   **Decision for the user (not taken):** (a) accept that a built deck is strong and lean on
-   stakes; (b) counterweight — VP/CEO (or stakes) play built decks too; (c) rebalance the
-   starter set so no card dominates (touches every bar: runbars, stakebars, firstcareer,
-   daily re-vet). Not built: "pick 1 of 3 cards" after a win.
+13. **Card collection + deck builder + star ceiling (user requests 2026-09-27) — BUILT; P1 a
+   recorded FAIL.** Asks, in order: wins earn MORE cards and you build your own 15, with every
+   winnable card greyed out from the start; then "rebalance, and a deck cannot exceed some
+   power ceiling — a simple constraint we can render and teach".
+   **Collection (shared `collection.ts`):** 16 `COLLECTIBLES` + the 8 SPECIALS =
+   `UNLOCKABLES` (24), unlocked by milestones over many careers via two new `Progress`
+   counters, `meetings` (won, summed) and `promotions`. `collectionOf`, `deckProblem` (15 cards,
+   owned copies, star cap), `defaultDeck` (starter + each unlocked special, in unlock order,
+   **while it fits the cap**), `resolveDeck`. Client `DeckView` is a builder (tap out / tap in;
+   saved only when full and legal; locked cards shown greyed with how + progress); `deck.ts`
+   (`qbr.deck.v1`) replaced the bench.
+   **The ceiling = ★ stars.** Every card has a 1-5★ rating (`STARS`) and a deck holds at most
+   `STAR_CAP` = 49★ (starter 48★). Shown on every card in the builder, a "★ n / 49" meter with
+   a standing one-line rule, a refusal naming the numbers ("Keynote is 1★ — that makes 50★,
+   over the 49★ limit…"), and a one-time Bindy tip. Ratings are MEASURED: `sim/src/starfit.ts`
+   ridge-fits each card's additive win-share contribution over 500 random legal decks plus
+   every deck found by capped hill climbs (6 rounds x 3 starts), binned by quintile.
+   **Rebalance (both seats play the starter deck, so everything moved):** Standup v2 -> v1;
+   Cold Call `fwd` v2 -> forward FAN v2; Coffee Mug +1 card every quarter -> opening hand only
+   (was 74% after the fan, J2 caps 70%); Circular Reference wraps straight sideways reaches
+   only; specials re-tuned to stay upgrades (Coffee Run $ v3 up/down, Budget Cut = fan v3,
+   Performance Review v2, Golden Parachute -> $$$ v9, Hostile Takeover v9); Red Pen/Deadline
+   = fan + weaken, Mentorship $$ v3 up/down +2 lane. Ladder eased (Finance and VP edge 0, CEO
+   edge 1); stakes re-cut (Budget freeze 1 $$ home cell, Restructuring +1 card, Hostile board
+   +1 card and 1 $$ cell); daily re-vetted (D1 14.2%).
+   **Bars, 2000 seeds, final:** matchbars M1-M4 PASS (seat 52.8%); runbars J1/J2/B1/L1/L2/L3
+   PASS (promoted 16.1%; rungs 90 > 84 > 77 > 66 > 42%); stakebars S1/S2 PASS (16.1 > 9.2 >
+   6.2 > 2.8%), S3's literal re-pointed at L2; firstcareer F1/F2 PASS (86.3%, 12.8%);
+   unlockbars U1/U2/U3 PASS (+1.4..+6.1pp, all specials 71.9%); collectionbars C1/C2 PASS,
+   **P2 PASS** (best capped 84.0% vs default 68.8%), **P1 FAIL: best capped build 84.0% (> 75%)**;
+   uncapped for comparison: best uncapped build 88.4% (57★). Rebalance bar R1 (starter spread halves) FAIL: 15.4pp.
+   **What was learned (do not re-run without new ideas):**
+   (1) **Power follows cost and reach, not stats**: $ cards +3..+15pp, $$$ -5..-8pp whatever
+   their value — a $$$ card waits for budget; raising values barely moves it (R1's fail).
+   (2) **Forward reach hurts**: cells claimed deep in rival territory hand them budget when
+   retaken — Budget Cut with a leap was -7pp vs without; forward-only cheap cards are the
+   worst in strong decks.
+   (3) **Power is not additive**: two archetypes — "sideways" cheap spreaders and a forward
+   "rush" of paired cheap cards — each ~+15pp over the default at EQUAL stars. No linear cap
+   between the starter deck (48★) and the default can hold the best build to 75%; a cap below
+   the starter would make the starter illegal. Also tried: a deck cost floor (swaps are
+   cost-neutral), "at most 7 $ cards" (the best deck already fits it), single-context ratings
+   (moved the exploit around). **P1 and P2 were only jointly feasible once the default deck
+   fell to <= 72%** — a pre-registration mistake worth remembering: check bars for mutual
+   consistency before running.
+   **Open, for the user:** the cap cuts the peak (88.4% uncapped -> 84.0%) and makes building a real
+   choice, but a tuned deck still beats the starter-deck ladder ~84%. Counterweight options:
+   VP/CEO or stakes play built decks; or measure "the ceiling" against a strong reference deck
+   rather than the starter.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

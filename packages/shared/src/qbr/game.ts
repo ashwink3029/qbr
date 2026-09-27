@@ -232,7 +232,9 @@ export function spreadTargets(cardId: string, at: number, player: Player, wrapLa
   for (const [dr, dc] of card(cardId).spread) {
     let r = r0 + dr;
     const c = c0 + dc * dir;
-    if (wrapLanes) r = ((r % ROWS) + ROWS) % ROWS;
+    // Circular Reference wraps straight sideways reaches only (dc === 0): wrapping
+    // diagonals too made it 71.6% after the Cold Call fan (J2 caps jokers at 70%).
+    if (wrapLanes && dc === 0) r = ((r % ROWS) + ROWS) % ROWS;
     if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
       const t = idx(r, c);
       if (t !== at && !out.includes(t)) out.push(t);

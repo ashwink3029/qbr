@@ -3,16 +3,21 @@ import {
   CARDS,
   DECK_SIZE,
   STARTER_DECK,
+  STAR_CAP,
   UNLOCKABLES,
   collectionOf,
   deckProblem,
+  deckStars,
   isUnlocked,
-  playerDeck,
+  defaultDeck,
   resolveDeck,
+  stars,
   unlockProgress,
   type Progress,
 } from '@qbr/shared';
 import { CardFace } from './CardFace.js';
+import { TipBubble } from './Mascot.js';
+import { loadSeenTips, markTipSeen } from './tips.js';
 
 const plain = (name: string) => name.replace(/­/g, '');
 // Cheapest first, then by value: the order you'd reason about a hand in.
@@ -43,10 +48,11 @@ export function DeckView({
   const used = new Map<string, number>();
   for (const id of draft) used.set(id, (used.get(id) ?? 0) + 1);
 
-  // Tapped a collection card while the deck was full: say how to make room.
-  const [full, setFull] = useState(false);
+  // Why the last tap on a collection card was refused (deck full / over the star limit).
+  const [refused, setRefused] = useState<string | null>(null);
+  const [seenTips, setSeenTips] = useState(loadSeenTips);
   const change = (next: string[]) => {
-    setFull(false);
+    setRefused(null);
     setDraft(next);
     if (deckProblem(next, progress) === null) onSave(next);
   };
@@ -54,7 +60,15 @@ export function DeckView({
     const at = draft.indexOf(id);
     change([...draft.slice(0, at), ...draft.slice(at + 1)]);
   };
-  const add = (id: string) => change([...draft, id]);
+  const total = deckStars(draft);
+  const add = (id: string) => {
+    if (draft.length >= DECK_SIZE) return setRefused('Your deck is full. Tap a card in it to take it out first.');
+    if (total + stars(id) > STAR_CAP)
+      return setRefused(
+        `${plain(CARDS[id]!.name)} is ${stars(id)}★ — that makes ${total + stars(id)}★, over the ${STAR_CAP}★ limit. Take out a stronger card first.`,
+      );
+    change([...draft, id]);
+  };
 
   const inDeck = [...used.keys()].sort(byCost);
   const unlocked = UNLOCKABLES.filter((u) => isUnlocked(u, progress));
@@ -76,12 +90,25 @@ export function DeckView({
           </span>
         </div>
         <div className="start-body deck-body">
-          <p className={`deck-status ${short > 0 || full ? 'short' : ''}`} data-deck-status>
-            {short > 0
+          {!seenTips.has('stars') && (
+            <TipBubble
+              text={`Stronger cards carry more ★. A deck of 15 can hold at most ${STAR_CAP}★ — so balance your stars against your strong cards.`}
+              onDismiss={() => setSeenTips((s) => markTipSeen(s, 'stars'))}
+            />
+          )}
+          <div className="star-meter" data-star-meter aria-label={`Deck rating ${total} of ${STAR_CAP} stars`}>
+            <span>
+              ★ {total} / {STAR_CAP}
+            </span>
+            <span className="star-bar" aria-hidden>
+              <i style={{ width: `${Math.min(100, (100 * total) / STAR_CAP)}%` }} />
+            </span>
+          </div>
+          <small className="star-hint">Stronger cards carry more ★. A deck holds at most {STAR_CAP}★.</small>
+          <p className={`deck-status ${short > 0 || refused ? 'short' : ''}`} data-deck-status>
+            {refused ?? (short > 0
               ? `Add ${short} more — until then, careers use your last full deck.`
-              : full
-                ? 'Your deck is full. Tap a card in it to take it out first.'
-                : 'Tap a card to take it out; add one from your collection below.'}
+              : 'Tap a card to take it out; add one from your collection below.')}
           </p>
           <div className="deck-grid" data-in-deck>
             {inDeck.map((id) => (
@@ -92,7 +119,7 @@ export function DeckView({
                 aria-label={`Take a ${plain(CARDS[id]!.name)} out of your deck`}
                 onClick={() => remove(id)}
               >
-                <CardFace id={id} />
+                <CardFace id={id} stars />
                 {used.get(id)! > 1 && <span className="copies">×{used.get(id)}</span>}
               </button>
             ))}
@@ -111,11 +138,11 @@ export function DeckView({
                   className={`card deck-card coll-card ${starterIds.has(id) ? '' : 'special'}`}
                   data-coll-card={id}
                   disabled={left === 0}
-                  aria-disabled={short === 0}
-                  aria-label={`Add ${plain(CARDS[id]!.name)} to your deck, ${left} left`}
-                  onClick={() => (short === 0 ? setFull(true) : add(id))}
+                  aria-disabled={short === 0 || total + stars(id) > STAR_CAP}
+                  aria-label={`Add ${plain(CARDS[id]!.name)} to your deck, ${stars(id)} stars, ${left} left`}
+                  onClick={() => add(id)}
                 >
-                  <CardFace id={id} />
+                  <CardFace id={id} stars />
                   <span className="left">{left} left</span>
                 </button>
               );
@@ -124,7 +151,7 @@ export function DeckView({
               const { have, need } = unlockProgress(u, progress);
               return (
                 <div key={u.id} className="card deck-card locked-card" data-locked-card={u.id}>
-                  <CardFace id={u.id} />
+                  <CardFace id={u.id} stars />
                   <span className="lock-how">
                     <span aria-hidden>🔒 </span>
                     {u.how}
@@ -145,7 +172,7 @@ export function DeckView({
               className="btn"
               data-deck-default
               onClick={() => {
-                setDraft(playerDeck(progress));
+                setDraft(defaultDeck(progress));
                 onSave(null);
               }}
             >

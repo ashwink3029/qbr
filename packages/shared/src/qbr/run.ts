@@ -49,9 +49,9 @@ export interface Meeting {
 export const MEETINGS: readonly Meeting[] = [
   { role: 'The Intern', initials: 'INT', name: 'Onboarding sync', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
   { role: 'The Manager', initials: 'MGR', name: 'Weekly 1:1', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
-  { role: 'Finance', initials: 'FIN', name: 'Budget review', opponent: 'lookahead', boss: null, edge: 1, homeBoost: 0 },
-  { role: 'The VP', initials: 'VP', name: 'Quarterly Review', opponent: 'lookahead', boss: 'drawn', edge: 1, homeBoost: 1 },
-  { role: 'The CEO', initials: 'CEO', name: 'Board meeting', opponent: 'lookahead', boss: 'replyall', edge: 2, homeBoost: 2 },
+  { role: 'Finance', initials: 'FIN', name: 'Budget review', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
+  { role: 'The VP', initials: 'VP', name: 'Quarterly Review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
+  { role: 'The CEO', initials: 'CEO', name: 'Board meeting', opponent: 'lookahead', boss: 'replyall', edge: 1, homeBoost: 2 },
 ];
 
 /** Bosses the VP can draw — every boss not already fixed to a rung. */
@@ -74,9 +74,9 @@ export interface Stake {
 
 export const STAKES: readonly Stake[] = [
   { name: 'Standard', blurb: 'The org chart as it is.', oppEdge: 0, oppHomeBoost: 0 },
-  { name: 'Budget freeze', blurb: 'Every opponent draws +1 card a quarter.', oppEdge: 1, oppHomeBoost: 0 },
-  { name: 'Restructuring', blurb: 'Opponents draw +1 card a quarter and start with a $$ home cell.', oppEdge: 1, oppHomeBoost: 1 },
-  { name: 'Hostile board', blurb: 'Opponents draw +1 card a quarter and start with two $$ home cells.', oppEdge: 1, oppHomeBoost: 2 },
+  { name: 'Budget freeze', blurb: 'Every opponent starts with a $$ home cell.', oppEdge: 0, oppHomeBoost: 1 },
+  { name: 'Restructuring', blurb: 'Opponents draw +1 card a quarter.', oppEdge: 1, oppHomeBoost: 0 },
+  { name: 'Hostile board', blurb: 'Opponents draw +1 card a quarter and start with a $$ home cell.', oppEdge: 1, oppHomeBoost: 1 },
 ];
 
 export const OFFER_SIZE = 3;

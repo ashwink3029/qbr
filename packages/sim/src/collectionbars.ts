@@ -16,6 +16,15 @@
 //                          re-measured at N seeds.
 //   C4. (informative) Building is a skill: the naive "15 cheapest cards" deck scores
 //                          below the builder's best.
+//
+// Power ceiling (user request 2026-09-27: "a deck cannot exceed some power ceiling";
+// pre-registered BEFORE the first capped run). Every card has a measured 1-5★ rating
+// and a deck may hold at most STAR_CAP stars. The hill climb only takes swaps that
+// keep the deck within the cap.
+//   P1. The ceiling holds: best capped build <= 75% (C3's bar, now under the cap).
+//   P2. Building still matters: best capped build >= the all-specials default + 3pp.
+//   P3. No one is locked out: every default deck fits the cap (a unit test in
+//       shared/src/qbr/collection.test.ts).
 // Usage: tsx src/collectionbars.ts [N=2000] [SCREEN=300] [only=c1c2|c3]
 import {
   BOSSES,
@@ -26,7 +35,10 @@ import {
   NO_MODS,
   SPECIALS,
   STARTER_DECK,
+  STAR_CAP,
   collectionOf,
+  defaultDeck,
+  deckStars,
   deckWith,
   greedyPolicy,
   matchPlayout,
@@ -41,8 +53,21 @@ const pct = (x: number): string => `${(100 * x).toFixed(1)}%`;
 const pp = (x: number): string => `${x >= 0 ? '+' : ''}${(100 * x).toFixed(1)}pp`;
 const verdict = (ok: boolean): string => (ok ? 'PASS' : 'FAIL');
 const smartG = smartPass(greedyPolicy);
+// Try stat changes without editing cards.ts: PATCH='{"coldcall":{"value":2}}'.
+for (const [id, p] of Object.entries(JSON.parse(process.env.PATCH ?? '{}') as Record<string, object>))
+  Object.assign(CARDS[id] as object, p);
 // Minimum total $ cost of a built deck (0 = no floor), for trying the budget rule.
 const FLOOR = Number(process.env.FLOOR ?? 0);
+// The star ceiling is on unless NOCAP=1 (to reproduce the uncapped C3 run).
+const CAPPED = process.env.NOCAP !== '1';
+// Try another cap without editing collection.ts: CAP=48.
+const CAP = Number(process.env.CAP ?? STAR_CAP);
+const VETERAN = { bestRung: 5, careers: 999, stakeCleared: 99, promotions: 999, meetings: 9999 };
+// The default deck a veteran gets: every special that fits under the cap.
+const DEFAULT = CAPPED ? defaultDeck(VETERAN, CAP) : deckWith(SPECIALS.map((s) => s.id));
+// Exploration: cap the $ cards / floor the $$$ cards in a built deck.
+const MAXCHEAP = Number(process.env.MAXCHEAP ?? 99);
+const MINSENIOR = Number(process.env.MINSENIOR ?? 0);
 const deckCost = (d: readonly string[]): number => d.reduce((s, id) => s + CARDS[id]!.cost, 0);
 
 function share(player: readonly string[], n: number, mods: Mods = NO_MODS): number {
@@ -87,10 +112,11 @@ if (ONLY !== 'c3') {
 }
 
 let c3 = true;
+let p2 = true;
 if (ONLY !== 'c1c2') {
   // Hill-climb: one-copy swaps from the whole collection, best improving swap each step.
   const owned = collectionOf({ bestRung: 5, careers: 999, stakeCleared: 99, promotions: 999, meetings: 9999 });
-  let deck = deckWith(SPECIALS.map((s) => s.id));
+  let deck = DEFAULT.slice();
   let score = share(deck, SCREEN);
   console.log(`\nDeck builder (hill climb at ${SCREEN} seeds) from the all-specials deck: ${pct(score)}`);
   for (let step = 0; step < 12; step++) {
@@ -103,6 +129,9 @@ if (ONLY !== 'c1c2') {
         if (deckCost(deck) - CARDS[out]!.cost + CARDS[inn]!.cost < FLOOR) continue;
         const d = deck.slice();
         d[d.indexOf(out)] = inn;
+        if (CAPPED && deckStars(d) > CAP) continue;
+        if (d.filter((id) => CARDS[id]!.cost === 1).length > MAXCHEAP) continue;
+        if (d.filter((id) => CARDS[id]!.cost === 3).length < MINSENIOR) continue;
         const v = share(d, SCREEN);
         if (!bestMove || v > bestMove.v) bestMove = { out, inn, v };
       }
@@ -113,10 +142,11 @@ if (ONLY !== 'c1c2') {
     console.log(`  step ${step + 1}: ${bestMove.out} -> ${bestMove.inn}   ${pct(score)}`);
   }
   const final = share(deck, N);
-  const allIn = share(deckWith(SPECIALS.map((s) => s.id)), N);
+  const allIn = share(DEFAULT, N);
   c3 = final <= 0.75;
-  console.log(`\n  best found: ${[...deck].sort().join(' ')}`);
-  console.log(`  best found at ${N}: ${pct(final)}   (all-specials default ${pct(allIn)})`);
+  p2 = final >= allIn + 0.03;
+  console.log(`\n  best found (${deckStars(deck)}★ / cap ${CAP}${CAPPED ? '' : ', cap OFF'}): ${[...deck].sort().join(' ')}`);
+  console.log(`  best found at ${N}: ${pct(final)}   (default deck ${pct(allIn)}, ${deckStars(DEFAULT)}★)`);
   const cheapest = [...owned.entries()]
     .flatMap(([id, n]) => Array<string>(n).fill(id))
     .sort((a, b) => CARDS[a]!.cost - CARDS[b]!.cost || CARDS[b]!.value - CARDS[a]!.value)
@@ -130,4 +160,7 @@ if (ONLY !== 'c3') {
   console.log(`  C1. not broken alone   ${verdict(c1)}`);
   console.log(`  C2. every card has a use   ${verdict(c2)}`);
 }
-if (ONLY !== 'c1c2') console.log(`  C3. collection is fair (best built <= 75%)   ${verdict(c3)}`);
+if (ONLY !== 'c1c2') {
+  console.log(`  ${CAPPED ? 'P1. the ceiling holds (best capped build' : 'C3. collection is fair (best built'} <= 75%)   ${verdict(c3)}`);
+  if (CAPPED) console.log(`  P2. building still matters (best >= default + 3pp)   ${verdict(p2)}`);
+}

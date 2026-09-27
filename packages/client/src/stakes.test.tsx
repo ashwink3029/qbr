@@ -30,7 +30,7 @@ describe('career stakes', () => {
     expect(picker.textContent).toMatch(/Standard/);
     fireEvent.click(q('[data-stake-next]')!);
     expect(q('[data-stake-picker]')!.textContent).toMatch(new RegExp(STAKES[1]!.name));
-    expect(q('[data-stake-picker]')!.textContent).toMatch(/draws \+1 card/);
+    expect(q('[data-stake-picker]')!.textContent).toMatch(/\$\$ home cell/);
     // Only stakes up to cleared + 1 are open.
     expect((q('[data-stake-next]') as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(q('[data-start-run]')!);

@@ -26,14 +26,14 @@ function board(m: Mods, cells: [number, Cell][], hand: string[] = []): GameState
 }
 
 describe('jokers', () => {
-  it('Coffee Mug: +1 card at the start of the match and at every refill', () => {
+  it('Coffee Mug: +1 card in the opening hand only (refills are unchanged)', () => {
     const plain = newMatch(1, STARTER_DECK);
     const mug = newMatch(1, STARTER_DECK, DEFAULT_MATCH, undefined, mods({ jokers: ['mug'] }));
     expect(mug.quarter.hands[0].length).toBe(plain.quarter.hands[0].length + 1);
     expect(mug.quarter.hands[1].length).toBe(plain.quarter.hands[1].length);
     const pass = { type: 'pass' } as const;
     const q2 = matchReducer(matchReducer(mug, pass), pass);
-    expect(q2.quarter.hands[0].length).toBe(mug.quarter.hands[0].length + DEFAULT_MATCH.drawAfter[0]! + 1);
+    expect(q2.quarter.hands[0].length).toBe(mug.quarter.hands[0].length + DEFAULT_MATCH.drawAfter[0]!);
   });
 
   it('APPROVED Stamp: your $$ and $$$ cards are worth +1, $ cards and Finance unaffected', () => {
@@ -66,14 +66,14 @@ describe('jokers', () => {
     expect(cellValue(s, idx(2, 0))).toBe(1);
   });
 
-  it('Circular Reference: a spread off the edge lane wraps to the other side', () => {
+  it('Circular Reference: a straight sideways spread off the edge lane wraps; diagonals do not', () => {
     // CC Everyone spreads up/down and diagonally forward; from lane 0 "up" is off-sheet.
     const at = idx(0, 0);
     const plain = spreadEffects(board(NO_MODS, [], ['cc']), 'cc', at, 0);
     const wrapped = spreadEffects(board(mods({ jokers: ['circular'] }), [], ['cc']), 'cc', at, 0);
     expect(plain.claim).not.toContain(idx(2, 0));
     expect(wrapped.claim).toContain(idx(2, 0));
-    expect(wrapped.claim).toContain(idx(2, 1));
+    expect(wrapped.claim).not.toContain(idx(2, 1)); // the up-forward diagonal stays off-sheet
   });
 });
 

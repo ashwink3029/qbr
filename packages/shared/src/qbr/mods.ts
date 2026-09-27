@@ -29,7 +29,7 @@ export interface ModDef {
 }
 
 export const JOKERS: Readonly<Record<string, ModDef>> = {
-  mug: { id: 'mug', name: 'Coffee Mug', blurb: '+1 card at the start of every quarter', glyph: 'MUG' },
+  mug: { id: 'mug', name: 'Coffee Mug', blurb: '+1 card in your opening hand', glyph: 'MUG' },
   stamp: { id: 'stamp', name: 'APPROVED Stamp', blurb: 'Your $$ and $$$ cards are worth +1', glyph: 'OK' },
   formatting: {
     id: 'formatting',
@@ -63,8 +63,10 @@ export const BOSSES: Readonly<Record<string, ModDef>> = {
 
 export const hasJoker = (mods: Mods, id: string): boolean => mods.jokers.includes(id);
 
-/** Extra cards a seat receives at the start of every quarter (opening and refills). */
-export function bonusDraw(mods: Mods, seat: 0 | 1): number {
-  if (seat === 0) return hasJoker(mods, 'mug') ? 1 : 0;
+/** Extra cards a seat receives at the start of a quarter: the opening hand, or a
+ *  between-quarter refill. The Coffee Mug is opening-only (it gave +1 every quarter
+ *  until the 2026-09-27 Cold Call rebalance made it 74% — over J2's 70%). */
+export function bonusDraw(mods: Mods, seat: 0 | 1, opening = true): number {
+  if (seat === 0) return hasJoker(mods, 'mug') && opening ? 1 : 0;
   return (mods.boss === 'replyall' ? 2 : 0) + (mods.oppEdge ?? 0);
 }
