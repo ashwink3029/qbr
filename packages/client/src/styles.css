@@ -805,3 +805,25 @@
 @media (prefers-reduced-motion: reduce) {
   [data-guide] { animation: none; box-shadow: 0 0 0 3px #ffd23f; }
 }
+
+/* The card inspector: tap and hold any card to see it large. Its text follows the iOS
+   text-size setting (-apple-system-body) and is sized in em, scoped to this overlay. */
+.inspector-scrim {
+  position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(0, 0, 0, 0.55);
+}
+.inspector {
+  font: -apple-system-body; font-family: inherit;
+  width: min(300px, 100%); max-height: 100%; overflow-y: auto;
+  display: flex; flex-direction: column; align-items: center; gap: 0.6em; padding: 1em;
+  background: #fffdf0; border: 2px solid; border-color: var(--hi) var(--lo) var(--lo) var(--hi);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.inspector .icost { align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #2d6a00; font-size: 1.3em; }
+.inspector .iname { font-weight: 700; font-size: 1.4em; text-align: center; line-height: 1.15; }
+.inspector .glyph { grid-template-columns: repeat(3, 22px); gap: 3px; }
+.inspector .g { width: 22px; height: 22px; }
+.inspector .ival { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 2.6em; line-height: 1; }
+.inspector .iwords { margin: 0; text-align: center; line-height: 1.35; }
+.inspector small { color: var(--lo); font-size: 0.8em; }
+.card, .cell { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }

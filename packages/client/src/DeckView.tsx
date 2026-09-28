@@ -13,6 +13,7 @@ import {
   type Progress,
 } from '@qbr/shared';
 import { CardFace } from './CardFace.js';
+import { CardInspector, useHold } from './Inspector.js';
 
 const plain = (name: string) => name.replace(/­/g, '');
 // Cheapest first, then by value: the order you'd reason about a hand in.
@@ -45,6 +46,9 @@ export function DeckView({
 
   // Why the last tap on a collection card was refused (the deck is full).
   const [refused, setRefused] = useState<string | null>(null);
+  // Tap-and-hold any card to see it large (the card inspector).
+  const [inspect, setInspect] = useState<string | null>(null);
+  const hold = useHold();
   const change = (next: string[]) => {
     setRefused(null);
     setDraft(next);
@@ -67,6 +71,7 @@ export function DeckView({
 
   return (
     <div className="app home deck-screen" data-deck-view>
+      {inspect && <CardInspector id={inspect} onClose={() => setInspect(null)} />}
       <div className="window start-window deck-window">
         <div className="titlebar">
           <span>
@@ -90,6 +95,7 @@ export function DeckView({
                 key={id}
                 className={`card deck-card ${starterIds.has(id) ? '' : 'special'}`}
                 data-deck-card={id}
+                {...hold(() => setInspect(id))}
                 aria-label={`Take a ${plain(CARDS[id]!.name)} out of your deck`}
                 onClick={() => remove(id)}
               >
@@ -102,7 +108,9 @@ export function DeckView({
           <h3 className="deck-h">
             Collection · {unlocked.length}/{UNLOCKABLES.length} unlocked
           </h3>
-          <p className="deck-hint">A career’s first org chart shows the VP’s boss — tailor your deck there.</p>
+          <p className="deck-hint">
+            Hold any card to see it up close. A career’s first org chart shows the VP’s boss — tailor your deck there.
+          </p>
           <div className="deck-grid" data-collection>
             {collection.map((id) => {
               const left = owned.get(id)! - (used.get(id) ?? 0);
@@ -111,6 +119,7 @@ export function DeckView({
                   key={id}
                   className={`card deck-card coll-card ${starterIds.has(id) ? '' : 'special'}`}
                   data-coll-card={id}
+                  {...hold(() => setInspect(id))}
                   disabled={left === 0}
                   aria-disabled={short === 0}
                   aria-label={`Add ${plain(CARDS[id]!.name)} to your deck, ${left} left`}
@@ -124,7 +133,7 @@ export function DeckView({
             {locked.map((u) => {
               const { have, need } = unlockProgress(u, progress);
               return (
-                <div key={u.id} className="card deck-card locked-card" data-locked-card={u.id}>
+                <div key={u.id} className="card deck-card locked-card" data-locked-card={u.id} {...hold(() => setInspect(u.id))}>
                   <CardFace id={u.id} />
                   <span className="lock-how">
                     <span aria-hidden>🔒 </span>

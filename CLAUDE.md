@@ -968,6 +968,25 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    building, not the draw.) So no mulligan; the only gap is perception, which item 18's
    grey-cards tip addresses. **Not measured:** the same split under lookahead play or with
    built decks.
+21. ~~Card inspector~~ **DONE (/explore 2026-09-27; accessibility + UI clarity; the first step
+   of the Larger Text route in "Next up").** Tap and HOLD any card (hand, a placed card on the
+   board, and every card in the deck builder, locked ones included) for 450ms (`HOLD_MS`) to
+   see it large: cost, name, the spread drawn at 22px cells, value, and one sentence ("Needs a
+   $$ cell. Value 3. Spreads left, right, 1 ahead, 1 behind. It gives +2 to your cards it
+   reaches."). `client/src/Inspector.tsx`: `useHold()` (one timer per component; a hold
+   swallows the click that follows, so it never selects, places or removes a card; iOS's
+   long-press menu suppressed) and `CardInspector` (text in `em` under `font:
+   -apple-system-body`, so it follows the iOS text-size setting, scoped to the overlay).
+   Deck builder hint: "Hold any card to see it up close." Tests first (`inspector.test.tsx`
+   5, red then green). **Honest history:** jsdom passed, but a REAL touch hold in headless
+   Chrome (CDP touch events) never showed it: when the finger lifts the browser sends a click
+   where it lifted, which is now the overlay, and that closed it at once. Found by logging
+   the event order (pointerdown -> pointerup, no cancel) and ruling out timer throttling and
+   the disabled state; fixed by closing only on a tap that STARTED on the overlay; a test
+   for that exact click was added red first. Verified with real CDP touch at 375x667 and
+   402x874: hold opens it without selecting, a tap closes it. **Not verified:** iOS WebKit's
+   own long-press behaviour (Simulator has no tap automation here; device), and how far
+   `-apple-system-body` scales it at the largest accessibility sizes.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
@@ -1024,7 +1043,8 @@ Priorities drive the next /explore iterations — work top-down.
   `-apple-system-body` and sizes are in rem. The honest route is a **card inspector**: tap
   and hold any card (hand, board, builder) to see it large (name, cost, full spread,
   value, ability in words, as `cardLabel` already says), scaled with Dynamic Type; then
-  menus, dialogs and tips in rem. Only then evaluate the label at 200%. Until then the
+  menus, dialogs and tips in rem. Only then evaluate the label at 200%. (Inspector DONE:
+  item 21. Remaining: rem for menus/dialogs/tips, then a 200% evaluation.) Until then the
   kit (item 10l) claims Differentiate Without Color + Reduced Motion only.
 - Balatro depth: helpers (keycap consumables Ctrl+C/V/X/Z, sticky notes), more
   jokers (Paste Special = paste over your own card, Pivot Table, Newton's

@@ -33,6 +33,7 @@ import * as feedback from './feedback.js';
 import { SCREEN_COLS, SCREEN_ROWS, fromScreen } from './layout.js';
 import { FX_MAX_MS, FX_STEP_MS, moveFx, type MoveFx } from './motion.js';
 import { TipBubble } from './Mascot.js';
+import { CardInspector, useHold } from './Inspector.js';
 import { loadSeenTips, markTipSeen, pickTip } from './tips.js';
 
 /** The AI "thinks" this long before replying, so its move reads as a move. */
@@ -128,6 +129,9 @@ export function Game({
   const [seenTips, setSeenTips] = useState<ReadonlySet<string>>(loadSeenTips);
   const [aiRng, setAiRng] = useState<RngState>(() => (seed ?? 1) * 7919);
   const [selected, setSelected] = useState<string | null>(null);
+  // Tap-and-hold any card to see it large (the card inspector).
+  const [inspect, setInspect] = useState<string | null>(null);
+  const hold = useHold();
 
   // While a quarter summary is up, the ended quarter's board stays on screen.
   const game = summary ? summary.board : match.quarter;
@@ -455,6 +459,8 @@ export function Game({
 
         {/* Bindy's one-time tips float over Finance's side of the board,
             away from your hand and home row. */}
+        {inspect && <CardInspector id={inspect} onClose={() => setInspect(null)} />}
+
         <div className="tip-anchor">
           {tip && (
             <TipBubble text={tip.text} mood={tip.mood} onDismiss={() => setSeenTips((s) => markTipSeen(s, tip.id))} />
@@ -491,6 +497,7 @@ export function Game({
                   key={i}
                   className={cls}
                   data-cell={i}
+                  {...(cell.card ? hold(() => setInspect(cell.card)) : {})}
                   data-guide={guideCell(i) ? '' : undefined}
                   data-owner={cell.owner === 0 ? 'you' : cell.owner === 1 ? 'them' : 'none'}
                   role="gridcell"
@@ -591,6 +598,7 @@ export function Game({
                 key={`${id}-${k}`}
                 className={`card ${selected === id ? 'sel' : ''} ${short ? 'unaffordable' : ''} ${explain === id ? 'explained' : ''}`}
                 data-card={id}
+                {...hold(() => setInspect(id))}
                 data-playable={playable ? 'true' : 'false'}
                 data-guide={
                   (guiding && selected === null && playable) || (points === 'unaffordable' && short) ? '' : undefined
