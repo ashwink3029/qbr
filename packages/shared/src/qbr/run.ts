@@ -85,8 +85,8 @@ const TECH_DECK: readonly string[] = [
 ];
 /** HR manages people: boosts, weakens, and the purple performance-review family. */
 const HR_DECK: readonly string[] = [
-  'highfive', 'highfive', 'standup', 'standup', 'mentorship', 'teambuilding', 'pip', 'deadline',
-  'stakeholder', 'synergy', 'cc', 'memo', 'memo', 'offsite', 'redpen',
+  'highfive', 'highfive', 'standup', 'standup', 'mentorship', 'pip', 'deadline', 'stakeholder',
+  'synergy', 'cc', 'memo', 'offsite', 'offsite', 'headcount', 'slidedeck',
 ];
 
 export const ORGS: readonly Org[] = [
@@ -119,9 +119,9 @@ export const ORGS: readonly Org[] = [
     meetings: [
       { role: 'The Recruiter', initials: 'REC', name: 'Phone screen', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
       { role: 'The HR Partner', initials: 'HRP', name: 'Check-in', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
-      { role: 'The Comp Lead', initials: 'CMP', name: 'Calibration', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
-      { role: 'The CHRO', initials: 'CHR', name: 'Talent review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
-      { role: 'The Board Chair', initials: 'BC', name: 'Governance review', opponent: 'lookahead', boss: 'replyall', edge: 1, homeBoost: 2 },
+      { role: 'The Comp Lead', initials: 'CMP', name: 'Calibration', opponent: 'lookahead', boss: null, edge: 1, homeBoost: 0 },
+      { role: 'The CHRO', initials: 'CHR', name: 'Talent review', opponent: 'lookahead', boss: 'drawn', edge: 1, homeBoost: 0 },
+      { role: 'The Board Chair', initials: 'BC', name: 'Governance review', opponent: 'lookahead', boss: 'replyall', edge: 2, homeBoost: 2 },
     ],
     bosses: ['auditor', 'micromanager'],
     opponentDeck: HR_DECK,

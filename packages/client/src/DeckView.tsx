@@ -109,7 +109,7 @@ export function DeckView({
             Collection · {unlocked.length}/{UNLOCKABLES.length} unlocked
           </h3>
           <p className="deck-hint">
-            Hold any card to see it up close. A career’s first org chart shows the VP’s boss — tailor your deck there.
+            Hold any card to see it up close. A career’s first org chart shows its bosses — tailor your deck there.
           </p>
           <div className="deck-grid" data-collection>
             {collection.map((id) => {

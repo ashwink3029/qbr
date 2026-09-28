@@ -711,6 +711,10 @@
    iPhone SE by 37px and pushed Settings below the fold. */
 @media (max-height: 760px) {
   .desktop-icons { display: none; }
+  /* Orgs (item 15) added a picker row: a veteran's Home (Resume + org + stake pickers)
+     overflowed an iPhone SE by 25px; tighter gaps get it back. */
+  .start-body { gap: 7px; padding: 12px; }
+  .stake-picker { padding: 3px; }
   .start-window .logo { width: 56px; height: 56px; background-size: 14px 14px; }
   .start-window .logo span { font-size: 18px; }
 }
@@ -848,3 +852,6 @@
 @media (prefers-reduced-motion: reduce) {
   .sum[data-fx='lead'] { animation: none; }
 }
+
+/* The org picker (item 15): a locked org is browsable but greyed. */
+.org-picker.locked .stake-text { color: var(--lo); }

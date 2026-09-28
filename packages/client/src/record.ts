@@ -19,6 +19,8 @@ export interface Record {
   readonly meetings: number;
   /** Highest career stake promoted at (0 = none). Stake N+1 is open to play. */
   readonly stakeCleared: number;
+  /** Orgs promoted in (ORGS ids); each opens the next org. */
+  readonly orgsPromoted: readonly string[];
   /** The last daily career attempted (one a day), or null. */
   readonly daily: Daily | null;
   /** Years against a coworker's phone ("Play your coworker"), kept apart. */
@@ -46,6 +48,7 @@ export const EMPTY_RECORD: Record = {
   bestMeetings: 0,
   meetings: 0,
   stakeCleared: 0,
+  orgsPromoted: [],
   daily: null,
   coworker: { wins: 0, losses: 0, draws: 0 },
 };
@@ -105,6 +108,7 @@ export function loadRecord(): Record {
       // Older records only kept the best career: at least that many were won.
       meetings: Number(r.meetings) || Number(r.bestMeetings) || 0,
       stakeCleared: Number(r.stakeCleared) || 0,
+      orgsPromoted: Array.isArray(r.orgsPromoted) ? r.orgsPromoted.filter((x): x is string => typeof x === 'string') : [],
       daily: loadDaily(r.daily),
       coworker: {
         wins: Number(r.coworker?.wins) || 0,
@@ -147,11 +151,13 @@ export function progressOf(r: Record): Progress {
     stakeCleared: r.stakeCleared,
     promotions: r.promotions,
     meetings: r.meetings,
+    orgsPromoted: r.orgsPromoted,
   };
 }
 
 /** Fold one finished run into the record. */
-export function recordRun(r: Record, promoted: boolean, meetingsWon: number, stake = 1): Record {
+export function recordRun(r: Record, promoted: boolean, meetingsWon: number, stake = 1, org = 'finance'): Record {
+  const orgs = r.orgsPromoted ?? [];
   return {
     ...r,
     runs: r.runs + 1,
@@ -159,6 +165,7 @@ export function recordRun(r: Record, promoted: boolean, meetingsWon: number, sta
     bestMeetings: Math.max(r.bestMeetings, meetingsWon),
     meetings: r.meetings + meetingsWon,
     stakeCleared: promoted ? Math.max(r.stakeCleared, stake) : r.stakeCleared,
+    orgsPromoted: promoted && !orgs.includes(org) ? [...orgs, org] : orgs,
   };
 }
 

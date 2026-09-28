@@ -1,4 +1,4 @@
-import { BOSSES, MEETINGS, bossFor, type RunState } from '@qbr/shared';
+import { BOSSES, bossFor, ladder, type RunState } from '@qbr/shared';
 import { AvatarImage } from './avatars.js';
 
 /** Your title after beating N rungs (N = run.meeting on the chart). */
@@ -10,7 +10,7 @@ export function yourTitle(beaten: number): string {
 
 /** What makes a rung hard, in one line: boss rule and seniority. */
 function threat(run: RunState, i: number): string {
-  const m = MEETINGS[i]!;
+  const m = ladder(run)[i]!;
   const parts: string[] = [];
   const b = bossFor(run, i);
   if (b) parts.push(`${BOSSES[b]!.name}: ${BOSSES[b]!.blurb}`);
@@ -39,7 +39,7 @@ export function OrgChart({
   /** A promotion: your tile rises to the top of the chart. */
   promoted?: boolean;
 }) {
-  const rows = MEETINGS.map((m, i) => ({ m, i })).reverse();
+  const rows = ladder(run).map((m, i) => ({ m, i })).reverse();
   return (
     <ol className="orgchart" data-orgchart aria-label="Org chart">
       {rows.map(({ m, i }) => {

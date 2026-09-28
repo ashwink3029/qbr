@@ -832,16 +832,42 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    (88.2%); (b) drop the ceiling entirely, the simplest UI, 88.4%, and counter strong decks
    another way (item 16's takeover change moves the whole meta; or VP/CEO play built decks);
    (c) keep stars (84.0%) with a lighter presentation.
-15. **Orgs: choose which org to tackle, most locked at first (user request 2026-09-27) — IN
-   PROGRESS (user: build now, 2026-09-28).** Shared model done: `ORGS` in run.ts (re-exported
-   by orgs.ts): Finance (the original ladder; its 3rd rung renamed **The Controller**, avatar key
-   CTL), Tech (New Grad / Scrum Master / Tech Lead / CTO / Founder; VP pool Legacy + Micromanager,
-   top boss Change Freeze; a forward-rush deck with no purple), HR (Recruiter / HR Partner / Comp
-   Lead / CHRO / Board Chair; VP pool Auditor + Micromanager, top boss Reply-All; a people deck of
-   boosts, weakens and purple). `RunState.org`, `ladder`, `meetingDeck`, `orgUnlocked`
-   (promotion in the previous org; an old promotion counts as Finance), `Progress.orgsPromoted`.
-   Finance careers deal exactly as before. Assumed: stakes shared across orgs; daily stays Finance.
-   Remaining: client picker + casts + org bars. Ask: the app should feel more EXPANSIVE to a new player. The CEO may be hard to
+15. ~~Orgs: choose which org to tackle, most locked at first (user request 2026-09-27)~~ **DONE
+   2026-09-28 (user: "build now").** Balatro's deck choice as **orgs**: Home shows an org picker
+   (◀ Finance · 1/3 ▶) from day one; locked orgs are browsable, greyed, with "🔒 … Get promoted
+   in Finance to open." and Start career disabled. Finance -> Tech -> HR, each opened by a
+   promotion in the one before (an old promotion counts as Finance). **Each org plays
+   differently:** its own cast of five (10 new 16x16 placeholder-in-code avatars: New Grad,
+   Scrum Master, Tech Lead, CTO, Founder; Recruiter, HR Partner, Comp Lead, CHRO, Board Chair —
+   fictional office types), its own VP-rung boss pool and top boss, and its own opponent
+   deck. Finance = the original ladder (3rd rung renamed **The Controller**, avatar key CTL) +
+   starter deck. **Tech**: forward-rush deck (Email Chain x2, Sticky Note x2, Hackathon x2, Cold
+   Call x2, Reorg x2, Memo x2, Blue-Sky, Slide Deck, Keynote; no purple), CTO draws Legacy System
+   or Micromanager, Founder = Change Freeze. **HR**: people deck (High Five x2, Standup x2,
+   Mentorship, PIP, Deadline, Stakeholder, Synergy, CC, Memo, Offsite x2, Headcount, Slide Deck;
+   boosts, weakens and purple), CHRO draws Auditor or Micromanager, Board Chair = Reply-All; Comp
+   Lead / CHRO / Board Chair draw +1 / +1 / +2 cards, the Chair with two $$ home cells.
+   Shared: `ORGS` / `orgOf` / `orgUnlocked` / `ladder` / `meetingDeck` (run.ts, re-exported by
+   orgs.ts), `RunState.org`, `Progress.orgsPromoted`; client: `record.orgsPromoted`,
+   `recordRun(..., org)`, `Game opponentDeck`, `Run org`, OrgChart reads the org's ladder, chart
+   title "Org chart — New hire · Tech", deck button names the org's boss rung ("the CTO's
+   boss"). Finance careers deal exactly as before (same boss + offers per seed), so daily
+   seeds and records carry over. **Assumed (user left open):** stakes shared across orgs; the
+   daily stays Finance. **Bars pre-registered in `sim/src/orgbars.ts` before the first run, 2000
+   careers per org: O1 PASS, O2 PASS** — Finance promoted 17.8% (89.3 > 84.3 > 80.3 > 67.3 >
+   43.6), Tech 8.5% (94.3 > 88.0 > 84.8 > 47.9 > 25.0), HR 5.5% (85.4 > 69.3 > 55.5 > 45.1 >
+   37.5). **Honest history:** HR's first deck (all boosts + purple) was brutal — the starter deck
+   won 14.8% against it, the Recruiter only 70.5% (bar 75%), promotion 3.1%; the softest
+   variant made HR EASIER than Tech (17.9%). Seven tuning rounds on HR's deck and rung levers
+   (card edge saturates again; two $$ home cells on the CHRO over-shot to 23%) ended at the
+   deck above. **Thin margin: HR 5.5% vs the 5% floor.** Also fixed: a veteran's Home (Resume +
+   org + stake pickers) overflowed an iPhone SE by 25px -> the pitch shows to first-timers
+   only and compact spacing tightened; verified 375x667 / 402x874, window scroll 0 for a fresh
+   player, a veteran, and the Tech chart. Tests first: shared `orgs.test.ts` 7; client
+   `orgs.test.tsx` 3 (picker from day one + locks, a Tech career climbs the Tech cast, the
+   record), avatars cover every org with no shared faces. **Not built yet:** org-specific card
+   unlocks ("more spots to unlock cards" — the user's third benefit): next step, e.g. a
+   collectible per org promotion; per-org stakes; an org in the daily. Ask: the app should feel more EXPANSIVE to a new player. The CEO may be hard to
    beat, but it doesn't look like much is locked away. Borrow Balatro's deck choice: before a
    career you pick an **org** to climb, most shown locked from day one. The first is
    **Finance**, then **Tech**, then **HR**, and so on. Each org brings more diverse characters,

@@ -93,6 +93,8 @@ export interface GameProps {
   /** Your deck (starter upgraded by unlocked specials); the opponent always
    *  plays the plain starter deck. */
   readonly deck?: readonly string[];
+  /** The opponent's deck (an org's own deck in a career); the starter deck otherwise. */
+  readonly opponentDeck?: readonly string[];
   /** Start from this match instead of dealing one (a coworker match: the view). */
   readonly initialMatch?: MatchState;
   /** A coworker match: my moves are reported instead of answered by an AI, and
@@ -114,6 +116,7 @@ export function Game({
   opponentInitials: whoInitials = 'CTL',
   meetingName,
   deck = STARTER_DECK,
+  opponentDeck = STARTER_DECK,
   initialMatch,
   remote,
 }: GameProps = {}) {
@@ -121,7 +124,7 @@ export function Game({
   const [match, setMatch] = useState<MatchState>(
     () =>
       initialMatch ??
-      newMatch(seed ?? freshSeed(), { player: deck, opponent: STARTER_DECK }, DEFAULT_MATCH, MATCH_RULES, mods),
+      newMatch(seed ?? freshSeed(), { player: deck, opponent: opponentDeck }, DEFAULT_MATCH, MATCH_RULES, mods),
   );
   const blocked = useMemo(() => blockedCells(mods), [mods]);
   const boss = mods.boss ? BOSSES[mods.boss] : undefined;

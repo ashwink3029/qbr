@@ -7,7 +7,9 @@ import {
   newlyUnlockedCards,
   type Progress,
   JOKERS,
-  MEETINGS,
+  ladder,
+  meetingDeck,
+  orgOf,
   currentMeeting,
   finishMeeting,
   leaveChart,
@@ -25,7 +27,7 @@ import { OrgChart, yourTitle } from './OrgChart.js';
 
 export interface RunResult {
   readonly promoted: boolean;
-  /** Rungs beaten before the career ended (MEETINGS.length = promoted). */
+  /** Rungs beaten before the career ended (ladder(run).length = promoted). */
   readonly meetingsWon: number;
   readonly jokers: readonly string[];
 }
@@ -34,6 +36,8 @@ export interface RunProps {
   readonly seed: number;
   /** Career stake (1 = Standard); see STAKES. */
   readonly stake?: number;
+  /** Which org this career climbs (ORGS id). */
+  readonly org?: string;
   /** Today's daily career (a shared seed): named in the org chart title. */
   readonly daily?: boolean;
   /** Your deck (live from the bench until the career's first meeting, then fixed). */
@@ -62,11 +66,11 @@ function CloseButton({ onExit }: { onExit: () => void }) {
 export function careerEndProgress(progress: Progress, run: RunState): Progress {
   const won = run.status === 'won';
   return {
-    bestRung: Math.max(progress.bestRung, won ? MEETINGS.length : run.meeting),
+    bestRung: Math.max(progress.bestRung, won ? ladder(run).length : run.meeting),
     careers: progress.careers + 1,
     stakeCleared: won ? Math.max(progress.stakeCleared ?? 0, run.stake) : (progress.stakeCleared ?? 0),
     promotions: (progress.promotions ?? 0) + (won ? 1 : 0),
-    meetings: (progress.meetings ?? 0) + (won ? MEETINGS.length : run.meeting),
+    meetings: (progress.meetings ?? 0) + (won ? ladder(run).length : run.meeting),
   };
 }
 
@@ -76,9 +80,9 @@ export function careerEndProgress(progress: Progress, run: RunState): Progress {
  * first meeting and after every win, and it is the career-end screen too. Each
  * meeting's Game is keyed by rung so it starts clean.
  */
-export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
+export function Run({ seed, stake = 1, org = 'finance', daily = false, deck, onEditDeck, progress = { bestRung: 0, careers: 0 }, paused = false, onExit, onRunEnd }: RunProps) {
   // A brand-new player's first career skips the closet and starts with a Coffee Mug.
-  const [run, setRun] = useState<RunState>(() => newRun(seed, stake, { firstCareer: progress.careers === 0 }));
+  const [run, setRun] = useState<RunState>(() => newRun(seed, stake, { firstCareer: progress.careers === 0, org }));
   // The deck follows the bench on the opening chart (you can see the VP's boss
   // there) and is fixed from the moment you walk out of it.
   const [fixedDeck, setFixedDeck] = useState<readonly string[] | undefined>(undefined);
@@ -96,7 +100,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
 
   if (run.status === 'won' || run.status === 'lost') {
     const won = run.status === 'won';
-    const beaten = won ? MEETINGS.length : run.meeting;
+    const beaten = won ? ladder(run).length : run.meeting;
     const earned = newlyUnlockedCards(progress, careerEndProgress(progress, run));
     return (
       <div className="app home" data-run-end>
@@ -162,6 +166,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
           <div className="titlebar">
             <span>
               Org chart — {yourTitle(run.meeting)}
+              {run.org !== 'finance' ? ` · ${orgOf(run.org).name}` : ''}
               {daily ? ' · Daily' : ''}
               {run.stake > 1 ? ` · ${STAKES[run.stake - 1]!.name}` : ''}
             </span>
@@ -182,7 +187,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
             )}
             {fresh && onEditDeck && (
               <button className="btn" data-chart-deck onClick={onEditDeck}>
-                Your deck — tailor it to the VP’s boss
+                Your deck — tailor it to {(ladder(run).find((m) => m.boss === 'drawn') ?? ladder(run)[3]!).role.replace(/^The /, 'the ')}’s boss
               </button>
             )}
             <button
@@ -242,6 +247,7 @@ export function Run({ seed, stake = 1, daily = false, deck, onEditDeck, progress
       opponentName={meeting.role}
       opponentInitials={meeting.initials}
       meetingName={meeting.name}
+      opponentDeck={meetingDeck(run)}
       {...(careerDeck ? { deck: careerDeck } : {})}
     />
   );

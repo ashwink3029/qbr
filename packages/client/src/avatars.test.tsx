@@ -1,13 +1,19 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
-import { MEETINGS } from '@qbr/shared';
+import { ORGS } from '@qbr/shared';
 import { AVATARS, AvatarImage } from './avatars.js';
 
 afterEach(cleanup);
 
 describe('opponent avatars', () => {
-  it('every opponent on the org chart has one', () => {
-    for (const m of MEETINGS) expect(AVATARS[m.initials], m.role).toBeTruthy();
+  it("every opponent on every org's chart has one, and no two share a face", () => {
+    const seen = new Set<string>();
+    for (const o of ORGS)
+      for (const m of o.meetings) {
+        expect(AVATARS[m.initials], m.role).toBeTruthy();
+        expect(seen.has(m.initials), m.initials).toBe(false);
+        seen.add(m.initials);
+      }
   });
 
   it('every map is exactly 16x16 and uses only its own palette', () => {
