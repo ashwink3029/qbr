@@ -238,6 +238,34 @@ describe('new jokers and a boss (iteration 13)', () => {
     expect(canPlay(theirs, 'memo', idx(0, 3))).toBe(true); // the boss's side is unbound
   });
 
+  it('Office Politics (exec modifier, item 25): every card they place lowers your cards in its lane by 2', () => {
+    // v1 ("their claims next to your cards lower those cards by 1") measured -0.3pp: their
+    // claims rarely touch your cards (10e's "check it LANDS" lesson). Lane reach lands.
+    const m = mods({ jokers: [], boss: 'politics' });
+    const s = {
+      ...strictBoard(m, [
+        [idx(1, 4), { owner: 1, budget: 1, card: null }],
+        [idx(1, 1), { owner: 0, budget: 1, card: 'ooo' }], // same lane (Ops)
+        [idx(1, 0), { owner: 0, budget: 1, card: 'memo' }], // same lane: 1 -> 0, removed
+        [idx(2, 1), { owner: 0, budget: 1, card: 'memo' }], // another lane
+      ], []),
+      toMove: 1 as const,
+      hands: [[], ['standup']] as [string[], string[]],
+    };
+    const fx = spreadEffects(s, 'standup', idx(1, 4), 1);
+    expect(fx.weaken).toEqual([
+      { cell: idx(1, 0), destroys: true, amount: 2 },
+      { cell: idx(1, 1), destroys: false, amount: 2 },
+    ]);
+    const after = reducer(s, { type: 'play', card: 'standup', cell: idx(1, 4) });
+    expect(cellValue(after, idx(1, 1))).toBe(3);
+    expect(after.cells[idx(1, 0)]!.card).toBeNull();
+    expect(cellValue(after, idx(2, 1))).toBe(1);
+    // Your own plays do nothing of the sort.
+    const yours = strictBoard(m, [[idx(1, 0), { owner: 0, budget: 1, card: null }], [idx(1, 3), { owner: 1, budget: 1, card: 'ooo' }]], ['standup']);
+    expect(spreadEffects(yours, 'standup', idx(1, 0), 0).weaken).toEqual([]);
+  });
+
   it('Label Maker (desk upgrade, item 25): your cards in your home row are worth +1', () => {
     const s = strictBoard(mods({ jokers: ['label'] }), [
       [idx(0, 0), { owner: 0, budget: 1, card: 'memo' }], // home row

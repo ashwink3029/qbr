@@ -275,11 +275,14 @@ export interface SpreadEffects {
   readonly boost: readonly number[];
   /** Opponent cards a `weaken` ability lowers; `destroys` when it takes the
    *  card's effective value to 0 or below. */
-  readonly weaken: readonly { readonly cell: number; readonly destroys: boolean }[];
+  readonly weaken: readonly { readonly cell: number; readonly destroys: boolean; readonly amount?: number }[];
 }
 
 /** Exactly what placing `cardId` at `at` would change. The reducer applies this
  *  and the client previews it, so the preview can never disagree with the move. */
+/** How much Office Politics lowers your cards per placement in the lane. */
+const POLITICS = 2;
+
 export function spreadEffects(state: GameState, cardId: string, at: number, player: Player = state.toMove): SpreadEffects {
   const power = card(cardId).value;
   const claim: number[] = [];
@@ -288,7 +291,7 @@ export function spreadEffects(state: GameState, cardId: string, at: number, play
   const blocked = blockedCells(state.mods);
   const ability = card(cardId).ability;
   const boost: number[] = [];
-  const weaken: { cell: number; destroys: boolean }[] = [];
+  const weaken: { cell: number; destroys: boolean; amount?: number }[] = [];
   // Change Freeze (a boss): the player's spreads stop at the middle of the sheet.
   const frozen = player === 0 && state.mods.boss === 'freeze';
   // Scope Creep (an exec modifier): the boss side's forward reaches go one cell further
@@ -334,6 +337,23 @@ export function spreadEffects(state: GameState, cardId: string, at: number, play
       if (ability.kind === 'weaken' && !mine) {
         weaken.push({ cell: t, destroys: cellValue(state, t) - ability.amount <= 0 });
       }
+    }
+  }
+  // Office Politics (an exec modifier): every card the boss side places lowers your cards in
+  // its lane by POLITICS (2; 1 measured -4.4pp, B1 needs 5) (combined with the card's own weaken, if any). A lane reach, because a
+  // neighbour reach measured -0.3pp: their claims rarely touch your cards.
+  if (player === 1 && state.mods.boss === 'politics') {
+    const own = ability?.kind === 'weaken' ? ability.amount : 0;
+    const lane = rowOf(at);
+    for (let c = 0; c < COLS; c++) {
+      const n = idx(lane, c);
+      const cell = state.cells[n]!;
+      if (n === at || cell.owner !== 0 || cell.card === null || flip.includes(n)) continue;
+      const k = weaken.findIndex((w) => w.cell === n);
+      const amount = (k >= 0 ? (weaken[k]!.amount ?? own) : 0) + POLITICS;
+      const entry = { cell: n, destroys: cellValue(state, n) - amount <= 0, amount };
+      if (k >= 0) weaken[k] = entry;
+      else weaken.push(entry);
     }
   }
   return { claim, flip, boost, weaken };
@@ -398,7 +418,7 @@ export function reducer(state: GameState, action: Action): GameState {
       const c = next[w.cell]!;
       next[w.cell] = w.destroys
         ? { owner: c.owner, budget: c.budget, card: null }
-        : { ...c, mod: (c.mod ?? 0) - amount };
+        : { ...c, mod: (c.mod ?? 0) - (w.amount ?? amount) };
     }
     cells = next;
     const hand = hands[p].slice();

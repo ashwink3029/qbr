@@ -1142,7 +1142,7 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    | Red Tape ✓ | You can only place in your home row and the row in front | canPlay | Legal (built) |
    | Performance Calibration | Each quarter your highest-value card loses 2 | cellValue | HR |
    | Budget Cuts | Your spreads add no $ to the cells they claim | spreadEffects budget | Finance |
-   | Office Politics | Their claims next to your cards lower those cards by 1 | spreadEffects weaken | HR |
+   | Office Politics ✓ | Every card they place lowers your cards in its lane by 2 | spreadEffects weaken | HR (built) |
    | Synergy Offsite ✓ | Their cards next to another of theirs are worth +1 | cellValue | Marketing (built) |
    | Cold Outreach | They start each quarter with the cell in front of each home claimed | freshBoard | Sales |
    | Tech Debt | Your $$$ cards can't be played in Q1 | canPlay | Tech |
@@ -1233,8 +1233,17 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Legal's General Counsel pool (with Auditor) — Tech and Legal no longer share a pool. **Bars
    (2000 seeds, never moved), first try, no re-tuning:** B1 PASS (Scope Creep −28.8pp, Red Tape
    −26.6pp — the two hardest after Micromanager); orgbars O1 + O2 PASS, 19.7 > 17.8 > 14.9 >
-   **12.8** > **8.3** > 6.9%. Tests first (mods.test.ts 2, red first). Menu left: Performance
-   Calibration, Budget Cuts, Office Politics, Cold Outreach, Tech Debt, Fine Print; desk ideas
+   **12.8** > **8.3** > 6.9%. Tests first (mods.test.ts 2, red first). **Iteration 6 DONE:**
+   **Office Politics** ("Every card they place lowers your cards in its lane by 2"; a weaken
+   rider in `spreadEffects` for the boss side, so preview/fx/AI agree; weaken entries now carry
+   their own `amount`, which the reducer uses) replaces the Auditor in HR's CHRO pool (with
+   Micromanager) — HR now has a boss of its own. **Bars (2000 seeds, never moved):** B1 PASS
+   (Office Politics −14.0pp); orgbars O1 + O2 PASS, 19.7 > 17.8 > 14.9 > 12.8 > 8.3 > 6.9% (the
+   CHRO now draws +2 cards: with the milder boss HR had drifted to 7.5%, 0.2pp inside Tech's
+   step). **Honest history:** v1 "their claims next to your cards lower those cards by 1" was
+   −0.3pp — their claims rarely touch your cards (10e's "check it LANDS", third time); v2 lane
+   reach at 1 was −4.4pp; at 2, −14.0pp. Tests red first for each version. Menu left:
+   Performance Calibration, Budget Cuts, Cold Outreach, Tech Debt, Fine Print; desk ideas
    Standing Desk, Expense Account, Noise-Cancelling Headphones, Corner Office, Red-Eye Flight.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.

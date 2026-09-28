@@ -176,10 +176,10 @@ export const ORGS: readonly Org[] = [
       { role: 'The Recruiter', initials: 'REC', name: 'Phone screen', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
       { role: 'The HR Partner', initials: 'HRP', name: 'Check-in', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
       { role: 'The Comp Lead', initials: 'CMP', name: 'Calibration', opponent: 'lookahead', boss: null, edge: 1, homeBoost: 0 },
-      { role: 'The CHRO', initials: 'CHR', name: 'Talent review', opponent: 'lookahead', boss: 'drawn', edge: 1, homeBoost: 0 },
+      { role: 'The CHRO', initials: 'CHR', name: 'Talent review', opponent: 'lookahead', boss: 'drawn', edge: 2, homeBoost: 0 },
       { role: 'The Board Chair', initials: 'BC', name: 'Governance review', opponent: 'lookahead', boss: 'replyall', edge: 3, homeBoost: 2 },
     ],
-    bosses: ['auditor', 'micromanager'],
+    bosses: ['politics', 'micromanager'],
     opponentDeck: HR_DECK,
   },
 ];
