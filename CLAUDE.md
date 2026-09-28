@@ -1004,6 +1004,23 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    cell is the lane you now lead). Verified in the real build at 375x667: mid-pop the cell's
    transform is scale 1.13, no window scroll. **Not verified:** how it feels on a device; no
    haptic added (flips already carry one).
+23. ~~Tips and result dialogs follow the iOS text size~~ **DONE (/explore 2026-09-28;
+   accessibility, Larger Text route step 2 after item 21).** `client/src/textscale.ts`: on
+   WebKit (where `CSS.supports('font', '-apple-system-body')`), measure the size iOS gives
+   `-apple-system-body` (17px at the default setting) and set `--text-scale` =
+   clamp(px/17, 1, 2.4) on the root; re-measured when the app returns to the foreground.
+   Elsewhere (Chrome, jsdom) nothing is set and everything stays as designed. Only text that
+   floats OVER the board scales: Bindy's tip text (`calc(13px * var(--text-scale, 1))`) and
+   result-dialog paragraphs (`calc(1em * ...)`); dialogs got `max-height: 100%; overflow-y:
+   auto` so huge text scrolls instead of pushing the button off. The board, hand and bars are
+   untouched, so the fixed layout can't break. Tests first (`textscale.test.ts` 3: ratio +
+   cap + floor; unsupported -> no-op; supported -> sets the var). **Simulator-verified**
+   (iPhone SE, fresh install, `VITE_QBR_START=year`; `xcrun simctl ui <UDID> content_size
+   accessibility-extra-large`, reset to `large` after): default size unchanged; at the
+   accessibility size Bindy's line is ~2.4x with the board as before. **Not verified:** a
+   result dialog at the largest sizes, device. **Still left for the Larger Text label:** Home,
+   Settings, org chart, draft and deck-builder text (they sit in the layout, so they need
+   their own overflow handling), then a 200% pass through every common task.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
@@ -1061,7 +1078,8 @@ Priorities drive the next /explore iterations — work top-down.
   and hold any card (hand, board, builder) to see it large (name, cost, full spread,
   value, ability in words, as `cardLabel` already says), scaled with Dynamic Type; then
   menus, dialogs and tips in rem. Only then evaluate the label at 200%. (Inspector DONE:
-  item 21. Remaining: rem for menus/dialogs/tips, then a 200% evaluation.) Until then the
+  item 21; tips + result dialogs DONE: item 23. Remaining: Home / Settings / chart / draft /
+  builder text, then a 200% evaluation.) Until then the
   kit (item 10l) claims Differentiate Without Color + Reduced Motion only.
 - Balatro depth: helpers (keycap consumables Ctrl+C/V/X/Z, sticky notes), more
   jokers (Paste Special = paste over your own card, Pivot Table, Newton's
