@@ -946,6 +946,24 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    code then green): no `font-size` below 11px in the stylesheet; every 9+-letter word in a
    card name has a soft hyphen. **Not verified:** Dynamic Type (sizes are still fixed px) and
    on-device legibility.
+20. **Opening-hand luck — MEASURED NULL, no mulligan needed (/explore 2026-09-27; research +
+   balance).** Hypothesis from research: Marvel Snap's low-star reviews blame losses on a bad
+   starting hand with "little recovery possible"
+   ([App Store](https://apps.apple.com/us/app/marvel-snap/id1592081003)); QBR has no mulligan
+   either. `sim/src/openinghand.ts` (bars pre-registered in its header): starter-deck mirrors,
+   smart-greedy both seats, 2000 seeds, grouped by $ cards in seat 0's 8-card opening hand.
+   **H1 PASS** (every group >= 5% of hands within 15pp of the overall 51.8%):
+   | $ cards in hand | 2 | 3 | 4 | 5 |
+   |---|---|---|---|---|
+   | share of hands | 9.0% | 31.7% | 37.4% | 17.8% |
+   | seat-0 win share | **61.7%** | 54.3% | 48.8% | 47.9% |
+   By the DIFFERENCE with the opponent's hand: -3 -> 71.9%, -1 -> 54.0%, 0 -> 54.0%, +1 ->
+   42.3%. **Finding: the hand that LOOKS bad (few playable cards, many grey) is the stronger
+   one** — in a mirror the expensive cards carry the high values that win lanes once spreads
+   build budget. (Not the same as item 5's "cheap spreaders are king", which is about deck
+   building, not the draw.) So no mulligan; the only gap is perception, which item 18's
+   grey-cards tip addresses. **Not measured:** the same split under lookahead play or with
+   built decks.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
