@@ -1014,6 +1014,18 @@ Priorities drive the next /explore iterations — work top-down.
   privacy policy / product page; real-device verification via TestFlight.
 
 ## Next up (not yet built)
+- **Larger Text — do NOT claim the App Store label in v1 (research, /explore 2026-09-27).**
+  Apple's criteria: text scales to **at least 200%** and players can finish **all common
+  tasks** at that size; same bar for games
+  ([criteria](https://www.developer.apple.com/help/app-store-connect/manage-app-accessibility/larger-text-evaluation-criteria),
+  [WWDC25](https://developer.apple.com/videos/play/wwdc2025/224/)). QBR's common task is
+  reading ~66px card faces on a 3x5 board at 375px wide; doubling that text cannot fit, and
+  a WKWebView ignores the iOS text-size setting unless the root font uses
+  `-apple-system-body` and sizes are in rem. The honest route is a **card inspector**: tap
+  and hold any card (hand, board, builder) to see it large (name, cost, full spread,
+  value, ability in words, as `cardLabel` already says), scaled with Dynamic Type; then
+  menus, dialogs and tips in rem. Only then evaluate the label at 200%. Until then the
+  kit (item 10l) claims Differentiate Without Color + Reduced Motion only.
 - Balatro depth: helpers (keycap consumables Ctrl+C/V/X/Z, sticky notes), more
   jokers (Paste Special = paste over your own card, Pivot Table, Newton's
   Cradle), "The Board" final boss, a shop/economy between meetings.
