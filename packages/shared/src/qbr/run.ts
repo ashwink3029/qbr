@@ -83,6 +83,21 @@ const TECH_DECK: readonly string[] = [
   'emailchain', 'emailchain', 'stickynote', 'stickynote', 'hackathon', 'hackathon', 'coldcall', 'coldcall',
   'reorg', 'reorg', 'memo', 'memo', 'bluesky', 'slidedeck', 'keynote',
 ];
+/** Sales works the phones: cheap forward fans, lots of them. */
+const SALES_DECK: readonly string[] = [
+  'coldcall', 'coldcall', 'coldcall', 'cc', 'cc', 'memo', 'memo', 'standup', 'standup',
+  'stakeholder', 'stakeholder', 'offsite', 'synergy', 'reorg', 'slidedeck',
+];
+/** Marketing builds the brand: boosts and wide, sideways spreads. */
+const MARKETING_DECK: readonly string[] = [
+  'highfive', 'teambuilding', 'cc', 'cc', 'bluesky', 'whiteboard', 'memo', 'memo', 'standup',
+  'standup', 'synergy', 'offsite', 'offsite', 'highfive', 'keynote',
+];
+/** Legal redlines: weakens, purple and big numbers. */
+const LEGAL_DECK: readonly string[] = [
+  'redpen', 'redpen', 'deadline', 'stakeholder', 'stakeholder', 'merger', 'headcount', 'slidedeck',
+  'synergy', 'reorg', 'memo', 'memo', 'standup', 'standup', 'cc',
+];
 /** HR manages people: boosts, weakens, and the purple performance-review family. */
 const HR_DECK: readonly string[] = [
   'highfive', 'highfive', 'standup', 'standup', 'mentorship', 'pip', 'deadline', 'stakeholder',
@@ -97,6 +112,48 @@ export const ORGS: readonly Org[] = [
     meetings: MEETINGS,
     bosses: DRAWABLE_BOSSES,
     opponentDeck: STARTER_DECK,
+  },
+  {
+    id: 'marketing',
+    name: 'Marketing',
+    blurb: 'All about the brand: boosts, and spreads that go wide.',
+    meetings: [
+      { role: 'The Content Writer', initials: 'CW', name: 'Content sync', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Designer', initials: 'DSN', name: 'Creative review', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Growth Lead', initials: 'GRW', name: 'Campaign retro', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Marketing Director', initials: 'MKD', name: 'Launch review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
+      { role: 'The CMO', initials: 'CMO', name: 'Brand summit', opponent: 'lookahead', boss: 'freeze', edge: 1, homeBoost: 2 },
+    ],
+    bosses: ['legacy', 'auditor'],
+    opponentDeck: MARKETING_DECK,
+  },
+  {
+    id: 'sales',
+    name: 'Sales',
+    blurb: 'Always be closing: cheap cards, thrown fast and far.',
+    meetings: [
+      { role: 'The SDR', initials: 'SDR', name: 'Call block', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Account Exec', initials: 'AE', name: 'Pipeline review', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Sales Manager', initials: 'SLM', name: 'Forecast call', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The VP of Sales', initials: 'VPS', name: 'Deal desk', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
+      { role: 'The CRO', initials: 'CRO', name: 'Sales kickoff', opponent: 'lookahead', boss: 'legacy', edge: 1, homeBoost: 2 },
+    ],
+    bosses: ['auditor', 'freeze'],
+    opponentDeck: SALES_DECK,
+  },
+  {
+    id: 'legal',
+    name: 'Legal',
+    blurb: 'Every clause is a trap: red pens, purple, and big numbers.',
+    meetings: [
+      { role: 'The Paralegal', initials: 'PL', name: 'Intake', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Associate', initials: 'ASC', name: 'Document review', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Senior Counsel', initials: 'SC', name: 'Redline', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The General Counsel', initials: 'GC', name: 'Compliance review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 0 },
+      { role: 'The Managing Partner', initials: 'MP', name: 'Deposition', opponent: 'lookahead', boss: 'replyall', edge: 2, homeBoost: 2 },
+    ],
+    bosses: ['auditor', 'legacy'],
+    opponentDeck: LEGAL_DECK,
   },
   {
     id: 'tech',
@@ -135,13 +192,16 @@ export function orgOf(id: string): Org {
 }
 
 /** Finance is always open; each later org opens once you are promoted in the one before
- *  (a promotion from before orgs existed counts as Finance). */
+ *  (a promotion from before orgs existed counts as Finance). An org you were already promoted
+ *  in stays open even if new orgs are later inserted before it. */
 export function orgUnlocked(id: string, p: Progress): boolean {
   const i = ORGS.findIndex((o) => o.id === id);
   if (i < 0) return false;
   if (i === 0) return true;
+  const done = p.orgsPromoted ?? [];
+  if (done.includes(id)) return true;
   const prev = ORGS[i - 1]!.id;
-  return (p.orgsPromoted ?? []).includes(prev) || (prev === 'finance' && (p.promotions ?? 0) > 0);
+  return done.includes(prev) || (prev === 'finance' && (p.promotions ?? 0) > 0);
 }
 
 /**

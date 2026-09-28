@@ -9,8 +9,8 @@ import { DRAWABLE_BOSSES, MEETINGS, bossFor, currentMeeting, finishMeeting, leav
 // is its own cast, its own VP boss pool and top boss, and its own opponent deck.
 
 describe('the orgs', () => {
-  it('Finance, then Tech, then HR; each a 5-rung ladder with its own cast', () => {
-    expect(ORGS.map((o) => o.id)).toEqual(['finance', 'tech', 'hr']);
+  it('Finance, Marketing, Sales, Legal, Tech, HR (easiest to hardest); each a 5-rung ladder with its own cast', () => {
+    expect(ORGS.map((o) => o.id)).toEqual(['finance', 'marketing', 'sales', 'legal', 'tech', 'hr']);
     const roles = new Set<string>();
     for (const o of ORGS) {
       expect(o.meetings).toHaveLength(5);
@@ -41,13 +41,17 @@ describe('the orgs', () => {
     }
   });
 
-  it('opens one after another: Finance always, Tech once promoted in Finance, HR once promoted in Tech', () => {
+  it('opens one after another, each by a promotion in the org before it', () => {
     const fresh = { bestRung: 0, careers: 0 };
-    expect(ORGS.map((o) => orgUnlocked(o.id, fresh))).toEqual([true, false, false]);
-    expect(ORGS.map((o) => orgUnlocked(o.id, { ...fresh, orgsPromoted: ['finance'] }))).toEqual([true, true, false]);
-    expect(ORGS.map((o) => orgUnlocked(o.id, { ...fresh, orgsPromoted: ['finance', 'tech'] }))).toEqual([true, true, true]);
+    expect(ORGS.map((o) => orgUnlocked(o.id, fresh))).toEqual([true, false, false, false, false, false]);
+    expect(ORGS.map((o) => orgUnlocked(o.id, { ...fresh, orgsPromoted: ['finance'] }))).toEqual([true, true, false, false, false, false]);
+    expect(ORGS.map((o) => orgUnlocked(o.id, { ...fresh, orgsPromoted: ['finance', 'marketing', 'sales', 'legal', 'tech'] }))).toEqual([true, true, true, true, true, true]);
     // A player promoted before orgs existed has already cleared Finance.
-    expect(orgUnlocked('tech', { ...fresh, promotions: 1 })).toBe(true);
+    expect(orgUnlocked('marketing', { ...fresh, promotions: 1 })).toBe(true);
+    // An org you were promoted in stays open when new orgs are inserted before it.
+    expect(orgUnlocked('hr', { ...fresh, orgsPromoted: ['finance', 'tech'] })).toBe(true);
+    expect(orgUnlocked('tech', { ...fresh, orgsPromoted: ['finance', 'tech'] })).toBe(true);
+    expect(orgUnlocked('legal', { ...fresh, orgsPromoted: ['finance', 'tech'] })).toBe(false);
   });
 });
 
@@ -78,6 +82,6 @@ describe('a career in an org', () => {
   });
 
   it('an unknown org is refused', () => {
-    expect(() => newRun(1, 1, { org: 'legal' })).toThrow();
+    expect(() => newRun(1, 1, { org: 'accounting' })).toThrow();
   });
 });

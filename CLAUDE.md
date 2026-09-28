@@ -877,7 +877,24 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    `orgs.test.tsx` 3 (picker from day one + locks, a Tech career climbs the Tech cast, the
    record), avatars cover every org with no shared faces. **Not built yet:** org-specific card
    unlocks ("more spots to unlock cards" — the user's third benefit): next step, e.g. a
-   collectible per org promotion; per-org stakes; an org in the daily. Ask: the app should feel more EXPANSIVE to a new player. The CEO may be hard to
+   collectible per org promotion; per-org stakes; an org in the daily.
+   **Three more orgs (user: "add a few more orgs", 2026-09-28): six in all, easiest to hardest
+   Finance -> Marketing -> Sales -> Legal -> Tech -> HR.** O2 (later orgs harder by >= 1pp) and
+   O1's 5% floor meant new orgs had to slot BETWEEN Finance and HR, not after. **Marketing**
+   (Content Writer / Designer / Growth Lead / Marketing Director / CMO; boosts + wide spreads:
+   High Five x2, Team Building, CC x2, Blue-Sky, Whiteboard, Keynote, ...; pool Legacy + Auditor,
+   top Change Freeze). **Sales** (SDR / Account Exec / Sales Manager / VP of Sales / CRO; cheap
+   forward fans: Cold Call x3, CC x2, Stakeholder x2, ...; pool Auditor + Freeze, top Legacy).
+   **Legal** (Paralegal / Associate / Senior Counsel / General Counsel / Managing Partner; Red Pen
+   x2, Deadline, Stakeholder x2, Merger, Headcount, ...; pool Auditor + Legacy, top Reply-All with
+   +2 cards). 15 more placeholder-in-code portraits, composed from parts (hair / eyewear / facial
+   hair / clothes) with distinct palettes by `avatars_gen.py` (scratch; the maps live in
+   avatars.tsx). An org you were already promoted in stays open when new orgs are inserted
+   before it (Tech now follows Legal). **orgbars, 2000 careers per org: O1 PASS, O2 PASS —
+   17.8 > 16.1 > 14.1 > 11.7 > 8.5 > 5.5%.** Honest history: first pass Sales 10.3 / Marketing 8.2
+   / Legal 9.3 (O2 FAIL); +1 card on the VP-rungs over-shot (~44%, broke the climb); Marketing
+   ended easier than Sales, so the chain order was swapped rather than re-tuned. Verified on
+   screen: each new tree shows 5 portraits and the right "opens …" chain. Ask: the app should feel more EXPANSIVE to a new player. The CEO may be hard to
    beat, but it doesn't look like much is locked away. Borrow Balatro's deck choice: before a
    career you pick an **org** to climb, most shown locked from day one. The first is
    **Finance**, then **Tech**, then **HR**, and so on. Each org brings more diverse characters,

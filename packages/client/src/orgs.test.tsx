@@ -29,9 +29,9 @@ describe('the org picker on the career’s org chart', () => {
     render(<App seed={5} />);
     fireEvent.click(q('[data-start-run]')!);
     fireEvent.click(q('[data-org-next]')!);
-    expect(q('[data-org-picker]')!.textContent).toMatch(/Tech/);
+    expect(q('[data-org-picker]')!.textContent).toMatch(/Marketing/);
     expect(q('[data-org-locked]')!.textContent).toMatch(/promoted in Finance/i);
-    for (const m of orgOf('tech').meetings) expect(chart()).toContain(m.role);
+    for (const m of orgOf('marketing').meetings) expect(chart()).toContain(m.role);
     expect(document.querySelectorAll('[data-orgchart] [data-rung] svg[data-avatar]').length).toBe(5); // every portrait
     expect((q('[data-chart-go]') as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(q('[data-org-prev]')!);
@@ -42,16 +42,16 @@ describe('the org picker on the career’s org chart', () => {
     render(<App seed={5} />);
     fireEvent.click(q('[data-start-run]')!);
     expect(q('[data-rung="0"] [data-unlock]')!.textContent).toMatch(/Coffee Run/);
-    expect(q('[data-rung="4"] [data-unlock]')!.textContent).toMatch(/Tech/);
+    expect(q('[data-rung="4"] [data-unlock]')!.textContent).toMatch(/opens Marketing/);
   });
 
-  it('once promoted in Finance, a Tech career climbs the Tech cast and is recorded as Tech', () => {
+  it('once promoted in Finance, a Marketing career climbs the Marketing cast', () => {
     localStorage.setItem('qbr.record.v1', JSON.stringify({ runs: 3, promotions: 1, bestMeetings: 5, meetings: 12, orgsPromoted: ['finance'] }));
     render(<App seed={5} />);
     fireEvent.click(q('[data-start-run]')!);
     fireEvent.click(q('[data-org-next]')!);
     expect(q('[data-org-locked]')).toBeNull();
-    expect(chart()).toContain('The New Grad');
+    expect(chart()).toContain(orgOf('marketing').meetings[0]!.role);
     expect(chart()).not.toContain('The Intern');
     expect((q('[data-chart-go]') as HTMLButtonElement).disabled).toBe(false);
   });
