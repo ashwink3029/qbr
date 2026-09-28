@@ -45,7 +45,7 @@ describe('pickTip', () => {
   it('teaches lane scoring once your first card is on the sheet, and lives when Q2 begins', () => {
     const lanes = pickTip({ ...base, myCardsOnBoard: 1 }, placed);
     expect(lanes?.id).toBe('lanes');
-    expect(lanes!.text).toMatch(/lane’s leader banks/);
+    expect(lanes!.text).toMatch(/Only a lane’s leader scores it/);
     expect(pickTip({ ...base, myCardsOnBoard: 0 }, placed)).toBeNull();
     const lives = pickTip({ ...base, quarterNo: 2 }, new Set(['place', 'lanes']));
     expect(lives?.id).toBe('lives');
@@ -79,7 +79,7 @@ describe('Bindy in the game', () => {
   it('after placement, explains grey cards once: they cost more $ than your open cells', () => {
     localStorage.setItem('qbr.tips.v1', JSON.stringify(['place']));
     render(<Game seed={5} />);
-    expect(document.querySelector('[data-tip]')!.textContent).toMatch(/Grey cards cost more \$/);
+    expect(document.querySelector('[data-tip]')!.textContent).toMatch(/Grey cards/);
     fireEvent.click(document.querySelector('[data-tip]')!);
     expect(document.querySelector('[data-tip]')).toBeNull();
   });

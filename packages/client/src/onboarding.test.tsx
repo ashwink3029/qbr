@@ -12,6 +12,8 @@ import { loadSeenTips } from './tips.js';
 const q = (s: string) => document.querySelector<HTMLElement>(s);
 const all = (s: string) => Array.from(document.querySelectorAll<HTMLElement>(s));
 const tipText = () => q('[data-tip]')?.textContent ?? '';
+// The placement guide itself (other tips may point at the =SUM row or grey cards).
+const placementGuide = () => all('[data-cell][data-guide], .hand [data-card][data-playable="true"][data-guide]');
 
 describe('the guided first turn', () => {
   beforeEach(() => localStorage.clear());
@@ -56,17 +58,17 @@ describe('the guided first turn', () => {
     const target = q('[data-cell][data-guide]')!;
     fireEvent.click(target);
     fireEvent.click(target);
-    expect(all('[data-guide]')).toHaveLength(0);
+    expect(placementGuide()).toHaveLength(0);
     expect(tipText()).not.toMatch(/glowing|tap again/i);
     expect(loadSeenTips().has('place')).toBe(true);
     cleanup();
     render(<Game seed={6} />);
-    expect(all('[data-guide]')).toHaveLength(0);
+    expect(placementGuide()).toHaveLength(0);
   });
 
   it('a returning player (placement already learned) sees no guide', () => {
     localStorage.setItem('qbr.tips.v1', JSON.stringify(['place']));
     render(<Game seed={5} />);
-    expect(all('[data-guide]')).toHaveLength(0);
+    expect(placementGuide()).toHaveLength(0);
   });
 });

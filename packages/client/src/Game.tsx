@@ -346,6 +346,8 @@ export function Game({
 
   // The guided first turn: until the first card is ever placed, the next thing to tap glows.
   const guiding = humanTurn && !summary && !paused && !match.over && !seenTips.has('place');
+  // A rules tip makes the thing it talks about glow while it shows.
+  const points = tip?.points;
   const guideCell = (i: number) =>
     guiding && selected !== null && (pending === null ? legalCells.has(i) : pending === i);
 
@@ -555,6 +557,7 @@ export function Game({
                 }`}
                 style={summary ? { animationDelay: `${sc * 120}ms` } : undefined}
                 data-lane-total={sc}
+                data-guide={points === 'sums' ? '' : undefined}
                 data-lead={lead}
                 aria-label={laneLabel(sc, you, them, who)}
               >
@@ -589,7 +592,9 @@ export function Game({
                 className={`card ${selected === id ? 'sel' : ''} ${short ? 'unaffordable' : ''} ${explain === id ? 'explained' : ''}`}
                 data-card={id}
                 data-playable={playable ? 'true' : 'false'}
-                data-guide={guiding && selected === null && playable ? '' : undefined}
+                data-guide={
+                  (guiding && selected === null && playable) || (points === 'unaffordable' && short) ? '' : undefined
+                }
                 aria-label={
                   cardLabel(id) +
                   (short ? ` — can't play: ${bestOpen < 0 ? 'no open cell' : `needs a ${'$'.repeat(card(id).cost)} cell`}` : '')
@@ -610,14 +615,20 @@ export function Game({
         </div>
 
         <div className="actions">
-          <button className="btn" data-pass disabled={!humanTurn} onClick={() => act({ type: 'pass' })}>
+          <button
+            className="btn"
+            data-pass
+            data-guide={points === 'pass' ? '' : undefined}
+            disabled={!humanTurn}
+            onClick={() => act({ type: 'pass' })}
+          >
             Close out Q{qNo}
           </button>
           <span className="rev">
             <span>
               Q{qNo}: <b className="you" data-mine>{mine}</b>–<b className="them" data-theirs>{theirs}</b>
             </span>
-            <span className="you-lives">
+            <span className="you-lives" data-guide={points === 'lives' ? '' : undefined}>
               <Lives n={match.lives[0]} max={maxLives} label="You" />
               <small>{game.hands[HUMAN].length} cards</small>
             </span>

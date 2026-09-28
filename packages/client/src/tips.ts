@@ -52,6 +52,8 @@ export interface Tip {
   readonly id: string;
   readonly text: string;
   readonly mood: Mood;
+  /** What on screen the tip is about; Game makes it glow while the tip shows. */
+  readonly points?: 'sums' | 'unaffordable' | 'lives' | 'pass';
 }
 
 /** The most relevant unseen tip for this moment, or null. Pure. */
@@ -75,11 +77,13 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
     });
   }
   // The two rules that decide who wins, taught in play rather than by losing.
-  if (ctx.humanTurn && ctx.myCardsOnBoard >= 1 && !ctx.selected) {
+  // Shown the moment your first card lands (even while the opponent thinks).
+  if (ctx.myCardsOnBoard >= 1 && !ctx.selected) {
     candidates.push({
       id: 'lanes',
-      text: 'Nice — the cells your card reached are yours now. Each column is a lane: when the quarter closes, each lane’s leader banks its total — only the leader scores the lane.',
+      text: 'Those cells are yours now. Only a lane’s leader scores it — watch the =SUM row.',
       mood: 'talk',
+      points: 'sums',
     });
   }
   if (ctx.humanTurn && ctx.quarterNo === 2) {
@@ -87,13 +91,15 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
       id: 'lives',
       text: `Fresh sheet for Q2, but your hand carries over. Two lives each: lose two quarters and the year goes to ${ctx.who}.`,
       mood: 'talk',
+      points: 'lives',
     });
   }
   if (ctx.humanTurn && ctx.hasUnaffordable && !ctx.selected) {
     candidates.push({
       id: 'cost',
-      text: 'Grey cards cost more $ than any open cell you own. Spreads add $ to the cells they reach — tap a grey card to see what it needs.',
+      text: 'Grey cards need a richer cell. Spreads add $ — tap one to see why.',
       mood: 'talk',
+      points: 'unaffordable',
     });
   }
   if (ctx.previewFlips) {
@@ -108,6 +114,7 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
       id: 'closeout-ahead',
       text: `${ctx.who} closed out and you’re ahead. Close out now — unplayed cards carry into next quarter.`,
       mood: 'talk',
+      points: 'pass',
     });
   }
   if (ctx.humanTurn && ctx.financeClosedOut && ctx.lead <= 0) {

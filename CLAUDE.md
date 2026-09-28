@@ -911,6 +911,22 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    badge -> placed, lanes tip, no window scroll. The badge was then moved from the cell's
    bottom edge (it covered the ▲ owner chevron) to the top; **not re-screenshotted after that
    one-line CSS move, and not verified on the Simulator or a device.**
+18. ~~Tips point at what they're about~~ **DONE (/explore 2026-09-27; lever 3, follow-on to
+   item 17).** Checked in item 17's new-player walkthrough: after the first card, Bindy's
+   `lanes` tip was a 31-word paragraph of rules and pointed at nothing; `cost` was 26 words.
+   Now every rules tip names its subject (`Tip.points`: `'sums' | 'unaffordable' | 'lives' |
+   'pass'`) and `Game` makes that thing glow with the same `data-guide` ring while the tip
+   shows: the `=SUM` row (lanes), the grey cards (cost), your lives (lives, at Q2), the Close
+   out button (closeout-ahead). Long lines cut to one: lanes "Those cells are yours now. Only a
+   lane's leader scores it — watch the =SUM row." (16 words), cost "Grey cards need a richer
+   cell. Spreads add $ — tap one to see why." (15). The lanes tip now shows the moment your
+   first card lands, while the opponent thinks, not after their reply. Tests first
+   (`pointers.test.tsx` 3, red then green; `onboarding.test.tsx` narrowed to the placement
+   guide itself, `tips.test.tsx` updated). **Honest history:** the first cost line measured 17
+   words against the pre-set 16 and was trimmed. Verified at 375x667 through the real first
+   career: `=SUM` row glows right after placing, then the grey cards; no window scroll. **Not
+   verified:** the lives and Close out pointers on screen (covered by the unit mapping only),
+   Simulator / device.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
