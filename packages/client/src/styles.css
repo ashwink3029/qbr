@@ -788,3 +788,20 @@
 @media (prefers-reduced-motion: reduce) {
   .stamp, .sum.banked, .rung[data-fx] .tick, .rung.you[data-fx], .unlocked-item[data-fx] { animation: none; }
 }
+
+/* The guided first turn (onboarding by doing): the next thing to tap glows until the
+   first card is ever placed. A glow ring, not colour alone: it pulses in width too. */
+[data-guide] { animation: guide-glow 1.1s ease-in-out infinite; position: relative; z-index: 1; }
+.card[data-guide] { box-shadow: 0 0 0 3px #ffd23f, 0 0 12px 2px rgba(255, 210, 63, 0.9); }
+@keyframes guide-glow {
+  0%, 100% { box-shadow: 0 0 0 2px #ffd23f, 0 0 6px 1px rgba(255, 210, 63, 0.6); }
+  50% { box-shadow: 0 0 0 4px #ffd23f, 0 0 16px 4px rgba(255, 210, 63, 1); }
+}
+.guide-badge {
+  position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
+  padding: 1px 6px; border-radius: 8px; background: var(--title); color: #fff;
+  font-size: 10px; font-weight: 700; white-space: nowrap; pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-guide] { animation: none; box-shadow: 0 0 0 3px #ffd23f; }
+}

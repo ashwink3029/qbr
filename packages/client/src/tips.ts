@@ -31,6 +31,8 @@ export interface TipContext {
   readonly humanTurn: boolean;
   readonly firstTurnOfMatch: boolean;
   readonly selected: boolean;
+  /** A cell is being previewed (the next tap on it places the card). */
+  readonly previewing?: boolean;
   readonly previewFlips: boolean;
   readonly financeClosedOut: boolean;
   /** Who you're facing ("Finance", "The VP"). */
@@ -59,10 +61,16 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
     const b = BOSSES[ctx.mods.boss]!;
     candidates.push({ id: `boss:${b.id}`, text: `Heads up — ${b.name} is in this meeting. ${b.blurb}.`, mood: 'worried' });
   }
-  if (ctx.humanTurn && ctx.firstTurnOfMatch && !ctx.selected) {
+  // Until the first card is ever placed, Bindy walks the three taps one line at a time,
+  // while the screen makes the next thing to tap glow (Game's data-guide).
+  if (ctx.humanTurn && !seen.has('place')) {
     candidates.push({
       id: 'place',
-      text: 'Tap a card, then a yellow cell to preview its spread. Tap the same cell again to commit.',
+      text: ctx.previewing
+        ? 'Like it? Tap the same cell again to place it.'
+        : ctx.selected
+          ? 'Now tap a glowing cell to see its spread.'
+          : 'Your move — tap a glowing card.',
       mood: 'talk',
     });
   }

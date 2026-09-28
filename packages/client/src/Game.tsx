@@ -231,6 +231,8 @@ export function Game({
     if (pending === i) {
       feedback.cardConfirmed();
       act({ type: 'play', card: selected, cell: i });
+      // The first card ever placed ends the guided first turn.
+      if (!seenTips.has('place')) setSeenTips((s) => markTipSeen(s, 'place'));
     } else {
       feedback.cardPlaced();
       setPending(i);
@@ -329,6 +331,7 @@ export function Game({
             humanTurn,
             firstTurnOfMatch: match.quarterNo === 1 && match.quarter.turn === 0,
             selected: selected !== null,
+            previewing: pending !== null,
             previewFlips: effects.flip.length > 0,
             financeClosedOut: theyPassed,
             who,
@@ -340,6 +343,11 @@ export function Game({
           },
           seenTips,
         );
+
+  // The guided first turn: until the first card is ever placed, the next thing to tap glows.
+  const guiding = humanTurn && !summary && !paused && !match.over && !seenTips.has('place');
+  const guideCell = (i: number) =>
+    guiding && selected !== null && (pending === null ? legalCells.has(i) : pending === i);
 
   let dialog: {
     title: string;
@@ -481,6 +489,7 @@ export function Game({
                   key={i}
                   className={cls}
                   data-cell={i}
+                  data-guide={guideCell(i) ? '' : undefined}
                   data-owner={cell.owner === 0 ? 'you' : cell.owner === 1 ? 'them' : 'none'}
                   role="gridcell"
                   aria-label={cellLabel(game, i, { sr, sc }, who, blocked.has(i))}
@@ -490,6 +499,11 @@ export function Game({
                   onPointerLeave={(e) => e.pointerType === 'mouse' && setHover(null)}
                   onClick={() => tapCell(i)}
                 >
+                  {guiding && pending === i && (
+                    <span className="guide-badge" data-guide-badge aria-hidden>
+                      tap again
+                    </span>
+                  )}
                   {cell.card ? (
                     <span
                       className="placed"
@@ -575,6 +589,7 @@ export function Game({
                 className={`card ${selected === id ? 'sel' : ''} ${short ? 'unaffordable' : ''} ${explain === id ? 'explained' : ''}`}
                 data-card={id}
                 data-playable={playable ? 'true' : 'false'}
+                data-guide={guiding && selected === null && playable ? '' : undefined}
                 aria-label={
                   cardLabel(id) +
                   (short ? ` — can't play: ${bestOpen < 0 ? 'no open cell' : `needs a ${'$'.repeat(card(id).cost)} cell`}` : '')

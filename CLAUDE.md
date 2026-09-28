@@ -883,6 +883,34 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
      runbars, stakebars, firstcareer, unlockbars, collectionbars (and item 14's caps), then
      re-vet the daily. Mirror (`mirror.ts`) and coworker lockstep tests must still pass.
      Bosses that touch takeovers (Change Freeze) need a look.
+17. ~~Guided first turn~~ **DONE (/explore 2026-09-27; playbook levers 1 + 3, research ->
+   onboarding by doing).** **Research first:** Marvel Snap guarantees a playable card in the
+   opening hand (QBR already does: `cheapOpener`) and orders its unlocks so each new card
+   teaches the next combo
+   ([mobilegamer.biz](https://mobilegamer.biz/second-dinner-reveals-the-secrets-of-marvel-snaps-onboarding-and-card-design/));
+   Queen's Blood teaches through real matches, and guides say its tutorial "goes by rather
+   quickly" and stays unclear "until you play a few rounds"
+   ([GameSpot](https://www.gamespot.com/gallery/final-fantasy-7-rebirth-queens-blood-tips-guide/2900-5133/),
+   [Gamer Guides](https://www.gamerguides.com/final-fantasy-vii-rebirth/guide/minigames/queens-blood/queens-blood-tutorial-final-fantasy-vii-rebirth));
+   indie card-game feedback on itch.io keeps saying "play first, read after" and "it clicked
+   halfway through the first match". **Checked as a brand-new player** (cleared storage, 375x667):
+   the first turn opened on a THREE-sentence Bindy bubble ("Tap a card, then a yellow cell to
+   preview its spread. Tap the same cell again to commit.") covering Finance's row and the
+   headers, repeating what the formula bar already says step by step, and nothing on screen
+   pointed at what to tap. **Now:** until the player's first card is ever placed, the next
+   thing to tap GLOWS (`data-guide`, a pulsing gold ring): the playable cards, then after
+   picking one its legal cells, then after a preview only that cell, with a "tap again" badge
+   (`data-guide-badge`). Bindy's `place` tip is one short line per step ("Your move — tap a
+   glowing card." / "Now tap a glowing cell to see its spread." / "Like it? Tap the same cell
+   again to place it.") and advances as the player acts instead of waiting to be dismissed;
+   the first placed card marks `place` seen, ends the guide for good, and hands over to the
+   `lanes` tip. It now also works if the opponent moves first (it used to need turn 0).
+   Reduced motion: a still ring, no pulse. Tests first (`onboarding.test.tsx` 5, 4 red then
+   green; `tips.test.tsx` updated for the new rule). Verified headlessly at 375x667 and 402x874
+   through the real first career (Home -> chart -> Intern): 4 cards glow -> 3 cells -> 1 cell +
+   badge -> placed, lanes tip, no window scroll. The badge was then moved from the cell's
+   bottom edge (it covered the ▲ owner chevron) to the top; **not re-screenshotted after that
+   one-line CSS move, and not verified on the Simulator or a device.**
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
