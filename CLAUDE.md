@@ -1119,6 +1119,57 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    `store/app-store-connect.md` (name / subtitle / description), the privacy policy, and this
    file's pitch. Check the one-year window title ("QBR.xls — Q1 Review" already fits) and the
    store screenshots (re-render Home). A copy change; no rules or bars move.
+25. **Content for the orgs: exec modifiers, desk upgrades, org-locked cards (user request
+   2026-09-28, /loop every 10m) — IN PROGRESS.** Ask: build out levels, "the potential deck that
+   starts locked", more desk upgrades before a level, and a list of interesting modifiers execs
+   could bring so the locked orgs are engaging.
+   **Research (iteration 1).** Balatro's boss blinds
+   ([list](https://balatrocalculator.blog/blog/balatro-boss-blinds-guide/)): the fair ones are
+   announced in advance, one readable line, and have counterplay through building/playing; the
+   hated ones hide information (face-down cards), stack constraints, or punish one narrow
+   strategy. The best ones change HOW you play ("can't repeat a hand type", "only one hand type
+   counts"), not just the numbers. Slay the Spire's boss relics
+   ([list](https://slaythespire.wiki.gg/wiki/Relics_List)) are strong upgrades WITH a real
+   drawback — a trade the player chooses; QBR's desk has none. **House rules for QBR content:**
+   one line; shown on the org chart before the career; counterable by deck or play; never
+   hides information; price by "cheap reach is king".
+   **Menu — exec modifiers (bosses), by engine hook, and the org each fits:**
+   | modifier | rule (one line) | hook | org |
+   |---|---|---|---|
+   | Quota | Win the Sales lane or the quarter is lost | revenue / quarter result | Sales |
+   | Brand Guidelines | You can't play a card already on your side of the sheet this quarter | canPlay | Marketing |
+   | Scope Creep | Their spreads reach one cell further forward | spreadTargets (seat 1) | Tech |
+   | Red Tape | You can only place in your home row and the row in front | canPlay | Legal |
+   | Performance Calibration | Each quarter your highest-value card loses 2 | cellValue | HR |
+   | Budget Cuts | Your spreads add no $ to the cells they claim | spreadEffects budget | Finance |
+   | Office Politics | Their claims next to your cards lower those cards by 1 | spreadEffects weaken | HR |
+   | Synergy Offsite | Their cards next to another of theirs are worth +1 | cellValue | Marketing |
+   | Cold Outreach | They start each quarter with the cell in front of each home claimed | freshBoard | Sales |
+   | Tech Debt | Your $$$ cards can't be played in Q1 | canPlay | Tech |
+   | Fine Print | Their purple reach also covers their diagonals | takeTargets (seat 1) | Legal |
+   Rejected up front: anything face-down / hidden (information denial), "player draws fewer" (measured
+   collapse to 0.5% promotion, 10d), stacking two bosses at once.
+   **Menu — desk upgrades (jokers); tradeoffs marked ⚖:**
+   | upgrade | rule | hook |
+   |---|---|---|
+   | Standing Desk | Your $ cards are worth +1 | cellValue |
+   | Expense Account | Your $$$ cards may go on $$ cells | canPlay |
+   | Label Maker | Your cards in your home row are worth +1 | cellValue |
+   | Second Monitor | +1 card before Q2 | bonusDraw (refill) |
+   | Noise-Cancelling Headphones | The boss rule is off in Q1 | mods by quarter |
+   | ⚖ Energy Drink | +2 cards in your opening hand, but −1 before Q2 | bonusDraw |
+   | ⚖ Corner Office | Your cards in Ops are worth +2, your Sales cards −1 | cellValue |
+   | ⚖ Red-Eye Flight | Your spreads add +1 extra $, but you start each quarter with 1 fewer $ home cell | spreadEffects / freshBoard |
+   **Org-locked cards ("the deck that starts locked"):** each org promotion unlocks that org's
+   signature card (shown on the org chart's top rung: "Beat → opens Sales · unlocks Viral
+   Post"), priced as strict upgrades per item 5's rule. Candidates: Marketing *Viral Post* ($,
+   wide sideways + boost 1), Sales *Closing Call* ($$, purple forward, v4), Legal *Cease & Desist*
+   ($$, weaken 2 in lane), Tech *Hotfix* ($, forward 2 + claim), HR *Team Offsite* ($$, boost 2
+   lane), Finance *Audit Trail* ($$$, purple forward fan).
+   **Build order (one per iteration, each measured against its harness, bars never moved):**
+   (1) research + this menu — DONE; (2) the modifier engine + first 2 exec modifiers (Quota,
+   Brand Guidelines) on Sales/Marketing, B1 + orgbars; (3) 3 desk upgrades incl. one ⚖, J1/J2;
+   (4) org-locked signature cards, U1/U2 + C1/C2; (5+) the rest of the menu, one org at a time.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
