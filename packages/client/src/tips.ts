@@ -124,6 +124,14 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
       mood: 'worried',
     });
   }
+  // Lowest priority: the card inspector (item 21) is otherwise only mentioned in the deck builder.
+  if (ctx.humanTurn && ctx.myCardsOnBoard >= 2 && !ctx.selected) {
+    candidates.push({
+      id: 'inspect',
+      text: 'Hold any card — in your hand or on the sheet — to see it up close.',
+      mood: 'talk',
+    });
+  }
   return candidates.find((t) => !seen.has(t.id)) ?? null;
 }
 

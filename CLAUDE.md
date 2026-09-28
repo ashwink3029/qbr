@@ -979,7 +979,10 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    swallows the click that follows, so it never selects, places or removes a card; iOS's
    long-press menu suppressed) and `CardInspector` (text in `em` under `font:
    -apple-system-body`, so it follows the iOS text-size setting, scoped to the overlay).
-   Deck builder hint: "Hold any card to see it up close." Tests first (`inspector.test.tsx`
+   Deck builder hint: "Hold any card to see it up close." **In play (2026-09-28):** a one-time,
+   lowest-priority Bindy tip `inspect` once you have 2+ cards on the sheet ("Hold any card —
+   in your hand or on the sheet — to see it up close."), since the builder hint alone left it
+   undiscoverable mid-game (test first, `pointers.test.tsx`). Tests first (`inspector.test.tsx`
    5, red then green). **Honest history:** jsdom passed, but a REAL touch hold in headless
    Chrome (CDP touch events) never showed it: when the finger lifts the browser sends a click
    where it lifted, which is now the overlay, and that closed it at once. Found by logging
