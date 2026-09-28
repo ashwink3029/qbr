@@ -827,3 +827,14 @@
 .inspector .iwords { margin: 0; text-align: center; line-height: 1.35; }
 .inspector small { color: var(--lo); font-size: 0.8em; }
 .card, .cell { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+
+/* A lane changing hands: its =SUM cell pops (inside the 420ms move-fx budget). */
+.sum[data-fx='lead'] { animation: lead-pop 360ms cubic-bezier(0.2, 1.6, 0.4, 1) both; position: relative; z-index: 1; }
+@keyframes lead-pop {
+  0% { transform: scale(0.85); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sum[data-fx='lead'] { animation: none; }
+}

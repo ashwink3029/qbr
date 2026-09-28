@@ -25,6 +25,20 @@ describe('moveFx: what a play visibly changes', () => {
     expect(fx.flip).toEqual([idx(0, 2)]);
   });
 
+  it('marks a lane whose leader changes, and only then (the moment that decides a quarter)', () => {
+    // An empty lane 0: your first card there takes the lead.
+    const s = board([], ['memo', 'coldcall']);
+    const first = moveFx(s, { type: 'play', card: 'memo', cell: idx(0, 0) })!;
+    expect(first.lead).toEqual([{ lane: 0, to: 0 }]);
+    // Already leading lane 0: another card there changes no leader.
+    const led = board([[idx(0, 0), { owner: 0, budget: 1, card: 'memo' }], [idx(0, 1), { owner: 0, budget: 1, card: null }]], ['coldcall']);
+    expect(moveFx(led, { type: 'play', card: 'coldcall', cell: idx(0, 1) })!.lead).toEqual([]);
+    // Taking over Finance's only card in lane 0 swings the lead to you.
+    const t = board([[idx(0, 2), { owner: 1, budget: 1, card: 'memo' }]], ['reorg']);
+    const rich = { ...t, cells: t.cells.map((c, i) => (i === idx(0, 0) ? { ...c, budget: 2 } : c)) };
+    expect(moveFx(rich, { type: 'play', card: 'reorg', cell: idx(0, 0) })!.lead).toEqual([{ lane: 0, to: 0 }]);
+  });
+
   it('orders claims by distance so a spread ripples outward', () => {
     // Vision Statement spreads to all 8 neighbours: adjacent first, diagonals next.
     const s = board([[idx(1, 1), { owner: 0, budget: 3, card: null }]], ['vision']);

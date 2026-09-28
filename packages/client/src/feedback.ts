@@ -165,6 +165,11 @@ export function moveResolved(fx: MoveFx, human: 0 | 1): void {
     if (mine) impact(ImpactStyle.Heavy);
     noise(0.18, 200, 0.6, 700, 0.6); // crumpled paper
   }
+  // A lane changing hands: two rising notes when you take the lead, two falling when you lose it.
+  const took = fx.lead.some((l) => l.to === human);
+  const lost = fx.lead.some((l) => l.to !== human);
+  if (took) notes([660, 880], 0.24, 70, 0.045, 'triangle');
+  else if (lost) notes([620, 470], 0.24, 80, 0.04, 'triangle');
 }
 
 /** A quarter that does not decide the year is booked. */

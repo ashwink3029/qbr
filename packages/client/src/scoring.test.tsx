@@ -53,6 +53,14 @@ describe('lane scores you can read at a glance', () => {
     expect(Number(document.querySelector('[data-theirs]')!.textContent)).toBe(banked('them'));
   });
 
+  it('when a play takes a lane’s lead, that =SUM cell pops (and only that one)', () => {
+    render(<Game seed={5} />);
+    playOneCard();
+    const popped = lanes().filter((l) => l.dataset.fx === 'lead');
+    expect(popped.length).toBeGreaterThan(0);
+    expect(popped.every((l) => l.dataset.lead === 'you')).toBe(true);
+  });
+
   it('lane labels say who banks and that the trailing side banks nothing', () => {
     expect(laneLabel(0, 5, 3, 'Finance')).toBe('Sales: you lead, banking 5; Finance 3, banks nothing');
     expect(laneLabel(1, 1, 4, 'Finance')).toBe('Ops: Finance leads, banking 4; you 1, bank nothing');

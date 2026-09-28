@@ -987,6 +987,18 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    402x874: hold opens it without selecting, a tap closes it. **Not verified:** iOS WebKit's
    own long-press behaviour (Simulator has no tap automation here; device), and how far
    `-apple-system-body` scales it at the largest accessibility sizes.
+22. ~~A lane changing hands pops~~ **DONE (/explore 2026-09-27; lever 4, juice).** After item
+   12 made lane ownership readable, the moment that decides a quarter (a play swings who
+   leads a lane) still just recoloured the `=SUM` cell. Now `moveFx` also returns `lead`
+   (lanes whose leader the play changed, and who leads now), computed from the shared
+   `rowResults` before vs after `reducer`, so it cannot disagree with scoring. That `=SUM`
+   cell pops (scale 0.85 -> 1.12 -> 1 in 360ms, inside the 420ms move-fx budget; off under
+   reduced motion), for either side's moves, and `moveResolved` adds two rising notes when
+   you take a lane, two falling when you lose one (behind the Sound setting). Tests first
+   (`motion.test.ts` lead: takes / no change / takeover swing; `scoring.test.tsx` the popped
+   cell is the lane you now lead). Verified in the real build at 375x667: mid-pop the cell's
+   transform is scale 1.13, no window scroll. **Not verified:** how it feels on a device; no
+   haptic added (flips already carry one).
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

@@ -555,9 +555,12 @@ export function Game({
             // colour, the trailing total small and struck through; a tie is plain.
             const [you, them] = row.totals;
             const lead = row.winner === 0 ? 'you' : row.winner === 1 ? 'them' : 'none';
+            // A play that just changed who leads this lane makes its =SUM cell pop.
+            const popped = fx !== null && fx.id !== settledFx && fx.lead.some((l) => l.lane === sc);
             return (
               <div
-                key={`s${sc}`}
+                key={popped ? `s${sc}-${fx!.id}` : `s${sc}`}
+                data-fx={popped ? 'lead' : undefined}
                 // While a quarter's result shows, the lanes that were banked pulse.
                 className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : 'tie'} ${
                   summary && row.winner !== null ? 'banked' : ''

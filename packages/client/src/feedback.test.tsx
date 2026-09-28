@@ -150,7 +150,7 @@ describe('the real feedback module', () => {
       real.cardDenied();
       real.cardPlaced();
       real.cardConfirmed();
-      const fx = { id: 1, by: 0 as const, placed: 0, claim: [], flip: [1], boost: [2], weaken: [3], destroy: [4] };
+      const fx = { id: 1, by: 0 as const, placed: 0, claim: [], flip: [1], boost: [2], weaken: [3], destroy: [4], lead: [{ lane: 0, to: 0 as const }] };
       real.moveResolved(fx, 0);
       real.moveResolved({ ...fx, by: 1 }, 0);
       real.quarterEnded('won');

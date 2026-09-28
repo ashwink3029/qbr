@@ -3,7 +3,7 @@
 // and the enemy cards it takes over. Derived from the shared `spreadEffects`,
 // so the animation can never disagree with the rules (same principle as the
 // green/orange preview).
-import { colOf, rowOf, spreadEffects, type Action, type GameState, type Player } from '@qbr/shared';
+import { colOf, reducer, rowOf, rowResults, spreadEffects, type Action, type GameState, type Player } from '@qbr/shared';
 
 /** Stagger between ripple rings, and the longest any move effect runs. Kept
  *  inside the opponent's 450ms "thinking" delay so animation never slows a turn. */
@@ -21,6 +21,8 @@ export interface MoveFx {
   readonly boost: readonly number[];
   readonly weaken: readonly number[];
   readonly destroy: readonly number[];
+  /** Lanes whose leader this play changed, and who leads now (null = now tied). */
+  readonly lead: readonly { lane: number; to: Player | null }[];
 }
 
 let nextId = 1;
@@ -36,6 +38,10 @@ export function moveFx(before: GameState, action: Action): MoveFx | null {
   // two-cell leaps one beat later — the fill reads as spreading outward.
   const ring = (i: number) => Math.abs(rowOf(i) - r0) + Math.abs(colOf(i) - c0);
   const rings = [...new Set(claim.map(ring))].sort((a, b) => a - b);
+  // Lane leadership before vs after, from the rules' own scoring (never re-derived here).
+  const was = rowResults(before);
+  const now = rowResults(reducer(before, action));
+  const lead = now.flatMap((r, lane) => (r.winner !== was[lane]!.winner ? [{ lane, to: r.winner }] : []));
   return {
     id: nextId++,
     by,
@@ -45,5 +51,6 @@ export function moveFx(before: GameState, action: Action): MoveFx | null {
     boost: [...boost],
     weaken: weaken.filter((w) => !w.destroys).map((w) => w.cell),
     destroy: weaken.filter((w) => w.destroys).map((w) => w.cell),
+    lead,
   };
 }
