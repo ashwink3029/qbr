@@ -59,6 +59,9 @@ export const BOSSES: Readonly<Record<string, ModDef>> = {
   auditor: { id: 'auditor', name: 'The Auditor', blurb: 'Your best card on the sheet counts half', glyph: 'AU' },
   freeze: { id: 'freeze', name: 'Change Freeze', blurb: 'Your spreads stop at the middle row and take nothing over', glyph: 'CZ' },
   replyall: { id: 'replyall', name: 'Reply-All', blurb: 'Draws +2 extra cards every quarter', glyph: 'RE' },
+  // Exec modifiers (item 25): rules that change HOW you play, one per org to start.
+  quota: { id: 'quota', name: 'Quota', blurb: 'Lead the Sales lane or you bank nothing that quarter', glyph: 'QT' },
+  teamsync: { id: 'teamsync', name: 'Synergy Offsite', blurb: 'Their cards next to another of theirs are worth +1', glyph: 'SO' },
 };
 
 export const hasJoker = (mods: Mods, id: string): boolean => mods.jokers.includes(id);

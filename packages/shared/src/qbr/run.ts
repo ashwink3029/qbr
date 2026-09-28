@@ -55,10 +55,9 @@ export const MEETINGS: readonly Meeting[] = [
   { role: 'The CEO', initials: 'CEO', name: 'Board meeting', opponent: 'lookahead', boss: 'replyall', edge: 1, homeBoost: 2 },
 ];
 
-/** Bosses the VP can draw — every boss not already fixed to a rung. */
-export const DRAWABLE_BOSSES: readonly string[] = Object.keys(BOSSES).filter(
-  (b) => !MEETINGS.some((m) => m.boss === b),
-);
+/** Bosses Finance's VP can draw. Pinned (it was "every boss not fixed to a rung"), so new
+ *  exec modifiers for other orgs never reshuffle Finance careers or the vetted daily seeds. */
+export const DRAWABLE_BOSSES: readonly string[] = ['micromanager', 'legacy', 'auditor', 'freeze'];
 
 /**
  * Orgs (backlog item 15): which org you climb, chosen like a Balatro deck. Each is its
@@ -122,7 +121,7 @@ export const ORGS: readonly Org[] = [
       { role: 'The Designer', initials: 'DSN', name: 'Creative review', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
       { role: 'The Growth Lead', initials: 'GRW', name: 'Campaign retro', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
       { role: 'The Marketing Director', initials: 'MKD', name: 'Launch review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
-      { role: 'The CMO', initials: 'CMO', name: 'Brand summit', opponent: 'lookahead', boss: 'freeze', edge: 1, homeBoost: 2 },
+      { role: 'The CMO', initials: 'CMO', name: 'Brand summit', opponent: 'lookahead', boss: 'teamsync', edge: 0, homeBoost: 2 },
     ],
     bosses: ['legacy', 'auditor'],
     opponentDeck: MARKETING_DECK,
@@ -136,7 +135,7 @@ export const ORGS: readonly Org[] = [
       { role: 'The Account Exec', initials: 'AE', name: 'Pipeline review', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
       { role: 'The Sales Manager', initials: 'SLM', name: 'Forecast call', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
       { role: 'The VP of Sales', initials: 'VPS', name: 'Deal desk', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
-      { role: 'The CRO', initials: 'CRO', name: 'Sales kickoff', opponent: 'lookahead', boss: 'legacy', edge: 1, homeBoost: 2 },
+      { role: 'The CRO', initials: 'CRO', name: 'Sales kickoff', opponent: 'lookahead', boss: 'quota', edge: 0, homeBoost: 0 },
     ],
     bosses: ['auditor', 'freeze'],
     opponentDeck: SALES_DECK,

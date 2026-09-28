@@ -1136,14 +1136,14 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    **Menu — exec modifiers (bosses), by engine hook, and the org each fits:**
    | modifier | rule (one line) | hook | org |
    |---|---|---|---|
-   | Quota | Win the Sales lane or the quarter is lost | revenue / quarter result | Sales |
-   | Brand Guidelines | You can't play a card already on your side of the sheet this quarter | canPlay | Marketing |
+   | Quota ✓ | Lead the Sales lane or you bank nothing that quarter | revenue | Sales (built) |
+   | ~~Brand Guidelines~~ | cut: both versions measured too mild (+1.9 / −1.1pp) | canPlay | — |
    | Scope Creep | Their spreads reach one cell further forward | spreadTargets (seat 1) | Tech |
    | Red Tape | You can only place in your home row and the row in front | canPlay | Legal |
    | Performance Calibration | Each quarter your highest-value card loses 2 | cellValue | HR |
    | Budget Cuts | Your spreads add no $ to the cells they claim | spreadEffects budget | Finance |
    | Office Politics | Their claims next to your cards lower those cards by 1 | spreadEffects weaken | HR |
-   | Synergy Offsite | Their cards next to another of theirs are worth +1 | cellValue | Marketing |
+   | Synergy Offsite ✓ | Their cards next to another of theirs are worth +1 | cellValue | Marketing (built) |
    | Cold Outreach | They start each quarter with the cell in front of each home claimed | freshBoard | Sales |
    | Tech Debt | Your $$$ cards can't be played in Q1 | canPlay | Tech |
    | Fine Print | Their purple reach also covers their diagonals | takeTargets (seat 1) | Legal |
@@ -1167,8 +1167,25 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    ($$, weaken 2 in lane), Tech *Hotfix* ($, forward 2 + claim), HR *Team Offsite* ($$, boost 2
    lane), Finance *Audit Trail* ($$$, purple forward fan).
    **Build order (one per iteration, each measured against its harness, bars never moved):**
-   (1) research + this menu — DONE; (2) the modifier engine + first 2 exec modifiers (Quota,
-   Brand Guidelines) on Sales/Marketing, B1 + orgbars; (3) 3 desk upgrades incl. one ⚖, J1/J2;
+   (1) research + this menu — DONE; (2) the modifier engine + first 2 exec modifiers on
+   Sales/Marketing — **DONE (iteration 2):** **Quota** ("Lead the Sales lane or you bank nothing
+   that quarter") lives in `revenue()`, so the match result, the AI's evaluation, pass plans and
+   the on-screen score all agree; the Sales CRO's top boss (was Legacy System). **Synergy
+   Offsite** ("Their cards next to another of theirs are worth +1", `cellValue` seat 1) is the
+   Marketing CMO's (was Change Freeze). `DRAWABLE_BOSSES` (Finance's VP pool) is now PINNED to
+   its original four, so new modifiers never reshuffle Finance careers or the vetted dailies.
+   **Bars (2000 seeds, never moved):** B1 PASS — Quota −16.4pp, Synergy Offsite −23.8pp
+   (smallest is still Change Freeze −7.6); orgbars O1 + O2 PASS — 17.8 > **15.2** > **13.3** >
+   11.7 > 8.5 > 5.5%. **Honest history:** Brand Guidelines was tried twice and CUT as a measured
+   null — v1 "no second copy of a card on your side" was +1.9pp FOR the player, v2 "cards only on
+   cells of exactly their cost" −1.1pp (B1 needs 5). Quota at the CRO with its seniority (+1
+   card, 2 $$ cells) over-shot Sales to 8.5% (below Legal); softening to 1 $$ cell made it WORSE
+   (7.8%) — the opponent's $$ home cells start in the Sales lane, the very lane Quota makes you
+   win — so the CRO is Quota alone. The CMO took five settings (19.5 / 13.1 / 17.4 / 16.8 on the
+   line / 15.2%); final: Synergy Offsite + two $$ home cells. Tests first for Quota and both
+   Brand Guidelines versions (mods.test.ts); **the Synergy Offsite test was written together with
+   its code, not confirmed red first.** **Not verified on screen:** the two new boss rules on the
+   org chart and Bindy's boss tip (both read `BOSSES` generically). (3) 3 desk upgrades incl. one ⚖, J1/J2;
    (4) org-locked signature cards, U1/U2 + C1/C2; (5+) the rest of the menu, one org at a time.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.

@@ -170,6 +170,45 @@ describe('new jokers and a boss (iteration 13)', () => {
     expect(spreadEffects(s, 'reorg', idx(2, 0)).flip).toEqual([]); // empty cell: green stays green
   });
 
+  it('Quota (exec modifier, item 25): miss the Sales lane and you bank nothing that quarter', () => {
+    const m = mods({ jokers: [], boss: 'quota' });
+    // You lead Ops by 5 but Finance leads Sales by 1: under Quota you bank 0.
+    const missed = strictBoard(m, [
+      [idx(0, 1), { owner: 1, budget: 1, card: 'memo' }],
+      [idx(1, 1), { owner: 0, budget: 1, card: 'ooo' }],
+    ], []);
+    expect(revenue(missed)).toEqual([0, 1]);
+    expect(revenue({ ...missed, mods: NO_MODS })).toEqual([5, 1]);
+    // Lead Sales and everything you win banks as usual.
+    const made = strictBoard(m, [
+      [idx(0, 1), { owner: 0, budget: 1, card: 'coldcall' }],
+      [idx(1, 1), { owner: 0, budget: 1, card: 'ooo' }],
+      [idx(2, 1), { owner: 1, budget: 1, card: 'memo' }],
+    ], []);
+    expect(revenue(made)).toEqual([7, 1]);
+    // An empty Sales lane is a miss too (a tie is not a lead).
+    const tied = strictBoard(m, [[idx(1, 1), { owner: 0, budget: 1, card: 'ooo' }]], []);
+    expect(revenue(tied)).toEqual([0, 0]);
+  });
+
+  it('Synergy Offsite (exec modifier, item 25): their cards next to another of theirs are worth +1', () => {
+    // Brand Guidelines was tried first and cut: v1 (no duplicate cards) +1.9pp for the player,
+    // v2 (cards only on cells of exactly their cost) -1.1pp — B1 needs >= 5pp.
+    const m = mods({ jokers: [], boss: 'teamsync' });
+    const s = strictBoard(m, [
+      [idx(0, 3), { owner: 1, budget: 1, card: 'memo' }],
+      [idx(0, 4), { owner: 1, budget: 1, card: 'memo' }], // next to the one above
+      [idx(2, 4), { owner: 1, budget: 1, card: 'memo' }], // alone
+      [idx(1, 0), { owner: 0, budget: 1, card: 'memo' }],
+      [idx(2, 0), { owner: 0, budget: 1, card: 'memo' }], // yours are not boosted
+    ], []);
+    expect(cellValue(s, idx(0, 3))).toBe(2);
+    expect(cellValue(s, idx(0, 4))).toBe(2);
+    expect(cellValue(s, idx(2, 4))).toBe(1);
+    expect(cellValue(s, idx(1, 0))).toBe(1);
+    expect(cellValue({ ...s, mods: NO_MODS }, idx(0, 3))).toBe(1);
+  });
+
   it('Ergonomic Chair: your Ops home cell starts with $$ (the mirror of Legacy System)', () => {
     const chair = newGame(1, STARTER_DECK, noPaste, mods({ jokers: ['chair'] }));
     expect(chair.cells[idx(1, 0)]!.budget).toBe(2);

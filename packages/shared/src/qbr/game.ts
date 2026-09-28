@@ -176,7 +176,19 @@ function jokerBase(state: GameState, i: number, cardId: string): number {
 export function cellValue(state: GameState, i: number): number {
   const cell = state.cells[i]!;
   if (cell.card === null) return 0;
-  if (cell.owner !== 0) return card(cell.card).value + (cell.mod ?? 0);
+  if (cell.owner !== 0) {
+    const base = card(cell.card).value + (cell.mod ?? 0);
+    // Synergy Offsite (an exec modifier): their cards next to another of theirs +1.
+    if (state.mods.boss !== 'teamsync') return base;
+    const r = rowOf(i);
+    const c = colOf(i);
+    const next = [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].some(([rr, cc]) => {
+      if (rr! < 0 || rr! >= ROWS || cc! < 0 || cc! >= COLS) return false;
+      const n = state.cells[idx(rr!, cc!)]!;
+      return n.owner === cell.owner && n.card !== null;
+    });
+    return base + (next ? 1 : 0);
+  }
   const v = jokerBase(state, i, cell.card);
   if (state.mods.boss !== 'auditor') return v;
   let best = -1;
@@ -430,9 +442,13 @@ export function rowResults(state: GameState): RowResult[] {
 /** Revenue banked by each player: the sum of the rows they win. */
 export function revenue(state: GameState): [number, number] {
   const out: [number, number] = [0, 0];
-  for (const row of rowResults(state)) {
+  const rows = rowResults(state);
+  for (const row of rows) {
     if (row.winner !== null) out[row.winner] += row.totals[row.winner];
   }
+  // Quota (an exec modifier): unless you lead the Sales lane, you bank nothing. Scoring
+  // is the one place it lives, so the match result, the AI and the screen all agree.
+  if (state.mods.boss === 'quota' && rows[0]!.winner !== 0) out[0] = 0;
   return out;
 }
 
