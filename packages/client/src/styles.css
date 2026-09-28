@@ -222,7 +222,7 @@
 .cell.legal { outline: 2px dashed #b08900; outline-offset: -4px; cursor: pointer; background: var(--legal); }
 .cell.reach { background: var(--reach); }
 /* An enemy card this play would take over: stripes over its red. */
-.cell.flip { background: repeating-linear-gradient(45deg, var(--theirs), var(--theirs) 6px, #ffb347 6px, #ffb347 12px); }
+.cell.flip { background: repeating-linear-gradient(45deg, var(--theirs), var(--theirs) 6px, #b58ae6 6px, #b58ae6 12px); }
 /* Ability preview: a card the selected card's ability would raise or lower. */
 .cell.boost { box-shadow: inset 0 0 0 3px #2e9e4f; }
 .cell.weaken { box-shadow: inset 0 0 0 3px #d64541; }
@@ -338,6 +338,13 @@
 .g { width: 8px; height: 8px; background: #e2e2e2; }
 .g.hit { background: #2d6a00; }
 .g.self { background: var(--title); }
+/* Purple takeover cell (item 16); the white dot says "takes over" without colour. */
+.g.take { background: #7b3fb5; position: relative; }
+.g.take::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 36%; height: 36%;
+  transform: translate(-50%, -50%); border-radius: 50%; background: #fff;
+}
+.card.unaffordable .g.take { background: #8c55c9; }
 
 .actions {
   flex: 0 0 auto;

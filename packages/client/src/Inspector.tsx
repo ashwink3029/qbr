@@ -1,6 +1,6 @@
 import { useRef, type MouseEvent } from 'react';
 import { card } from '@qbr/shared';
-import { abilityWords, spreadWords } from './a11y.js';
+import { abilityWords, spreadWords, takeWords } from './a11y.js';
 import { SpreadGlyph } from './CardFace.js';
 
 /** How long a press must last to open the inspector instead of tapping. */
@@ -71,7 +71,9 @@ export function CardInspector({ id, onClose }: { id: string; onClose: () => void
         <SpreadGlyph id={id} />
         <span className="ival">{c.value}</span>
         <p className="iwords">
-          Needs a {cost} cell. Value {c.value}. Spreads {spreadWords(id)}.
+          Needs a {cost} cell. Value {c.value}.
+          {(c.spread.length > 0 || !takeWords(id)) && ` Spreads ${spreadWords(id)}.`}
+          {takeWords(id) && ` Takes over ${takeWords(id)}: an enemy card there flips to you.`}
           {ability && ` It ${ability}.`}
         </p>
         <small>tap to close</small>

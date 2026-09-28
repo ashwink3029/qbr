@@ -17,7 +17,11 @@ export interface CardDef {
   readonly cost: 1 | 2 | 3;
   /** Revenue this card contributes to its row. */
   readonly value: number;
+  /** Green reach: empty cells here become yours (+1 budget). Never flips a card. */
   readonly spread: readonly Offset[];
+  /** Purple reach (backlog item 16): claims an empty cell like green AND takes over an
+   *  enemy card there, whatever its value. Only a few cards have purple cells. */
+  readonly takes?: readonly Offset[];
   /** On-play ability, acting after claims and takeover flips: `boost` raises
    *  your cards, `weaken` lowers the opponent's (a card at 0 or below is
    *  destroyed). It reaches the cells the spread reaches, or with
@@ -42,7 +46,7 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   synergy: { id: 'synergy', name: 'Synergy', cost: 2, value: 3, spread: [up, down, fwd, back] },
   offsite: { id: 'offsite', name: 'Offsite', cost: 2, value: 2, spread: [[-1, -1], [-1, 1], [1, -1], [1, 1]] },
   reorg: { id: 'reorg', name: 'Reorg', cost: 2, value: 4, spread: [fwd, [0, 2]] },
-  stakeholder: { id: 'stakeholder', name: 'Stake\u00ADholder', cost: 2, value: 3, spread: [[-1, 1], fwd, [1, 1]] },
+  stakeholder: { id: 'stakeholder', name: 'Stake\u00ADholder', cost: 2, value: 3, spread: [[-1, 1], [1, 1]], takes: [fwd] },
   slidedeck: { id: 'slidedeck', name: 'Slide Deck', cost: 3, value: 6, spread: [fwd] },
   headcount: { id: 'headcount', name: 'Head\u00ADcount', cost: 3, value: 7, spread: [] },
   vision: {
@@ -54,10 +58,10 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   },
 
   // ── Special cards: unlocked by climbing careers (see SPECIALS below) ──
-  coffeerun: { id: 'coffeerun', name: 'Coffee Run', cost: 1, value: 3, spread: [up, down] },
+  coffeerun: { id: 'coffeerun', name: 'Coffee Run', cost: 1, value: 2, spread: [up, down] },
   perfreview: { id: 'perfreview', name: 'Perfor\u00ADmance Review', cost: 2, value: 2, spread: [fwd] },
   budgetcut: { id: 'budgetcut', name: 'Budget Cut', cost: 1, value: 3, spread: [[-1, 1], fwd, [1, 1]] },
-  takeover: { id: 'takeover', name: 'Hostile Takeover', cost: 3, value: 9, spread: [[-1, 1], fwd, [1, 1]] },
+  takeover: { id: 'takeover', name: 'Hostile Takeover', cost: 3, value: 8, spread: [[-1, 1], [1, 1]], takes: [fwd] },
   parachute: { id: 'parachute', name: 'Golden Para\u00ADchute', cost: 3, value: 9, spread: [] },
   gossip: { id: 'gossip', name: 'Water Cooler Gossip', cost: 1, value: 1, spread: [up, down, [-1, -1], [1, -1]] },
 
@@ -66,7 +70,7 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
     id: 'teambuilding',
     name: 'Team Building',
     cost: 2,
-    value: 3,
+    value: 4,
     spread: [up, down, fwd, back],
     ability: { kind: 'boost', amount: 2 },
   },
@@ -75,7 +79,8 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
     name: 'Perfor\u00ADmance Improve\u00ADment Plan',
     cost: 2,
     value: 3,
-    spread: [[-1, 1], fwd, [1, 1]],
+    spread: [[-1, 1], [1, 1]],
+    takes: [fwd],
     ability: { kind: 'weaken', amount: 2, reach: 'lane' },
   },
 
@@ -89,7 +94,7 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   whiteboard: { id: 'whiteboard', name: 'White­board', cost: 2, value: 2, spread: [up, down, fwd, [-1, 1], [1, 1]] },
   pivot: { id: 'pivot', name: 'Pivot', cost: 2, value: 4, spread: [up, down, back] },
   mentorship: { id: 'mentorship', name: 'Mentor­ship', cost: 2, value: 3, spread: [up, down], ability: { kind: 'boost', amount: 2, reach: 'lane' } },
-  deadline: { id: 'deadline', name: 'Deadline', cost: 2, value: 3, spread: [[-1, 1], fwd, [1, 1]], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
+  deadline: { id: 'deadline', name: 'Deadline', cost: 2, value: 3, spread: [[-1, 1], [1, 1]], takes: [fwd], ability: { kind: 'weaken', amount: 1, reach: 'lane' } },
   hackathon: { id: 'hackathon', name: 'Hack­athon', cost: 2, value: 3, spread: [fwd, [0, 2], [-1, 2], [1, 2]] },
   summerintern: { id: 'summerintern', name: 'Summer Intern', cost: 1, value: 1, spread: [up, down, fwd, back] },
   ipo: { id: 'ipo', name: 'IPO', cost: 3, value: 10, spread: [] },
@@ -106,7 +111,8 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
     name: 'Merger',
     cost: 3,
     value: 5,
-    spread: [[-1, 1], fwd, [1, 1], [0, 2]],
+    spread: [[-1, 1], [1, 1], [0, 2]],
+    takes: [fwd],
     ability: { kind: 'weaken', amount: 1 },
   },
   bluesky: { id: 'bluesky', name: 'Blue-Sky Thinking', cost: 2, value: 2, spread: [[0, 2], [-1, 2], [1, 2], [0, 3]] },
@@ -133,6 +139,8 @@ export interface Progress {
   readonly promotions?: number;
   /** Meetings won, summed over every career. */
   readonly meetings?: number;
+  /** Orgs promoted in (ORGS ids), which opens the next org. */
+  readonly orgsPromoted?: readonly string[];
 }
 
 export type UnlockCondition =

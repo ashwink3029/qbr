@@ -43,7 +43,7 @@ export const JOKERS: Readonly<Record<string, ModDef>> = {
     blurb: 'Your spreads wrap around the sheet’s sides',
     glyph: '↻',
   },
-  paste: { id: 'paste', name: 'Paste Special', blurb: 'You may play over your own cards', glyph: '⌘V' },
+  paste: { id: 'paste', name: 'Paste Special', blurb: 'Play over your own cards; a pasted card flips weaker cards it reaches', glyph: '⌘V' },
   // (Newton's Cradle — claims gain +2 budget — measured +33.7pp: broken. See CLAUDE.md.)
   chair: { id: 'chair', name: 'Ergonomic Chair', blurb: 'Your Ops home cell starts with $$', glyph: 'EC' },
 };

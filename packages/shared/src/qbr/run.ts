@@ -12,6 +12,7 @@ import { neverPass, smartPass, type MatchPolicy } from './match.js';
 import { BOSSES, JOKERS, type Mods } from './mods.js';
 import { greedyPolicy, lookaheadPolicy, randomPolicy } from './policies.js';
 import { nextInt, shuffle, type RngState } from './rng.js';
+import { STARTER_DECK, type Progress } from './cards.js';
 
 /** How the opponent plays. One mapping for the app and the sim, so the
  *  measured ladder IS the shipped ladder. */
@@ -49,7 +50,7 @@ export interface Meeting {
 export const MEETINGS: readonly Meeting[] = [
   { role: 'The Intern', initials: 'INT', name: 'Onboarding sync', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
   { role: 'The Manager', initials: 'MGR', name: 'Weekly 1:1', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
-  { role: 'Finance', initials: 'FIN', name: 'Budget review', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
+  { role: 'The Controller', initials: 'CTL', name: 'Budget review', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
   { role: 'The VP', initials: 'VP', name: 'Quarterly Review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
   { role: 'The CEO', initials: 'CEO', name: 'Board meeting', opponent: 'lookahead', boss: 'replyall', edge: 1, homeBoost: 2 },
 ];
@@ -58,6 +59,90 @@ export const MEETINGS: readonly Meeting[] = [
 export const DRAWABLE_BOSSES: readonly string[] = Object.keys(BOSSES).filter(
   (b) => !MEETINGS.some((m) => m.boss === b),
 );
+
+/**
+ * Orgs (backlog item 15): which org you climb, chosen like a Balatro deck. Each is its
+ * own cast of five, its own pool of VP bosses and top boss, and its own opponent deck,
+ * so orgs differ in play, not only in look. Finance is the original ladder; getting
+ * promoted in one org opens the next. Measured per org in sim/src/orgbars.ts.
+ */
+export interface Org {
+  readonly id: string;
+  readonly name: string;
+  /** One line for the picker. */
+  readonly blurb: string;
+  readonly meetings: readonly Meeting[];
+  /** Bosses the org's VP-rung can draw at the start of a career. */
+  readonly bosses: readonly string[];
+  /** The deck every opponent in this org plays. */
+  readonly opponentDeck: readonly string[];
+}
+
+/** Tech ships fast: a forward rush of cheap reach and no takeovers. */
+const TECH_DECK: readonly string[] = [
+  'emailchain', 'emailchain', 'stickynote', 'stickynote', 'hackathon', 'hackathon', 'coldcall', 'coldcall',
+  'reorg', 'reorg', 'memo', 'memo', 'bluesky', 'slidedeck', 'keynote',
+];
+/** HR manages people: boosts, weakens, and the purple performance-review family. */
+const HR_DECK: readonly string[] = [
+  'highfive', 'highfive', 'standup', 'standup', 'mentorship', 'teambuilding', 'pip', 'deadline',
+  'stakeholder', 'synergy', 'cc', 'memo', 'memo', 'offsite', 'redpen',
+];
+
+export const ORGS: readonly Org[] = [
+  {
+    id: 'finance',
+    name: 'Finance',
+    blurb: 'The numbers people. Where every career starts.',
+    meetings: MEETINGS,
+    bosses: DRAWABLE_BOSSES,
+    opponentDeck: STARTER_DECK,
+  },
+  {
+    id: 'tech',
+    name: 'Tech',
+    blurb: 'They ship fast and reach far — no takeovers, all rush.',
+    meetings: [
+      { role: 'The New Grad', initials: 'NG', name: 'Onboarding standup', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Scrum Master', initials: 'SM', name: 'Sprint planning', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Tech Lead', initials: 'TL', name: 'Code review', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The CTO', initials: 'CTO', name: 'Architecture review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
+      { role: 'The Founder', initials: 'FDR', name: 'All-hands', opponent: 'lookahead', boss: 'freeze', edge: 1, homeBoost: 2 },
+    ],
+    bosses: ['legacy', 'micromanager'],
+    opponentDeck: TECH_DECK,
+  },
+  {
+    id: 'hr',
+    name: 'HR',
+    blurb: 'Every card lifts a colleague or reviews one — watch their purple.',
+    meetings: [
+      { role: 'The Recruiter', initials: 'REC', name: 'Phone screen', opponent: 'rookie', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The HR Partner', initials: 'HRP', name: 'Check-in', opponent: 'greedy', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The Comp Lead', initials: 'CMP', name: 'Calibration', opponent: 'lookahead', boss: null, edge: 0, homeBoost: 0 },
+      { role: 'The CHRO', initials: 'CHR', name: 'Talent review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
+      { role: 'The Board Chair', initials: 'BC', name: 'Governance review', opponent: 'lookahead', boss: 'replyall', edge: 1, homeBoost: 2 },
+    ],
+    bosses: ['auditor', 'micromanager'],
+    opponentDeck: HR_DECK,
+  },
+];
+
+export function orgOf(id: string): Org {
+  const o = ORGS.find((x) => x.id === id);
+  if (!o) throw new Error(`no org ${id}`);
+  return o;
+}
+
+/** Finance is always open; each later org opens once you are promoted in the one before
+ *  (a promotion from before orgs existed counts as Finance). */
+export function orgUnlocked(id: string, p: Progress): boolean {
+  const i = ORGS.findIndex((o) => o.id === id);
+  if (i < 0) return false;
+  if (i === 0) return true;
+  const prev = ORGS[i - 1]!.id;
+  return (p.orgsPromoted ?? []).includes(prev) || (prev === 'finance' && (p.promotions ?? 0) > 0);
+}
 
 /**
  * Career stakes (Balatro's post-win difficulty tiers): promoting at stake N
@@ -91,6 +176,8 @@ export type RunStatus = 'chart' | 'draft' | 'meeting' | 'won' | 'lost';
 
 export interface RunState {
   readonly seed: number;
+  /** Which org this career climbs (ORGS id). */
+  readonly org: string;
   /** 1-based index into STAKES. */
   readonly stake: number;
   /** Index into MEETINGS of the current (or next) rung. */
@@ -119,17 +206,18 @@ export const STARTER_JOKER = 'mug';
 /** `firstCareer`: a brand-new player's first career walks from the org chart
  *  straight into the Intern with a Coffee Mug — no closet of jokers they cannot
  *  read yet. The closet first opens after beating the Intern. */
-export function newRun(seed: number, stake = 1, opts: { firstCareer?: boolean } = {}): RunState {
+export function newRun(seed: number, stake = 1, opts: { firstCareer?: boolean; org?: string } = {}): RunState {
   if (stake < 1 || stake > STAKES.length) throw new Error(`no stake ${stake}`);
+  const org = orgOf(opts.org ?? 'finance');
   let rng: RngState = (seed ^ 0x9e3779b9) >>> 0;
   let b: number;
-  [rng, b] = nextInt(rng, DRAWABLE_BOSSES.length);
+  [rng, b] = nextInt(rng, org.bosses.length);
   let offer: string[];
   // Drawn even when discarded, so a seed's boss and later offers stay the same.
   [rng, offer] = draft(rng, []);
   if (opts.firstCareer) offer = [];
   const jokers = opts.firstCareer ? [STARTER_JOKER] : [];
-  return { seed, stake, meeting: 0, jokers, boss: DRAWABLE_BOSSES[b]!, offer, status: 'chart', rngState: rng };
+  return { seed, org: org.id, stake, meeting: 0, jokers, boss: org.bosses[b]!, offer, status: 'chart', rngState: rng };
 }
 
 /** Leave the org chart: to the supply closet, or straight to the meeting when
@@ -153,18 +241,28 @@ export function skipDraft(run: RunState): RunState {
 export function finishMeeting(run: RunState, won: boolean): RunState {
   if (run.status !== 'meeting') throw new Error('no meeting in progress');
   if (!won) return { ...run, status: 'lost' };
-  if (run.meeting >= MEETINGS.length - 1) return { ...run, status: 'won' };
+  if (run.meeting >= ladder(run).length - 1) return { ...run, status: 'won' };
   const [rng, offer] = draft(run.rngState, run.jokers);
   return { ...run, meeting: run.meeting + 1, offer, status: 'chart', rngState: rng };
 }
 
+/** The rungs of this career's org (a run saved before orgs existed is Finance). */
+export function ladder(run: RunState): readonly Meeting[] {
+  return orgOf(run.org ?? 'finance').meetings;
+}
+
 export function currentMeeting(run: RunState): Meeting {
-  return MEETINGS[run.meeting]!;
+  return ladder(run)[run.meeting]!;
+}
+
+/** The deck this career's opponents play. */
+export function meetingDeck(run: RunState): readonly string[] {
+  return orgOf(run.org ?? 'finance').opponentDeck;
 }
 
 /** The boss rule a rung brings in this career, or null. */
 export function bossFor(run: RunState, rung: number): string | null {
-  const b = MEETINGS[rung]!.boss;
+  const b = ladder(run)[rung]!.boss;
   return b === null ? null : b === 'drawn' ? run.boss : b;
 }
 

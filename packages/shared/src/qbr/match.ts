@@ -42,7 +42,9 @@ export const DEFAULT_MATCH: MatchConfig = { openingHand: 8, drawAfter: [3, 2], l
  *  the match bars still pass 4/4 without it (seat 45.8%, passing 63.5%,
  *  headroom 61.3%, 21 turns), because a match's fixed hand, not board space, is
  *  now the binding constraint. Paste-over is reserved for a future joker. */
-export const MATCH_RULES: Rules = { ...DEFAULT_RULES, pasteOver: false, drawPerTurn: false, lockingPass: true };
+/** Matches: no paste-over, fixed hands, locking pass, and (item 16, 2026-09-28) no
+ *  weaker-card takeover — only a card's purple cells take cards over. */
+export const MATCH_RULES: Rules = { ...DEFAULT_RULES, pasteOver: false, takeover: false, drawPerTurn: false, lockingPass: true };
 
 export interface QuarterResult {
   readonly revenue: readonly [number, number];

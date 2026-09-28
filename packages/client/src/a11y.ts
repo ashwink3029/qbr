@@ -17,16 +17,26 @@ function offsetWord(o: Offset): string {
   return `${Math.abs(dy) > 1 ? `${Math.abs(dy)} ` : ''}${dy < 0 ? 'ahead' : 'behind'}-${side}`;
 }
 
-/** A card's spread in words, in the card's own order. */
+/** A card's green spread in words, in the card's own order. */
 export function spreadWords(id: string): string {
   const s = card(id).spread;
   return s.length === 0 ? 'nowhere' : s.map(offsetWord).join(', ');
 }
 
+/** A card's purple (takeover) cells in words, or null if it has none (item 16). */
+export function takeWords(id: string): string | null {
+  const t = card(id).takes ?? [];
+  return t.length === 0 ? null : t.map(offsetWord).join(', ');
+}
+
 export function cardLabel(id: string): string {
   const c = card(id);
   const ability = abilityWords(id);
-  return `${plain(c.name)}, costs ${'$'.repeat(c.cost)}, value ${c.value}, spreads ${spreadWords(id)}${ability ? `; ${ability}` : ''}`;
+  const takes = takeWords(id);
+  const reach = [c.spread.length > 0 || !takes ? `spreads ${spreadWords(id)}` : '', takes ? `takes over ${takes}` : '']
+    .filter(Boolean)
+    .join('; ');
+  return `${plain(c.name)}, costs ${'$'.repeat(c.cost)}, value ${c.value}, ${reach}${ability ? `; ${ability}` : ''}`;
 }
 
 /** An on-play ability in words, or null for a plain card. */

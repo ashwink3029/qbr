@@ -152,6 +152,24 @@ describe('new jokers and a boss (iteration 13)', () => {
     expect(canPlay(theirs, 'reorg', idx(0, 4))).toBe(false);
   });
 
+  it('Paste Special (item 16): a pasted card flips WEAKER enemy cards anywhere it reaches', () => {
+    // Reorg (value 4, green forward) pasted over your Memo flips Finance's weaker Memo in
+    // front; a stronger Headcount stays put; played on an empty cell, it flips nothing.
+    // (First try, "all reach is purple", measured 76.9% — J2 caps jokers at 70%.)
+    const cells: [number, Cell][] = [
+      [idx(0, 0), { owner: 0, budget: 2, card: 'memo' }],
+      [idx(0, 1), { owner: 1, budget: 1, card: 'memo' }],
+      [idx(1, 0), { owner: 0, budget: 2, card: 'memo' }],
+      [idx(1, 1), { owner: 1, budget: 1, card: 'headcount' }],
+      [idx(2, 0), { owner: 0, budget: 2, card: null }],
+      [idx(2, 1), { owner: 1, budget: 1, card: 'memo' }],
+    ];
+    const s = { ...strictBoard(mods({ jokers: ['paste'] }), cells, ['reorg', 'reorg', 'reorg']), rules: { ...noPaste, takeover: false } };
+    expect(spreadEffects(s, 'reorg', idx(0, 0)).flip).toEqual([idx(0, 1)]); // pasted, weaker: flips
+    expect(spreadEffects(s, 'reorg', idx(1, 0)).flip).toEqual([]); // pasted, stronger: stays
+    expect(spreadEffects(s, 'reorg', idx(2, 0)).flip).toEqual([]); // empty cell: green stays green
+  });
+
   it('Ergonomic Chair: your Ops home cell starts with $$ (the mirror of Legacy System)', () => {
     const chair = newGame(1, STARTER_DECK, noPaste, mods({ jokers: ['chair'] }));
     expect(chair.cells[idx(1, 0)]!.budget).toBe(2);

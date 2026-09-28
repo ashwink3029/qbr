@@ -53,8 +53,8 @@ describe('daily career', () => {
 });
 
 describe('career ladder', () => {
-  it('climbs Intern -> Manager -> Finance -> VP -> CEO', () => {
-    expect(MEETINGS.map((m) => m.role)).toEqual(['The Intern', 'The Manager', 'Finance', 'The VP', 'The CEO']);
+  it('climbs Intern -> Manager -> Controller -> VP -> CEO', () => {
+    expect(MEETINGS.map((m) => m.role)).toEqual(['The Intern', 'The Manager', 'The Controller', 'The VP', 'The CEO']);
     expect(MEETINGS.map((m) => m.opponent)).toEqual(['rookie', 'greedy', 'lookahead', 'lookahead', 'lookahead']);
   });
 

@@ -111,7 +111,7 @@ export function Game({
   mods = NO_MODS,
   opponent: opponentKind = 'lookahead',
   opponentName: who = 'Finance',
-  opponentInitials: whoInitials = 'FIN',
+  opponentInitials: whoInitials = 'CTL',
   meetingName,
   deck = STARTER_DECK,
   initialMatch,
@@ -342,6 +342,8 @@ export function Game({
             lead: mine - theirs,
             mods,
             hasUnaffordable: humanTurn && game.hands[HUMAN].some((id) => !legal.some((a) => a.card === id)),
+            hasPurple: game.hands[HUMAN].some((id) => (card(id).takes ?? []).length > 0),
+            lostToPurple: fx !== null && fx.by !== HUMAN && fx.flip.length > 0,
             myCardsOnBoard: match.quarter.cells.filter((c) => c.owner === HUMAN && c.card !== null).length,
             quarterNo: match.quarterNo,
           },
@@ -498,7 +500,7 @@ export function Game({
                   className={cls}
                   data-cell={i}
                   {...(cell.card ? hold(() => setInspect(cell.card)) : {})}
-                  data-guide={guideCell(i) ? '' : undefined}
+                  data-guide={guideCell(i) || (points === 'lost' && fx !== null && fx.flip.includes(i)) ? '' : undefined}
                   data-owner={cell.owner === 0 ? 'you' : cell.owner === 1 ? 'them' : 'none'}
                   role="gridcell"
                   aria-label={cellLabel(game, i, { sr, sc }, who, blocked.has(i))}
@@ -604,7 +606,11 @@ export function Game({
                 {...hold(() => setInspect(id))}
                 data-playable={playable ? 'true' : 'false'}
                 data-guide={
-                  (guiding && selected === null && playable) || (points === 'unaffordable' && short) ? '' : undefined
+                  (guiding && selected === null && playable) ||
+                  (points === 'unaffordable' && short) ||
+                  (points === 'purple' && (card(id).takes ?? []).length > 0)
+                    ? ''
+                    : undefined
                 }
                 aria-label={
                   cardLabel(id) +

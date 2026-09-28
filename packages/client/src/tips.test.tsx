@@ -39,7 +39,7 @@ describe('pickTip', () => {
     const t = pickTip({ ...base, firstTurnOfMatch: true, mods: { jokers: [], boss: 'auditor' } }, none)!;
     expect(t.id).toBe('boss:auditor');
     expect(t.text).toMatch(/The Auditor/);
-    expect(pickTip({ ...base, previewFlips: true }, placed)?.id).toBe('takeover');
+    expect(pickTip({ ...base, previewFlips: true }, placed)?.id).toBe('purple-preview');
   });
 
   it('teaches lane scoring once your first card is on the sheet, and lives when Q2 begins', () => {

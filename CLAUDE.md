@@ -832,8 +832,16 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    (88.2%); (b) drop the ceiling entirely, the simplest UI, 88.4%, and counter strong decks
    another way (item 16's takeover change moves the whole meta; or VP/CEO play built decks);
    (c) keep stars (84.0%) with a lighter presentation.
-15. **Orgs: choose which org to tackle, most locked at first (user request 2026-09-27) — NOT
-   STARTED.** Ask: the app should feel more EXPANSIVE to a new player. The CEO may be hard to
+15. **Orgs: choose which org to tackle, most locked at first (user request 2026-09-27) — IN
+   PROGRESS (user: build now, 2026-09-28).** Shared model done: `ORGS` in run.ts (re-exported
+   by orgs.ts): Finance (the original ladder; its 3rd rung renamed **The Controller**, avatar key
+   CTL), Tech (New Grad / Scrum Master / Tech Lead / CTO / Founder; VP pool Legacy + Micromanager,
+   top boss Change Freeze; a forward-rush deck with no purple), HR (Recruiter / HR Partner / Comp
+   Lead / CHRO / Board Chair; VP pool Auditor + Micromanager, top boss Reply-All; a people deck of
+   boosts, weakens and purple). `RunState.org`, `ladder`, `meetingDeck`, `orgUnlocked`
+   (promotion in the previous org; an old promotion counts as Finance), `Progress.orgsPromoted`.
+   Finance careers deal exactly as before. Assumed: stakes shared across orgs; daily stays Finance.
+   Remaining: client picker + casts + org bars. Ask: the app should feel more EXPANSIVE to a new player. The CEO may be hard to
    beat, but it doesn't look like much is locked away. Borrow Balatro's deck choice: before a
    career you pick an **org** to climb, most shown locked from day one. The first is
    **Finance**, then **Tech**, then **HR**, and so on. Each org brings more diverse characters,
@@ -857,7 +865,38 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    - **Bars.** Each org needs the ladder bars re-run for its own cast and twist (L1 difficulty
      climbs, L2 promotion in 10-40%, L3 first rung >= 75%), and later orgs should be harder
      but still winnable, like stakes S1/S2.
-16. **Takeover only from special "purple" cells (user request 2026-09-27) — NOT STARTED.**
+16. ~~Takeover only from special "purple" cells (user request 2026-09-27)~~ **DONE 2026-09-28
+   (user: "build now … include some tooltips when it's introduced, cause it's not a simple
+   concept").** **Rule:** `CardDef.takes` = purple offsets. Green reach (`spread`) only
+   claims EMPTY cells; a purple cell claims an empty cell too and flips ANY enemy card it
+   reaches — no value check (assumed from "completely flip"). `MATCH_RULES.takeover = false`;
+   the old "any reach flips a weaker card" survives only in Phase 0 `DEFAULT_RULES`.
+   `spreadTargets` = green ∪ purple, `takeTargets` = purple; Change Freeze still blocks.
+   **Content:** Stakeholder (starter, x2) and its upgrades PIP / Deadline, Hostile Takeover and
+   Merger take FORWARD (diagonals stay green). **Paste Special** now: a card pasted over your
+   own flips WEAKER enemy cards anywhere it reaches (the old rule, for that play).
+   **Teaching (user asked):** purple glyph cells with a white centre dot (non-colour cue);
+   flip preview in purple stripes; three one-time Bindy tips, each at first meeting —
+   `purple` (a purple card in your hand; those cards glow: "See the purple square? It takes
+   over … Green squares only claim empty cells."), `purple-preview` (first purple flip
+   preview), `purple-lost` (first time their purple takes your card; the taken cell glows).
+   VoiceOver / inspector: "spreads ahead-left, ahead-right; takes over 1 ahead". The old
+   orange `takeover` tip is gone.
+   **Bars (pre-registered: every existing bar still passes; never moved), 2000 seeds, final:**
+   flips per match 3.90 -> **0.51** (45% of matches see one, was 96%); match M1-M4 PASS
+   (seat 49.8%, passing 64.2%, headroom 63.3%, 24 turns); runbars J1 58.4% / J2 65.5% / B1 /
+   L1 89.3 > 84.3 > 80.3 > 67.3 > 43.6% / L2 17.8% / L3 PASS; stakebars S1/S2 PASS (17.8 > 9.6
+   > 6.9 > 3.6%), S3's literal re-pointed at L2 (0.178); firstcareer F1/F2 PASS (85.6%, 15.3%);
+   unlockbars U1 +1.2 / U2 +5.5 / U3 74.2% PASS; collectionbars C1/C2 PASS; daily re-vetted
+   (1096 days, D1 13.4%, D2 100%, D3 the recorded FAIL). **Honest history:** round 1 failed J1
+   (Paste Special +1.1pp — pasting used to flip via the old rule), U1 (Team Building +1.0) and U3
+   (79.2%: Hostile Takeover with a whole purple fan was +9.9pp). Round 2: Team Building v3 -> 4,
+   Hostile Takeover purple forward only, Paste "all reach purple" — which was BROKEN (76.9%,
+   J2 caps 70). Round 3: Paste = weaker cards flip, Coffee Run v3 -> 2, Hostile Takeover v9 ->
+   8: all pass. **Checked on screen** (375x667): the purple tip + glowing Stakeholders; the
+   greyed purple was first too pale (#b89ad6) to see, now #8c55c9. **Not verified:** the
+   purple-preview and purple-lost tips on screen (unit + DOM tests only), device.
+   Original notes follow.
    Ask: an ordinary card shouldn't overpower an adjacent square that holds an enemy card. A
    card adds value to its own cell (blue on the card's shape glyph) and gives strength to the
    cells it reaches (green). Flipping a filled enemy square should be something only

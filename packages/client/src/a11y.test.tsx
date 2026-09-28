@@ -18,7 +18,7 @@ describe('describing a card in words', () => {
 
   it('a card label says name, cost, value and spread', () => {
     expect(cardLabel('memo')).toBe('Memo, costs $, value 1, spreads left, right, 1 ahead');
-    expect(cardLabel('stakeholder')).toBe('Stakeholder, costs $$, value 3, spreads ahead-left, 1 ahead, ahead-right');
+    expect(cardLabel('stakeholder')).toBe('Stakeholder, costs $$, value 3, spreads ahead-left, ahead-right; takes over 1 ahead');
   });
   it('ability cards say what their ability does, on the face and in the label', () => {
     expect(abilityWords('memo')).toBeNull();
@@ -26,7 +26,7 @@ describe('describing a card in words', () => {
     expect(abilityWords('pip')).toBe('gives −2 to every rival card in its lane; a card at 0 is removed');
     expect(abilityBadge('teambuilding')).toBe('+2');
     expect(abilityBadge('pip')).toBe('−2 lane');
-    expect(cardLabel('pip')).toMatch(/spreads ahead-left, 1 ahead, ahead-right; gives −2 to every rival card in its lane/);
+    expect(cardLabel('pip')).toMatch(/spreads ahead-left, ahead-right; takes over 1 ahead; gives −2 to every rival card in its lane/);
     const { container } = render(<CardFace id="pip" />);
     expect(container.querySelector('[data-ability="weaken"]')!.textContent).toBe('−2 lane');
     cleanup();

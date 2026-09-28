@@ -42,6 +42,10 @@ export interface TipContext {
   readonly mods: Mods;
   /** Some card in your hand costs more than any open cell you own. */
   readonly hasUnaffordable: boolean;
+  /** A card with purple (takeover) cells is in your hand (item 16). */
+  readonly hasPurple?: boolean;
+  /** The opponent's last move took one of your cards over. */
+  readonly lostToPurple?: boolean;
   /** Your cards currently on the sheet this quarter. */
   readonly myCardsOnBoard: number;
   /** 1-based quarter of the current year. */
@@ -53,7 +57,7 @@ export interface Tip {
   readonly text: string;
   readonly mood: Mood;
   /** What on screen the tip is about; Game makes it glow while the tip shows. */
-  readonly points?: 'sums' | 'unaffordable' | 'lives' | 'pass';
+  readonly points?: 'sums' | 'unaffordable' | 'lives' | 'pass' | 'purple' | 'lost';
 }
 
 /** The most relevant unseen tip for this moment, or null. Pure. */
@@ -86,6 +90,30 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
       points: 'sums',
     });
   }
+  // Purple takeover cells (item 16) — not a simple concept, so taught at each first meeting.
+  if (ctx.previewFlips) {
+    candidates.push({
+      id: 'purple-preview',
+      text: `Purple stripes: that card of ${ctx.who}'s flips to you when you place this — any value.`,
+      mood: 'talk',
+    });
+  }
+  if (ctx.humanTurn && ctx.lostToPurple) {
+    candidates.push({
+      id: 'purple-lost',
+      text: `${ctx.who}'s purple square just took your card. Keep key cards out of reach of their purple.`,
+      mood: 'worried',
+      points: 'lost',
+    });
+  }
+  if (ctx.humanTurn && ctx.hasPurple && !ctx.selected) {
+    candidates.push({
+      id: 'purple',
+      text: 'See the purple square? It takes over: an enemy card there flips to you, whatever its value. Green squares only claim empty cells.',
+      mood: 'talk',
+      points: 'purple',
+    });
+  }
   if (ctx.humanTurn && ctx.quarterNo === 2) {
     candidates.push({
       id: 'lives',
@@ -100,13 +128,6 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
       text: 'Grey cards need a richer cell. Spreads add $ — tap one to see why.',
       mood: 'talk',
       points: 'unaffordable',
-    });
-  }
-  if (ctx.previewFlips) {
-    candidates.push({
-      id: 'takeover',
-      text: `Orange stripes: that card of ${ctx.who}'s is weaker than yours, so it flips to you.`,
-      mood: 'talk',
     });
   }
   if (ctx.humanTurn && ctx.financeClosedOut && ctx.lead > 0) {

@@ -21,8 +21,8 @@ describe('opponent avatars', () => {
   });
 
   it('draws a labelled portrait, and falls back to initials for an unknown id', () => {
-    render(<AvatarImage id="FIN" />);
-    const svg = document.querySelector('[data-avatar="FIN"]')!;
+    render(<AvatarImage id="CTL" />);
+    const svg = document.querySelector('[data-avatar="CTL"]')!;
     expect(svg.getAttribute('aria-label')).toMatch(/Finance/);
     expect(svg.querySelectorAll('rect').length).toBeGreaterThan(20);
     cleanup();

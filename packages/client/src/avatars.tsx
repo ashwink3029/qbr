@@ -65,7 +65,7 @@ export const AVATARS: Readonly<Record<string, Avatar>> = {
       '.ccccccttcccccc.',
     ],
   },
-  FIN: {
+  CTL: {
     name: 'Finance — green visor, glasses, sweater vest',
     bg: '#e9dcc0',
     palette: { ...EYES, s: '#e8b894', S: '#c9926a', H: '#9a9a9a', g: '#2e8b57', k: '#1a1a1a', c: '#7a2a3a', t: '#333333' },

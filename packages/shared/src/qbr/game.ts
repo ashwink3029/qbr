@@ -11,7 +11,7 @@
 // row's value as revenue. Ties bank nothing. The quarter ends when both players
 // pass back to back (or, under `lockingPass`, once both have passed). A
 // best-of-3 match of quarters is layered on top in match.ts.
-import { card } from './cards.js';
+import { card, type Offset } from './cards.js';
 import { NO_MODS, bonusDraw, hasJoker, type Mods } from './mods.js';
 import { nextRng, shuffle, type RngState } from './rng.js';
 
@@ -225,11 +225,21 @@ function withCheapOpener(deck: string[], n: number): string[] {
 /** Cells reached by `cardId` placed at `at` by `player`, in-bounds only. With
  *  `wrapLanes` (Circular Reference) a spread off one side re-enters on the other. */
 export function spreadTargets(cardId: string, at: number, player: Player, wrapLanes = false): number[] {
+  const c = card(cardId);
+  return offsetTargets([...c.spread, ...(c.takes ?? [])], at, player, wrapLanes);
+}
+
+/** The purple (takeover) cells among `spreadTargets` — see `CardDef.takes`. */
+export function takeTargets(cardId: string, at: number, player: Player, wrapLanes = false): number[] {
+  return offsetTargets(card(cardId).takes ?? [], at, player, wrapLanes);
+}
+
+function offsetTargets(offsets: readonly Offset[], at: number, player: Player, wrapLanes: boolean): number[] {
   const r0 = rowOf(at);
   const c0 = colOf(at);
   const dir = player === 0 ? 1 : -1;
   const out: number[] = [];
-  for (const [dr, dc] of card(cardId).spread) {
+  for (const [dr, dc] of offsets) {
     let r = r0 + dr;
     const c = c0 + dc * dir;
     // Circular Reference wraps straight sideways reaches only (dc === 0): wrapping
@@ -271,11 +281,18 @@ export function spreadEffects(state: GameState, cardId: string, at: number, play
   const targets = spreadTargets(cardId, at, player, wrap).filter(
     (t) => !blocked.has(t) && !(frozen && colOf(t) > Math.floor(COLS / 2)),
   );
+  // Purple cells (item 16) take over any enemy card they reach. The old rule — any
+  // reach flips a strictly weaker card — survives only in the Phase 0 single-quarter
+  // rules (`rules.takeover`); matches run without it.
+  // Paste Special (a joker): a card pasted over your own card flips WEAKER enemy cards
+  // anywhere it reaches — the pre-item-16 takeover rule, for that play only.
+  const pasting = player === 0 && hasJoker(state.mods, 'paste') && state.cells[at]?.card != null;
+  const purple = new Set(takeTargets(cardId, at, player, wrap));
   for (const t of targets) {
     const c = state.cells[t]!;
     if (c.card === null) claim.push(t);
     // Change Freeze: and the player's spreads take nothing over.
-    else if (state.rules.takeover && !frozen && c.owner !== player && card(c.card).value < power) flip.push(t);
+    else if (!frozen && c.owner !== player && (purple.has(t) || ((state.rules.takeover || pasting) && card(c.card).value < power))) flip.push(t);
   }
   // Abilities act after claims and flips: a just-flipped card is now yours.
   if (ability) {
