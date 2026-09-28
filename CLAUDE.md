@@ -1206,7 +1206,26 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    (HR 4.8%, climb broke); Comp Lead +2 cards (no effect — edge saturates). **Variety cost:** Tech
    and Legal now draw from the same VP pool; new modifiers (step 5) should split them. Tests
    first (mods.test.ts: 3 new, each red first; Monitor and Energy tests rewritten red-first at
-   each retune). (4) org-locked signature cards, U1/U2 + C1/C2;
+   each retune). (4) org-locked signature cards — **DONE (iteration 4):** a new unlock kind
+   `{kind: 'org', org}` (promoted in that org; an old promotion counts as Finance) and six
+   COLLECTIBLES, each measured against the starter card it replaces: **Audit Trail** (Finance;
+   $$$ v7, green diagonals + purple forward, for Slide Deck), **Viral Post** (Marketing; $ v1, CC's
+   shape + boost 1, for CC), **Closing Call** (Sales; $$ v4, Stakeholder's shape, for Stakeholder),
+   **Cease & Desist** (Legal; $$ v5, purple forward + a leap, for Reorg), **Hotfix** (Tech; $ v2,
+   Cold Call's fan + boost 1 to your cards in its lane), **Culture Deck** (HR; $$ v3, Synergy's
+   shape + boost 1 lane). They show greyed in the builder from day one ("Get promoted in Tech")
+   and on the org chart's top rung ("Beat → unlocks Golden Parachute, Audit Trail · opens
+   Marketing"). `careerEndProgress` now KEEPS and adds `orgsPromoted` — it used to drop the field,
+   so an org card would have unlocked silently (the same bug class as 10f's stake unlocks).
+   **Bars (collectionbars, 2000 seeds, never moved): C1 PASS, C2 PASS** — best lifts: Audit Trail
+   +4.1, Viral Post +1.5, Closing Call +5.1, Cease & Desist +6.2, Hotfix +1.4, Culture Deck +1.5pp.
+   **Thin margins:** Viral Post, Hotfix and Culture Deck sit within 0.5pp of C2's +1. No other bar
+   moves (career bars use the starter deck; org decks don't use these cards). **Honest history:**
+   first pass failed C2 — Cease & Desist v4 (−0.4 / +0.2pp: a purple forward cell rarely finds an
+   enemy card) and Hotfix with a spread-reach boost (+0.6pp: its fan rarely holds your cards —
+   10e's "check it LANDS" lesson again); fixed with value 5 and a lane-reach boost. Tests first:
+   shared `orgcards.test.ts` 3 (red first), client `orgs.test.tsx` +2 (top rung names the card;
+   career end records the org), `career.test.tsx` expectation updated for the new field.
    (5+) the rest of the menu, one org at a time.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.

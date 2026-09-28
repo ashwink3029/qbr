@@ -67,6 +67,7 @@ describe('career end', () => {
       stakeCleared: 2,
       promotions: 1,
       meetings: 5,
+      orgsPromoted: ['finance'],
     });
     const lost = finishMeeting(leaveChart({ ...newRun(1, 3), offer: [] }), false);
     expect(careerEndProgress({ bestRung: 5, careers: 3, stakeCleared: 2 }, lost).stakeCleared).toBe(2);

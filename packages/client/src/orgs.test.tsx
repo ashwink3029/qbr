@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render } from '@testing-library/react';
-import { orgOf } from '@qbr/shared';
+import { newRun, orgOf } from '@qbr/shared';
 import { App } from './App.js';
 import { EMPTY_RECORD, progressOf, recordRun } from './record.js';
+import { careerEndProgress } from './Run.js';
 
 // Orgs (item 15, user request): the app should feel expansive to a new player — choose
 // which org to climb, most of them visibly locked from day one. The picker lives on the
@@ -38,10 +39,11 @@ describe('the org picker on the career’s org chart', () => {
     expect((q('[data-chart-go]') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('each rung says what beating it unlocks; the top rung, which org promotion opens', () => {
+  it('each rung says what beating it unlocks; the top rung, the org’s own card and which org promotion opens', () => {
     render(<App seed={5} />);
     fireEvent.click(q('[data-start-run]')!);
     expect(q('[data-rung="0"] [data-unlock]')!.textContent).toMatch(/Coffee Run/);
+    expect(q('[data-rung="4"] [data-unlock]')!.textContent).toMatch(/Audit Trail/);
     expect(q('[data-rung="4"] [data-unlock]')!.textContent).toMatch(/opens Marketing/);
   });
 
@@ -65,5 +67,15 @@ describe('the record remembers which orgs you were promoted in', () => {
     expect(won.orgsPromoted).toEqual(['finance']);
     expect(recordRun(won, true, 5, 1, 'finance').orgsPromoted).toEqual(['finance']);
     expect(progressOf(recordRun(won, true, 5, 1, 'tech')).orgsPromoted).toEqual(['finance', 'tech']);
+  });
+});
+
+describe('a promotion records its org, so the org’s card is announced', () => {
+  it('a won career adds its org and keeps the earlier ones; a lost one changes nothing', () => {
+    const won = { ...newRun(1, 1, { org: 'tech' }), status: 'won' as const, meeting: 4 };
+    const lost = { ...won, status: 'lost' as const };
+    const before = { bestRung: 5, careers: 3, promotions: 1, orgsPromoted: ['finance'] };
+    expect(careerEndProgress(before, won).orgsPromoted).toEqual(['finance', 'tech']);
+    expect(careerEndProgress(before, lost).orgsPromoted).toEqual(['finance']);
   });
 });

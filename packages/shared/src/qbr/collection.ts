@@ -51,6 +51,13 @@ export const COLLECTIBLES: readonly Unlockable[] = [
   { id: 'corneroffice', replaces: 'vision', unlock: { kind: 'promotions', count: 5 }, how: 'Get promoted 5 times', flavor: 'Two windows. One plant. Everyone works harder.' },
   { id: 'merger', replaces: 'slidedeck', unlock: { kind: 'meetings', count: 45 }, how: 'Win 45 meetings', flavor: 'Synergies have been identified.' },
   { id: 'bluesky', replaces: 'offsite', unlock: { kind: 'careers', count: 20 }, how: 'Finish 20 careers', flavor: 'Not here. Over there. Further.' },
+  // Org signature cards (item 25): each org's promotion unlocks its own card.
+  { id: 'audittrail', replaces: 'slidedeck', unlock: { kind: 'org', org: 'finance' }, how: 'Get promoted in Finance', flavor: 'Every number has a receipt. Every receipt has a number.' },
+  { id: 'viralpost', replaces: 'cc', unlock: { kind: 'org', org: 'marketing' }, how: 'Get promoted in Marketing', flavor: 'Nobody knows why. Everybody shares it.' },
+  { id: 'closingcall', replaces: 'stakeholder', unlock: { kind: 'org', org: 'sales' }, how: 'Get promoted in Sales', flavor: 'So — what would it take?' },
+  { id: 'ceaseanddesist', replaces: 'reorg', unlock: { kind: 'org', org: 'legal' }, how: 'Get promoted in Legal', flavor: 'Please stop. Kindly. Immediately.' },
+  { id: 'hotfix', replaces: 'coldcall', unlock: { kind: 'org', org: 'tech' }, how: 'Get promoted in Tech', flavor: 'Shipped at 4:59 on a Friday.' },
+  { id: 'culturedeck', replaces: 'synergy', unlock: { kind: 'org', org: 'hr' }, how: 'Get promoted in HR', flavor: 'Forty slides about who we are.' },
 ];
 
 /** Everything winnable: the original specials first, then the collectibles. */
@@ -80,7 +87,9 @@ export function unlockProgress(u: Unlockable, p: Progress): { have: number; need
           ? [p.stakeCleared ?? 0, c.cleared]
           : c.kind === 'promotions'
             ? [p.promotions ?? 0, c.count]
-            : [p.meetings ?? 0, c.count];
+            : c.kind === 'org'
+              ? [isUnlocked(u, p) ? 1 : 0, 1]
+              : [p.meetings ?? 0, c.count];
   return { have: Math.min(have, need), need };
 }
 

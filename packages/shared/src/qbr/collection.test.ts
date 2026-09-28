@@ -14,7 +14,7 @@ import {
 } from './collection.js';
 
 const fresh = { bestRung: 0, careers: 0 };
-const veteran = { bestRung: 5, careers: 40, stakeCleared: 4, promotions: 10, meetings: 100 };
+const veteran = { bestRung: 5, careers: 40, stakeCleared: 4, promotions: 10, meetings: 100, orgsPromoted: ['finance', 'marketing', 'sales', 'legal', 'tech', 'hr'] };
 
 describe('the card collection', () => {
   it('is a big inventory: every unlockable is a real, unique card outside the starter deck', () => {

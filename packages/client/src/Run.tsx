@@ -75,6 +75,10 @@ export function careerEndProgress(progress: Progress, run: RunState): Progress {
     stakeCleared: won ? Math.max(progress.stakeCleared ?? 0, run.stake) : (progress.stakeCleared ?? 0),
     promotions: (progress.promotions ?? 0) + (won ? 1 : 0),
     meetings: (progress.meetings ?? 0) + (won ? ladder(run).length : run.meeting),
+    // A promotion records its org, so that org's signature card is announced.
+    orgsPromoted: won && !(progress.orgsPromoted ?? []).includes(run.org)
+      ? [...(progress.orgsPromoted ?? []), run.org]
+      : (progress.orgsPromoted ?? []),
   };
 }
 

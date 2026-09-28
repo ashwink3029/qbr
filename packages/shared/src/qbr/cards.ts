@@ -116,6 +116,21 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
     ability: { kind: 'weaken', amount: 1 },
   },
   bluesky: { id: 'bluesky', name: 'Blue-Sky Thinking', cost: 2, value: 2, spread: [[0, 2], [-1, 2], [1, 2], [0, 3]] },
+
+  // ── Org signature cards (item 25): a promotion in that org unlocks its card ──
+  audittrail: { id: 'audittrail', name: 'Audit Trail', cost: 3, value: 7, spread: [[-1, 1], [1, 1]], takes: [fwd] },
+  viralpost: { id: 'viralpost', name: 'Viral Post', cost: 1, value: 1, spread: [up, down, [-1, 1], [1, 1]], ability: { kind: 'boost', amount: 1 } },
+  closingcall: { id: 'closingcall', name: 'Closing Call', cost: 2, value: 4, spread: [[-1, 1], [1, 1]], takes: [fwd] },
+  ceaseanddesist: { id: 'ceaseanddesist', name: 'Cease & Desist', cost: 2, value: 5, spread: [[0, 2]], takes: [fwd] },
+  hotfix: { id: 'hotfix', name: 'Hotfix', cost: 1, value: 2, spread: [[-1, 1], fwd, [1, 1]], ability: { kind: 'boost', amount: 1, reach: 'lane' } },
+  culturedeck: {
+    id: 'culturedeck',
+    name: 'Culture Deck',
+    cost: 2,
+    value: 3,
+    spread: [up, down, fwd, back],
+    ability: { kind: 'boost', amount: 1, reach: 'lane' },
+  },
 };
 
 /** Both seats play the same 15-card list (shuffled independently), so a seat
@@ -148,7 +163,9 @@ export type UnlockCondition =
   | { readonly kind: 'careers'; readonly count: number }
   | { readonly kind: 'stake'; readonly cleared: number }
   | { readonly kind: 'promotions'; readonly count: number }
-  | { readonly kind: 'meetings'; readonly count: number };
+  | { readonly kind: 'meetings'; readonly count: number }
+  /** Promoted in that org (ORGS id) — an org's signature card. */
+  | { readonly kind: 'org'; readonly org: string };
 
 export interface Special {
   readonly id: string;
@@ -189,6 +206,9 @@ export function isUnlocked(s: { readonly unlock: UnlockCondition }, p: Progress)
       return (p.promotions ?? 0) >= s.unlock.count;
     case 'meetings':
       return (p.meetings ?? 0) >= s.unlock.count;
+    case 'org':
+      // A promotion from before orgs existed counts as Finance.
+      return (p.orgsPromoted ?? []).includes(s.unlock.org) || (s.unlock.org === 'finance' && (p.promotions ?? 0) > 0);
   }
 }
 

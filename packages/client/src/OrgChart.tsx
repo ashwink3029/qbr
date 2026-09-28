@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { BOSSES, CARDS, ORGS, SPECIALS, bossFor, isUnlocked, ladder, orgUnlocked, type Progress, type RunState } from '@qbr/shared';
+import { BOSSES, CARDS, COLLECTIBLES, ORGS, SPECIALS, bossFor, isUnlocked, ladder, orgUnlocked, type Progress, type RunState } from '@qbr/shared';
 import { AvatarImage } from './avatars.js';
 
 /** Your title after beating N rungs (N = run.meeting on the chart). */
@@ -28,6 +28,11 @@ function unlockText(run: RunState, i: number, progress: Progress | undefined): s
   const cards = SPECIALS.filter(
     (s) => s.unlock.kind === 'rung' && s.unlock.rungsBeaten === i + 1 && !isUnlocked(s, progress),
   ).map((s) => CARDS[s.id]!.name.replace(/\u00AD/g, ''));
+  if (i === ladder(run).length - 1) {
+    // The org's own signature card (item 25) comes with its promotion.
+    const sig = COLLECTIBLES.find((u) => u.unlock.kind === 'org' && u.unlock.org === run.org);
+    if (sig && !isUnlocked(sig, progress)) cards.push(CARDS[sig.id]!.name.replace(/\u00AD/g, ''));
+  }
   const parts = cards.length ? [`unlocks ${cards.join(', ')}`] : [];
   if (i === ladder(run).length - 1) {
     const k = ORGS.findIndex((o) => o.id === run.org);
