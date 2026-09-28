@@ -50,6 +50,9 @@ export const JOKERS: Readonly<Record<string, ModDef>> = {
   label: { id: 'label', name: 'Label Maker', blurb: 'Your cards in your home row are worth +1', glyph: 'LM' },
   monitor: { id: 'monitor', name: 'Second Monitor', blurb: '+1 card before Q2', glyph: '2M' },
   energy: { id: 'energy', name: 'Energy Drink', blurb: '+2 cards in your opening hand, but 1 fewer before Q3', glyph: 'ED' },
+  // (Expense Account — $$$ cards on $$ cells — cut: anywhere 72.6%, home row 70.9% (J2 caps 70),
+  //  home row + "$ cards -1" only +5.8pp, which diluted random drafts (top stake 1.9%). See CLAUDE.md item 25.)
+  corner: { id: 'corner', name: 'Corner Office', blurb: 'Your Ops cards are worth +1, your Sales cards −1', glyph: 'CO' },
 };
 
 export const BOSSES: Readonly<Record<string, ModDef>> = {

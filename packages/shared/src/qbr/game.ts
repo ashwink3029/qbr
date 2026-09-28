@@ -166,6 +166,7 @@ function jokerBase(state: GameState, i: number, cardId: string): number {
   if (hasJoker(state.mods, 'stamp') && def.cost >= 2) v += 1;
   if (hasJoker(state.mods, 'formatting') && leadsLane(state, rowOf(i))) v += 1;
   if (hasJoker(state.mods, 'label') && colOf(i) === 0) v += 1; // Label Maker: your home row
+  if (hasJoker(state.mods, 'corner')) v += rowOf(i) === 1 ? 1 : rowOf(i) === 0 ? -1 : 0; // Corner Office: Ops +1, Sales -1
   return v;
 }
 

@@ -1153,12 +1153,12 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    | upgrade | rule | hook |
    |---|---|---|
    | Standing Desk | Your $ cards are worth +1 (held back: cheap cards are already strongest) | cellValue |
-   | Expense Account | Your $$$ cards may go on $$ cells | canPlay |
+   | ~~Expense Account~~ | cut after 3 versions (72.6 / 70.9% / +5.8pp) | canPlay |
    | Label Maker ✓ | Your cards in your home row are worth +1 | cellValue |
    | Second Monitor ✓ | +1 card before Q2 | bonusDraw (refill) |
    | Noise-Cancelling Headphones | The boss rule is off in Q1 | mods by quarter |
    | ⚖ Energy Drink ✓ | +2 cards in your opening hand, but 1 fewer before Q3 | bonusDraw |
-   | ⚖ Corner Office | Your cards in Ops are worth +2, your Sales cards −1 | cellValue |
+   | ⚖ Corner Office ✓ | Your Ops cards are worth +1, your Sales cards −1 | cellValue |
    | ⚖ Red-Eye Flight | Your spreads add +1 extra $, but you start each quarter with 1 fewer $ home cell | spreadEffects / freshBoard |
    **Org-locked cards ("the deck that starts locked"):** each org promotion unlocks that org's
    signature card (shown on the org chart's top rung: "Beat → opens Sales · unlocks Viral
@@ -1242,9 +1242,22 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    CHRO now draws +2 cards: with the milder boss HR had drifted to 7.5%, 0.2pp inside Tech's
    step). **Honest history:** v1 "their claims next to your cards lower those cards by 1" was
    −0.3pp — their claims rarely touch your cards (10e's "check it LANDS", third time); v2 lane
-   reach at 1 was −4.4pp; at 2, −14.0pp. Tests red first for each version. Menu left:
-   Performance Calibration, Budget Cuts, Cold Outreach, Tech Debt, Fine Print; desk ideas
-   Standing Desk, Expense Account, Noise-Cancelling Headphones, Corner Office, Red-Eye Flight.
+   reach at 1 was −4.4pp; at 2, −14.0pp. Tests red first for each version. **Iteration 7
+   DONE:** **⚖ Corner Office** ("Your Ops cards are worth +1, your Sales cards −1", `jokerBase`)
+   joins the pool (10 desk upgrades) at +15.3pp — the pool's average, as iteration 3 taught.
+   **Expense Account CUT** after three versions: $$$ cards on $$ cells anywhere 72.6%, home row
+   only 70.9% (J2 caps 70 — early $$$ cards are strong once they can LAND; item 13's "$$$ cards are
+   liabilities" was about timing, not power), home row + "your $ cards −1" +5.8pp, which diluted
+   random drafts (top stake 1.9%, S2 FAIL). Corner Office's first version (Ops +2) was 78.8%:
+   broken. **Bars (2000 seeds, never moved) — all PASS:** J1/J2, B1, L1-L3 (promoted 16.3%),
+   stakes S1/S2 (16.3 > 10.3 > 6.5 > 3.3%; S3 literal -> 0.163), first career F1/F2, orgbars
+   O1/O2 (16.3 > 14.6 > 12.4 > 10.3 > 7.2 > 6.2% — **Tech->HR exactly 1.0pp, thin**; Marketing CMO
+   2 $$ cells + Director 1; Legal's Senior Counsel 1 $$ cell — +1 card broke Legal's climb),
+   daily re-vetted (D1 17.5%, D2 100%, D3 340). Menu left: Performance Calibration, Budget Cuts,
+   Cold Outreach, Tech Debt, Fine Print; desk ideas Standing Desk, Noise-Cancelling Headphones,
+   Red-Eye Flight. **Standing lesson for new desk upgrades:** land them near the pool's average
+   (+13..+19pp): above 70% breaks J2, and well below the average dilutes random drafts and
+   drags every ladder, stake and org with it.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

@@ -266,6 +266,20 @@ describe('new jokers and a boss (iteration 13)', () => {
     expect(spreadEffects(yours, 'standup', idx(1, 0), 0).weaken).toEqual([]);
   });
 
+  it('Corner Office (a tradeoff, item 25): your Ops cards +1, your Sales cards -1', () => {
+    // Ops +2 measured 78.8%: broken (J2 caps 70).
+    const s = strictBoard(mods({ jokers: ['corner'] }), [
+      [idx(0, 1), { owner: 0, budget: 1, card: 'coldcall' }], // Sales: 2 -> 1
+      [idx(1, 1), { owner: 0, budget: 1, card: 'memo' }], // Ops: 1 -> 2
+      [idx(2, 1), { owner: 0, budget: 1, card: 'memo' }], // R&D: unchanged
+      [idx(1, 3), { owner: 1, budget: 1, card: 'memo' }], // theirs: unchanged
+    ], []);
+    expect(cellValue(s, idx(0, 1))).toBe(1);
+    expect(cellValue(s, idx(1, 1))).toBe(2);
+    expect(cellValue(s, idx(2, 1))).toBe(1);
+    expect(cellValue(s, idx(1, 3))).toBe(1);
+  });
+
   it('Label Maker (desk upgrade, item 25): your cards in your home row are worth +1', () => {
     const s = strictBoard(mods({ jokers: ['label'] }), [
       [idx(0, 0), { owner: 0, budget: 1, card: 'memo' }], // home row
