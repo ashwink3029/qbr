@@ -927,6 +927,25 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    career: `=SUM` row glows right after placing, then the grey cards; no window scroll. **Not
    verified:** the lives and Close out pointers on screen (covered by the unit mapping only),
    Simulator / device.
+19. ~~No text under 11px~~ **DONE (/explore 2026-09-27; levers 1 + UI clarity).** **Research:**
+   Balatro's iPhone port is praised, but reviewers note text is "less so" readable "on tiny
+   devices" ([Engadget](https://www.engadget.com/gaming/balatro-is-an-almost-perfect-mobile-port-163050971.html),
+   [148Apps](https://www.148apps.com/balatro/review/)); Marvel Snap's low-star reviews are
+   mostly monetization (N/A here), bad opening hands and "pointless" cards
+   ([App Store](https://apps.apple.com/us/app/marvel-snap/id1592081003)). Apple's HIG minimum
+   text size is 11pt. **Measured first:** a headless font audit at 375x667 (every visible text
+   node's computed size, over Home, deck builder, org chart, upgrade draft and a game)
+   found 9-10.5px text: card names 10.5, placed-card names 10, lane labels 10, "needs $$" 9,
+   joker tray name/glyph 10, ability badges 9, lock text/progress 9, copies/"left" 10, rung
+   initials 10, joker blurbs 10. **Now:** every `font-size` in `styles.css` is >= 11px (16
+   rules raised; card names `clamp(11px, 2.9vw, 12px)`); re-audit at 375x667 and 402x874:
+   **zero** sub-11px text on all five screens, game still fits (no window scroll, pass button
+   on screen). **Honest history:** at 11-12px "Performance Review" clipped to "Performanc" in
+   the hand, so the long words got soft hyphens like `Stake\u00ADholder` (Perfor-mance,
+   Improve-ment, State-ment, Para-chute). Guards (`readability.test.ts`, both red on the old
+   code then green): no `font-size` below 11px in the stylesheet; every 9+-letter word in a
+   card name has a soft hyphen. **Not verified:** Dynamic Type (sizes are still fixed px) and
+   on-device legibility.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

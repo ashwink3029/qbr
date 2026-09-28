@@ -143,7 +143,7 @@
   font-size: 13px;
 }
 .hd.lane { line-height: 1.05; }
-.hd.lane small { font-size: 10px; color: #555; }
+.hd.lane small { font-size: 11px; color: #555; }
 .hd.num { font-size: 12px; }
 
 .cell {
@@ -236,7 +236,7 @@
 
 .budget { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 15px; letter-spacing: 1px; }
 .placed { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0 2px; }
-.pname { font-size: 10px; line-height: 1.05; hyphens: auto; -webkit-hyphens: auto; }
+.pname { font-size: 11px; line-height: 1.05; hyphens: auto; -webkit-hyphens: auto; }
 .pval { font-size: 24px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; line-height: 1; }
 
 .sum {
@@ -257,8 +257,8 @@
 .sum .lost { font-size: 11px; opacity: 0.75; }
 .sum.win { background: var(--mine-ink); color: #fff; }
 .sum.lose { background: var(--theirs-ink); color: #fff; }
-.sum.win .bank::after { content: ' ▲'; font-size: 10px; }
-.sum.lose .bank::after { content: ' ▼'; font-size: 10px; }
+.sum.win .bank::after { content: ' ▲'; font-size: 11px; }
+.sum.lose .bank::after { content: ' ▼'; font-size: 11px; }
 .sum.tie { background: #ececec; color: var(--lo); align-items: center; }
 .sum .even { font-size: 13px; }
 .rev .you { color: var(--mine-ink); }
@@ -305,7 +305,7 @@
 .card.unaffordable .g.hit { background: #8aa37a; }
 .card.unaffordable.explained { outline: 2px dashed var(--theirs-ink); outline-offset: -4px; }
 .needs {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1;
   padding: 2px 4px;
@@ -315,7 +315,7 @@
 }
 .cost { align-self: flex-start; padding-left: 3px; font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #2d6a00; }
 .cname {
-  font-size: clamp(10px, 2.8vw, 12px);
+  font-size: clamp(11px, 2.9vw, 12px);
   font-weight: 700;
   text-align: center;
   line-height: 1.1;
@@ -327,7 +327,7 @@
 }
 /* An on-play ability tag between the spread glyph and the value. */
 .cab {
-  font-size: 9px; font-weight: 700; line-height: 1; padding: 2px 4px; white-space: nowrap;
+  font-size: 11px; font-weight: 700; line-height: 1; padding: 2px 4px; white-space: nowrap;
   font-family: ui-monospace, Menlo, monospace; color: #fff;
 }
 .cab[data-ability='boost'] { background: #1b7f3a; }
@@ -471,7 +471,7 @@
   font-size: 13px;
 }
 .jname { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.1; }
-.jblurb { font-size: 10px; color: #444; text-align: center; line-height: 1.15; }
+.jblurb { font-size: 11px; color: #444; text-align: center; line-height: 1.15; }
 .tray .jblurb { display: none; } /* tap-free tray: name + glyph; the closet shows the rule */
 .closet .offer { display: flex; gap: 6px; }
 .offer-card { cursor: pointer; min-height: 132px; touch-action: manipulation; }
@@ -569,7 +569,7 @@
   .rung { padding: 4px 6px; }
   .rung + .rung { margin-top: 8px; }
   .rung + .rung::before { top: -9px; height: 8px; }
-  .rung-avatar { width: 28px; height: 28px; font-size: 10px; }
+  .rung-avatar { width: 28px; height: 28px; font-size: 11px; }
   .chart-window .pitch { margin: 0; }
   .chart-window .logo { display: none; }
   .starter-joker { margin: 4px 0; padding: 4px 6px; font-size: 12px; }
@@ -639,7 +639,7 @@
   position: absolute;
   top: 3px;
   right: 3px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   padding: 1px 4px;
   color: #fff;
@@ -651,18 +651,18 @@
 .deck-status { margin: 0; font-size: 13px; }
 .deck-status.short { color: var(--theirs-ink); font-weight: 700; }
 .deck-card { cursor: pointer; }
-.coll-card .left { font-size: 10px; color: #555; line-height: 1; }
+.coll-card .left { font-size: 11px; color: #555; line-height: 1; }
 .coll-card:disabled { opacity: 0.45; }
 /* The power ceiling: every card's ★ rating, and the deck's total against the limit. */
 .deck-body .tip { position: static; animation: none; }
 /* Locked: the real card, greyed, with how to earn it — the whole inventory is on show. */
 .locked-card { cursor: default; filter: grayscale(1); opacity: 0.6; border-style: dashed; background: #eee; }
-.lock-how { font-size: 9px; line-height: 1.15; text-align: center; color: #333; padding: 0 2px; }
+.lock-how { font-size: 11px; line-height: 1.15; text-align: center; color: #333; padding: 0 2px; }
 .lock-progress { white-space: nowrap; }
 .unlocked { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; background: #fffbe0; border: 2px solid #f2c14e; }
 .unlocked-cards { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .unlocked-item { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 80px; }
-.unlocked-item small { font-size: 10px; color: #555; text-align: center; }
+.unlocked-item small { font-size: 11px; color: #555; text-align: center; }
 /* Outside the hand a card must not inherit the hand's flex sizing: in a
    column, `flex: 1 0 66px` becomes a 66px HEIGHT and squashes the face. */
 .unlocked-item .card { flex: 0 0 auto; width: 76px; }
@@ -690,7 +690,7 @@
   animation: tip-in 180ms ease-out;
 }
 .tip-text { display: flex; flex-direction: column; gap: 3px; line-height: 1.3; font-size: 13px; }
-.tip-text small { color: var(--lo); font-size: 10px; }
+.tip-text small { color: var(--lo); font-size: 11px; }
 .clipper { flex: 0 0 auto; }
 .clipper.talk { animation: clip-talk 900ms ease-in-out infinite; transform-origin: 50% 80%; }
 @keyframes clip-talk { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
@@ -716,8 +716,8 @@
 @media (max-height: 760px) {
   .tray { padding: 2px 0 4px; gap: 4px; }
   .tray .joker { flex-direction: row; gap: 5px; padding: 3px 5px; }
-  .tray .jglyph { width: 22px; height: 22px; font-size: 10px; flex: 0 0 auto; }
-  .tray .jname { font-size: 10px; text-align: left; }
+  .tray .jglyph { width: 22px; height: 22px; font-size: 11px; flex: 0 0 auto; }
+  .tray .jname { font-size: 11px; text-align: left; }
   .card { min-height: 100px; gap: 2px; padding: 4px 2px; }
   .cname { min-height: 22px; }
   .sheet { grid-template-rows: 30px repeat(5, minmax(44px, 96px)) 30px; min-height: calc(30px + 5 * 44px + 30px); }
@@ -800,7 +800,7 @@
 .guide-badge {
   position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
   padding: 1px 6px; border-radius: 8px; background: var(--title); color: #fff;
-  font-size: 10px; font-weight: 700; white-space: nowrap; pointer-events: none;
+  font-size: 11px; font-weight: 700; white-space: nowrap; pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
   [data-guide] { animation: none; box-shadow: 0 0 0 3px #ffd23f; }

@@ -47,7 +47,7 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   headcount: { id: 'headcount', name: 'Head\u00ADcount', cost: 3, value: 7, spread: [] },
   vision: {
     id: 'vision',
-    name: 'Vision Statement',
+    name: 'Vision State\u00ADment',
     cost: 3,
     value: 4,
     spread: [up, down, fwd, back, [-1, -1], [-1, 1], [1, -1], [1, 1]],
@@ -55,10 +55,10 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
 
   // ── Special cards: unlocked by climbing careers (see SPECIALS below) ──
   coffeerun: { id: 'coffeerun', name: 'Coffee Run', cost: 1, value: 3, spread: [up, down] },
-  perfreview: { id: 'perfreview', name: 'Performance Review', cost: 2, value: 2, spread: [fwd] },
+  perfreview: { id: 'perfreview', name: 'Perfor\u00ADmance Review', cost: 2, value: 2, spread: [fwd] },
   budgetcut: { id: 'budgetcut', name: 'Budget Cut', cost: 1, value: 3, spread: [[-1, 1], fwd, [1, 1]] },
   takeover: { id: 'takeover', name: 'Hostile Takeover', cost: 3, value: 9, spread: [[-1, 1], fwd, [1, 1]] },
-  parachute: { id: 'parachute', name: 'Golden Parachute', cost: 3, value: 9, spread: [] },
+  parachute: { id: 'parachute', name: 'Golden Para\u00ADchute', cost: 3, value: 9, spread: [] },
   gossip: { id: 'gossip', name: 'Water Cooler Gossip', cost: 1, value: 1, spread: [up, down, [-1, -1], [1, -1]] },
 
   // ── Ability specials (unlocked by clearing career stakes) ──
@@ -72,7 +72,7 @@ export const CARDS: Readonly<Record<string, CardDef>> = {
   },
   pip: {
     id: 'pip',
-    name: 'Performance Improvement Plan',
+    name: 'Perfor\u00ADmance Improve\u00ADment Plan',
     cost: 2,
     value: 3,
     spread: [[-1, 1], fwd, [1, 1]],
