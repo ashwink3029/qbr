@@ -926,9 +926,11 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    (`pointers.test.tsx` 3, red then green; `onboarding.test.tsx` narrowed to the placement
    guide itself, `tips.test.tsx` updated). **Honest history:** the first cost line measured 17
    words against the pre-set 16 and was trimmed. Verified at 375x667 through the real first
-   career: `=SUM` row glows right after placing, then the grey cards; no window scroll. **Not
-   verified:** the lives and Close out pointers on screen (covered by the unit mapping only),
-   Simulator / device.
+   career: `=SUM` row glows right after placing, then the grey cards; no window scroll. The
+   lives and Close out pointers were then **verified in real play** (headless script playing
+   whole years at 375x667 until each tip fired): at Q2 the lives tip lights your lives + card
+   count; when Finance closes out while you lead, the tip lights the Close out button.
+   **Not verified:** device.
 19. ~~No text under 11px~~ **DONE (/explore 2026-09-27; levers 1 + UI clarity).** **Research:**
    Balatro's iPhone port is praised, but reviewers note text is "less so" readable "on tiny
    devices" ([Engadget](https://www.engadget.com/gaming/balatro-is-an-almost-perfect-mobile-port-163050971.html),
