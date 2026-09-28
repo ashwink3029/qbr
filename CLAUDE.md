@@ -1152,12 +1152,12 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    **Menu — desk upgrades (jokers); tradeoffs marked ⚖:**
    | upgrade | rule | hook |
    |---|---|---|
-   | Standing Desk | Your $ cards are worth +1 | cellValue |
+   | Standing Desk | Your $ cards are worth +1 (held back: cheap cards are already strongest) | cellValue |
    | Expense Account | Your $$$ cards may go on $$ cells | canPlay |
-   | Label Maker | Your cards in your home row are worth +1 | cellValue |
-   | Second Monitor | +1 card before Q2 | bonusDraw (refill) |
+   | Label Maker ✓ | Your cards in your home row are worth +1 | cellValue |
+   | Second Monitor ✓ | +1 card before Q2 | bonusDraw (refill) |
    | Noise-Cancelling Headphones | The boss rule is off in Q1 | mods by quarter |
-   | ⚖ Energy Drink | +2 cards in your opening hand, but −1 before Q2 | bonusDraw |
+   | ⚖ Energy Drink ✓ | +2 cards in your opening hand, but 1 fewer before Q3 | bonusDraw |
    | ⚖ Corner Office | Your cards in Ops are worth +2, your Sales cards −1 | cellValue |
    | ⚖ Red-Eye Flight | Your spreads add +1 extra $, but you start each quarter with 1 fewer $ home cell | spreadEffects / freshBoard |
    **Org-locked cards ("the deck that starts locked"):** each org promotion unlocks that org's
@@ -1185,8 +1185,29 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    line / 15.2%); final: Synergy Offsite + two $$ home cells. Tests first for Quota and both
    Brand Guidelines versions (mods.test.ts); **the Synergy Offsite test was written together with
    its code, not confirmed red first.** **Not verified on screen:** the two new boss rules on the
-   org chart and Bindy's boss tip (both read `BOSSES` generically). (3) 3 desk upgrades incl. one ⚖, J1/J2;
-   (4) org-locked signature cards, U1/U2 + C1/C2; (5+) the rest of the menu, one org at a time.
+   org chart and Bindy's boss tip (both read `BOSSES` generically). (3) 3 desk upgrades incl. one
+   ⚖ — **DONE (iteration 3):** **Label Maker** (your home-row cards +1, `jokerBase`), **Second
+   Monitor** (+1 card before Q2, `bonusDraw(..., refill)` — refills now know which quarter they
+   precede), **⚖ Energy Drink** (+2 opening cards, but 1 fewer before Q3). Pool 6 -> 9 jokers
+   (`MAX_JOKERS` 4 unchanged). **Bars, 2000 seeds, never moved — all PASS:** J1/J2 (Label +18.8,
+   Monitor +14.4, Energy +19.1pp = 69.0%, **thin under J2's 70**), B1, L1-L3 (89.8 > 85.4 > 84.7
+   > 69.2 > 43.8, promoted 19.7%), stakes S1/S2 (19.7 > 10.8 > 7.3 > 3.0%; S3's literal re-pointed
+   to 0.197), first career F1/F2 (85.6%, 17.0%), orgbars O1/O2 (19.7 > 17.8 > 14.9 > 13.8 > 9.3 >
+   6.9%); daily re-vetted: D1 17.3%, D2 100%, and **D3 PASSES for the first time — 333 distinct
+   setups >= 300** (the recorded FAIL since 10h: the bigger joker pool made it reachable). **Honest history:** Monitor as "+1 every refill" was BROKEN (73.0%).
+   Nerfed to "before Q3" (+8.7) and Energy as "−1 every refill" (+4.7) both passed J1 but
+   DILUTED the random-draft pool: career promotion fell 17.8 -> 13.7%, the top stake to 1.6% (S2
+   FAIL) and HR to 3.7% (O1 FAIL) — weak jokers in a random-draft pool make every career harder,
+   so the fix was to buff them to the pool's level (Monitor before Q2, Energy's crash only before
+   Q3), not to re-tune the ladders. The org ladders then drifted (Sales easier than Finance) and
+   took six more rounds: Marketing CMO 1 $$ cell + Director 2; Sales CRO Quota + 1 card; Tech's CTO
+   pool Legacy + Auditor (Micromanager out). Dead ends, both non-monotone again: the Founder with
+   1 $$ cell (Tech 7.7 -> 15.1%) or no extra card (16.7%, climb broke); the CHRO with a $$ cell
+   (HR 4.8%, climb broke); Comp Lead +2 cards (no effect — edge saturates). **Variety cost:** Tech
+   and Legal now draw from the same VP pool; new modifiers (step 5) should split them. Tests
+   first (mods.test.ts: 3 new, each red first; Monitor and Energy tests rewritten red-first at
+   each retune). (4) org-locked signature cards, U1/U2 + C1/C2;
+   (5+) the rest of the menu, one org at a time.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

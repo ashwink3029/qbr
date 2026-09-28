@@ -46,6 +46,10 @@ export const JOKERS: Readonly<Record<string, ModDef>> = {
   paste: { id: 'paste', name: 'Paste Special', blurb: 'Play over your own cards; a pasted card flips weaker cards it reaches', glyph: '⌘V' },
   // (Newton's Cradle — claims gain +2 budget — measured +33.7pp: broken. See CLAUDE.md.)
   chair: { id: 'chair', name: 'Ergonomic Chair', blurb: 'Your Ops home cell starts with $$', glyph: 'EC' },
+  // Item 25: more desk upgrades, including a tradeoff (a Slay the Spire boss-relic shape).
+  label: { id: 'label', name: 'Label Maker', blurb: 'Your cards in your home row are worth +1', glyph: 'LM' },
+  monitor: { id: 'monitor', name: 'Second Monitor', blurb: '+1 card before Q2', glyph: '2M' },
+  energy: { id: 'energy', name: 'Energy Drink', blurb: '+2 cards in your opening hand, but 1 fewer before Q3', glyph: 'ED' },
 };
 
 export const BOSSES: Readonly<Record<string, ModDef>> = {
@@ -69,7 +73,13 @@ export const hasJoker = (mods: Mods, id: string): boolean => mods.jokers.include
 /** Extra cards a seat receives at the start of a quarter: the opening hand, or a
  *  between-quarter refill. The Coffee Mug is opening-only (it gave +1 every quarter
  *  until the 2026-09-27 Cold Call rebalance made it 74% — over J2's 70%). */
-export function bonusDraw(mods: Mods, seat: 0 | 1, opening = true): number {
-  if (seat === 0) return hasJoker(mods, 'mug') && opening ? 1 : 0;
+export function bonusDraw(mods: Mods, seat: 0 | 1, opening = true, refill = 0): number {
+  if (seat === 0) {
+    let n = 0;
+    if (opening && hasJoker(mods, 'mug')) n += 1;
+    if (!opening && refill === 1 && hasJoker(mods, 'monitor')) n += 1; // before Q2 only
+    if (hasJoker(mods, 'energy')) n += opening ? 2 : refill === 2 ? -1 : 0; // the crash comes before Q3
+    return n;
+  }
   return (mods.boss === 'replyall' ? 2 : 0) + (mods.oppEdge ?? 0);
 }

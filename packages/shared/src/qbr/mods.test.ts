@@ -14,7 +14,7 @@ import {
   type GameState,
 } from './game.js';
 import { DEFAULT_MATCH, matchReducer, newMatch } from './match.js';
-import { BOSSES, JOKERS, NO_MODS, type Mods } from './mods.js';
+import { BOSSES, JOKERS, NO_MODS, bonusDraw, type Mods } from './mods.js';
 import { DRAWABLE_BOSSES } from './run.js';
 
 const mods = (m: Partial<Mods>): Mods => ({ ...NO_MODS, ...m });
@@ -207,6 +207,36 @@ describe('new jokers and a boss (iteration 13)', () => {
     expect(cellValue(s, idx(2, 4))).toBe(1);
     expect(cellValue(s, idx(1, 0))).toBe(1);
     expect(cellValue({ ...s, mods: NO_MODS }, idx(0, 3))).toBe(1);
+  });
+
+  it('Label Maker (desk upgrade, item 25): your cards in your home row are worth +1', () => {
+    const s = strictBoard(mods({ jokers: ['label'] }), [
+      [idx(0, 0), { owner: 0, budget: 1, card: 'memo' }], // home row
+      [idx(1, 1), { owner: 0, budget: 1, card: 'memo' }], // one row out
+      [idx(2, 4), { owner: 1, budget: 1, card: 'memo' }], // their home row: not yours
+    ], []);
+    expect(cellValue(s, idx(0, 0))).toBe(2);
+    expect(cellValue(s, idx(1, 1))).toBe(1);
+    expect(cellValue(s, idx(2, 4))).toBe(1);
+  });
+
+  it('Second Monitor (desk upgrade, item 25): +1 card before Q2 only', () => {
+    // +1 at every refill measured 73.0% (broken, J2 caps 70%); before Q3 only, +8.7pp, too
+    // weak for the random-draft pool (it dragged career promotion 17.8% -> 13.7%).
+    const m = mods({ jokers: ['monitor'] });
+    expect(bonusDraw(m, 0, true)).toBe(0);
+    expect(bonusDraw(m, 0, false, 1)).toBe(1); // before Q2
+    expect(bonusDraw(m, 0, false, 2)).toBe(0); // before Q3
+    expect(bonusDraw(m, 1, false, 1)).toBe(0);
+  });
+
+  it('Energy Drink (a tradeoff, item 25): +2 opening cards, but 1 fewer before Q3', () => {
+    // -1 at every refill measured only +4.7pp.
+    const m = mods({ jokers: ['energy'] });
+    expect(bonusDraw(m, 0, true)).toBe(2);
+    expect(bonusDraw(m, 0, false, 1)).toBe(0);
+    expect(bonusDraw(m, 0, false, 2)).toBe(-1);
+    expect(bonusDraw(mods({ jokers: ['energy', 'mug'] }), 0, true)).toBe(3);
   });
 
   it('Ergonomic Chair: your Ops home cell starts with $$ (the mirror of Legacy System)', () => {

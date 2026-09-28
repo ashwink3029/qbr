@@ -108,7 +108,7 @@ export function matchReducer(m: MatchState, action: Action): MatchState {
 
   const base = m.config.drawAfter[results.length - 1] ?? 0;
   const draw = (p: Player): [string[], string[]] => {
-    const n = base + bonusDraw(q.mods, p, false);
+    const n = base + bonusDraw(q.mods, p, false, results.length);
     const deck = q.decks[p];
     return [[...q.hands[p], ...deck.slice(0, n)], deck.slice(n)];
   };

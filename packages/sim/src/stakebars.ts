@@ -77,5 +77,5 @@ console.log('\nPre-registered bar');
 console.log(`  S1. each stake harder    ${rates.map((r) => pct(r)).join(' > ')} (>= 2pp steps)   ${verdict(falls)}`);
 console.log(`  S2. top stake winnable   ${pct(rates.at(-1)!)} >= 2%                            ${verdict(rates.at(-1)! >= 0.02)}`);
 console.log(`  (stake 1 exact: ${rates[0]!.toFixed(4)})`);
-const L2 = 0.178; // runbars.ts L2 at 2000 seeds (2026-09-28, purple takeover cells)
+const L2 = 0.197; // runbars.ts L2 at 2000 seeds (2026-09-28, 9 desk upgrades)
 console.log(`  S3. standard untouched   ${pct(rates[0]!)} == ${pct(L2)} baseline                  ${verdict(Math.abs(rates[0]! - L2) < 0.0005)}`);
