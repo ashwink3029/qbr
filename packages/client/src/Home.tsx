@@ -1,7 +1,7 @@
-import { MEETINGS, ORGS, STAKES, orgUnlocked } from '@qbr/shared';
+import { MEETINGS, STAKES } from '@qbr/shared';
 import { yourTitle } from './OrgChart.js';
 import { BinderClip } from './Mascot.js';
-import { liveStreak, progressOf, type Record } from './record.js';
+import { liveStreak, type Record } from './record.js';
 import { homeLine } from './tips.js';
 
 export interface HomeProps {
@@ -24,9 +24,6 @@ export interface HomeProps {
   readonly stake?: number;
   readonly maxStake?: number;
   readonly onStake?: (s: number) => void;
-  /** Which org the next career climbs (ORGS id); locked orgs can be browsed. */
-  readonly org?: string;
-  readonly onOrg?: (id: string) => void;
 }
 
 /**
@@ -49,8 +46,6 @@ export function Home({
   stake = 1,
   maxStake = 1,
   onStake,
-  org = 'finance',
-  onOrg,
 }: HomeProps) {
   const years = record.wins + record.losses + record.draws;
   const last =
@@ -76,12 +71,6 @@ export function Home({
         : beaten === 0
           ? 'lost to the Intern'
           : `beat ${MEETINGS[beaten - 1]!.role.replace(/^The /, 'the ')}`;
-
-  // Orgs (item 15): shown from day one, most locked, so a new player sees how much is ahead.
-  const orgIdx = Math.max(0, ORGS.findIndex((o) => o.id === org));
-  const theOrg = ORGS[orgIdx]!;
-  const orgOpen = orgUnlocked(theOrg.id, progressOf(record));
-  const prevOrg = orgIdx > 0 ? ORGS[orgIdx - 1]! : null;
 
   return (
     <div className="app home" data-home>
@@ -118,37 +107,6 @@ export function Home({
               {inProgress === 'run' ? (dailyLive ? 'Resume today’s career' : 'Resume career') : 'Resume year'}
             </button>
           )}
-          <div className={`stake-picker org-picker ${orgOpen ? '' : 'locked'}`} data-org-picker>
-            <button
-              className="btn stake-arrow"
-              data-org-prev
-              aria-label="Previous org"
-              disabled={orgIdx <= 0}
-              onClick={() => onOrg?.(ORGS[orgIdx - 1]!.id)}
-            >
-              ◀
-            </button>
-            <span className="stake-text">
-              <b>
-                {orgOpen ? '' : '🔒 '}
-                {theOrg.name} · {orgIdx + 1}/{ORGS.length}
-              </b>
-              {orgOpen ? (
-                <small>{theOrg.blurb}</small>
-              ) : (
-                <small data-org-locked>Get promoted in {prevOrg!.name} to open.</small>
-              )}
-            </span>
-            <button
-              className="btn stake-arrow"
-              data-org-next
-              aria-label="Next org"
-              disabled={orgIdx >= ORGS.length - 1}
-              onClick={() => onOrg?.(ORGS[orgIdx + 1]!.id)}
-            >
-              ▶
-            </button>
-          </div>
           {maxStake > 1 && (
             <div className="stake-picker" data-stake-picker>
               <button
@@ -177,7 +135,7 @@ export function Home({
               </button>
             </div>
           )}
-          <button className={`btn ${inProgress ? '' : 'primary'}`} data-start-run disabled={!orgOpen} onClick={onStartRun}>
+          <button className={`btn ${inProgress ? '' : 'primary'}`} data-start-run onClick={onStartRun}>
             {inProgress === 'run' ? 'Start a new career' : 'Start career'}
           </button>
           {showDaily &&

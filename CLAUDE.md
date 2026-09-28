@@ -833,9 +833,19 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    another way (item 16's takeover change moves the whole meta; or VP/CEO play built decks);
    (c) keep stars (84.0%) with a lighter presentation.
 15. ~~Orgs: choose which org to tackle, most locked at first (user request 2026-09-27)~~ **DONE
-   2026-09-28 (user: "build now").** Balatro's deck choice as **orgs**: Home shows an org picker
-   (◀ Finance · 1/3 ▶) from day one; locked orgs are browsable, greyed, with "🔒 … Get promoted
-   in Finance to open." and Start career disabled. Finance -> Tech -> HR, each opened by a
+   2026-09-28 (user: "build now").** Balatro's deck choice as **orgs**. **Picker moved off Home
+   (user, same day)** onto the career's opening org chart (`OrgPicker.tsx`, above the tree, not
+   on the daily): browsing an org redraws its WHOLE tree — every rung's portrait, character,
+   meeting, boss/seniority, and a gold "Beat → unlocks Coffee Run" line (rung specials not yet
+   owned; the top rung adds "opens Tech" while the next org is locked). Locked orgs are fully
+   browsable, greyed "🔒 Tech · 2/3 — Get promoted in Finance to open.", with the chart's start
+   button disabled. The tree scrolls INSIDE the window (picker and start button stay on screen:
+   five rungs + unlock lines outgrew an iPhone SE by 65-77px) and opens scrolled to the bottom
+   — you and the rung you face. Verified 375x667 / 402x874: window scroll 0, start button
+   visible in every case. A brand-new player is still two taps from the first card. Tests:
+   `orgs.test.tsx` rewritten (not on Home; picker on the chart; a locked org's full tree with 5
+   portraits and a disabled start; rung unlock lines; a Tech career). (Original: Home showed
+   the picker from day one; locked orgs browsable, greyed, Start career disabled.) Finance -> Tech -> HR, each opened by a
    promotion in the one before (an old promotion counts as Finance). **Each org plays
    differently:** its own cast of five (10 new 16x16 placeholder-in-code avatars: New Grad,
    Scrum Master, Tech Lead, CTO, Founder; Recruiter, HR Partner, Comp Lead, CHRO, Board Chair —
@@ -1086,6 +1096,12 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    result dialog at the largest sizes, device. **Still left for the Larger Text label:** Home,
    Settings, org chart, draft and deck-builder text (they sit in the layout, so they need
    their own overflow handling), then a 200% pass through every common task.
+24. **Rename: "Quarterly Business Reviews", not "Reports" (user request 2026-09-28) — NOT
+   STARTED.** "That's the QBR I was aiming for." Every player-facing "Quarterly Business Reports"
+   becomes "Quarterly Business Reviews": Home's title bar ("QBR — Quarterly Business Reports"),
+   `store/app-store-connect.md` (name / subtitle / description), the privacy policy, and this
+   file's pitch. Check the one-year window title ("QBR.xls — Q1 Review" already fits) and the
+   store screenshots (re-render Home). A copy change; no rules or bars move.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

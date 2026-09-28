@@ -10,6 +10,7 @@ import {
   ladder,
   meetingDeck,
   orgOf,
+  orgUnlocked,
   currentMeeting,
   finishMeeting,
   leaveChart,
@@ -24,12 +25,15 @@ import { CardFace } from './CardFace.js';
 import * as feedback from './feedback.js';
 import { Game } from './Game.js';
 import { OrgChart, yourTitle } from './OrgChart.js';
+import { OrgPicker } from './OrgPicker.js';
 
 export interface RunResult {
   readonly promoted: boolean;
   /** Rungs beaten before the career ended (ladder(run).length = promoted). */
   readonly meetingsWon: number;
   readonly jokers: readonly string[];
+  /** The org this career climbed (ORGS id). */
+  readonly org: string;
 }
 
 export interface RunProps {
@@ -147,7 +151,7 @@ export function Run({ seed, stake = 1, org = 'finance', daily = false, deck, onE
             <button
               className="btn primary"
               data-run-home
-              onClick={() => onRunEnd({ promoted: won, meetingsWon: beaten, jokers: run.jokers })}
+              onClick={() => onRunEnd({ promoted: won, meetingsWon: beaten, jokers: run.jokers, org: run.org })}
             >
               Back to home
             </button>
@@ -159,6 +163,7 @@ export function Run({ seed, stake = 1, org = 'finance', daily = false, deck, onE
 
   if (run.status === 'chart') {
     const next = currentMeeting(run);
+    const orgOpen = orgUnlocked(run.org, progress);
     const fresh = run.meeting === 0;
     return (
       <div className="app home" data-chart>
@@ -178,14 +183,22 @@ export function Run({ seed, stake = 1, org = 'finance', daily = false, deck, onE
                 ? 'Day one. Climb the org chart one meeting at a time — lose once and the career ends.'
                 : `Promoted to ${yourTitle(run.meeting)}. Next up: ${next.role.replace(/^The /, 'the ')}.`}
             </p>
-            <OrgChart run={run} beaten={run.meeting} {...(fresh ? {} : { justBeat: run.meeting - 1 })} />
+            {/* Choose the org on the opening chart; browsing redraws the whole tree. */}
+            {fresh && !daily && (
+              <OrgPicker
+                org={run.org}
+                progress={progress}
+                onOrg={(id) => setRun(newRun(seed, stake, { firstCareer: progress.careers === 0, org: id }))}
+              />
+            )}
+            <OrgChart run={run} beaten={run.meeting} progress={progress} {...(fresh ? {} : { justBeat: run.meeting - 1 })} />
             {fresh && run.offer.length === 0 && run.jokers.length > 0 && (
               <p className="starter-joker" data-starter-joker>
                 Your desk came with a <b>{JOKERS[run.jokers[0]!]!.name}</b>: {JOKERS[run.jokers[0]!]!.blurb.toLowerCase()}.
                 You pick more desk upgrades after your first win.
               </p>
             )}
-            {fresh && onEditDeck && (
+            {fresh && onEditDeck && orgOpen && (
               <button className="btn" data-chart-deck onClick={onEditDeck}>
                 Your deck — tailor it to {(ladder(run).find((m) => m.boss === 'drawn') ?? ladder(run)[3]!).role.replace(/^The /, 'the ')}’s boss
               </button>
@@ -193,6 +206,7 @@ export function Run({ seed, stake = 1, org = 'finance', daily = false, deck, onE
             <button
               className="btn primary"
               data-chart-go
+              disabled={!orgOpen}
               onClick={() => {
                 if (fixedDeck === undefined) setFixedDeck(deck);
                 setRun((r) => leaveChart(r));

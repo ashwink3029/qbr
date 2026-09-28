@@ -1,4 +1,5 @@
-import { BOSSES, bossFor, ladder, type RunState } from '@qbr/shared';
+import { useLayoutEffect, useRef } from 'react';
+import { BOSSES, CARDS, ORGS, SPECIALS, bossFor, isUnlocked, ladder, orgUnlocked, type Progress, type RunState } from '@qbr/shared';
 import { AvatarImage } from './avatars.js';
 
 /** Your title after beating N rungs (N = run.meeting on the chart). */
@@ -20,6 +21,22 @@ function threat(run: RunState, i: number): string {
   return parts.join(' · ');
 }
 
+/** What beating rung `i` would newly unlock, in words — or null. Rung specials unlock by
+ *  the best rung reached in any org; promotion (the top rung) also opens the next org. */
+function unlockText(run: RunState, i: number, progress: Progress | undefined): string | null {
+  if (!progress) return null;
+  const cards = SPECIALS.filter(
+    (s) => s.unlock.kind === 'rung' && s.unlock.rungsBeaten === i + 1 && !isUnlocked(s, progress),
+  ).map((s) => CARDS[s.id]!.name.replace(/\u00AD/g, ''));
+  const parts = cards.length ? [`unlocks ${cards.join(', ')}`] : [];
+  if (i === ladder(run).length - 1) {
+    const k = ORGS.findIndex((o) => o.id === run.org);
+    const nextOrg = ORGS[k + 1];
+    if (nextOrg && !orgUnlocked(nextOrg.id, progress)) parts.push(`opens ${nextOrg.name}`);
+  }
+  return parts.length ? `Beat → ${parts.join(' · ')}` : null;
+}
+
 /**
  * The org chart: the ladder from the CEO (top) down to you (bottom). Rungs you
  * have beaten are ticked; the next one is highlighted with its meeting and what
@@ -31,6 +48,7 @@ export function OrgChart({
   beaten,
   justBeat,
   promoted = false,
+  progress,
 }: {
   run: RunState;
   beaten: number;
@@ -38,10 +56,18 @@ export function OrgChart({
   justBeat?: number;
   /** A promotion: your tile rises to the top of the chart. */
   promoted?: boolean;
+  /** When given, each rung says what beating it unlocks. */
+  progress?: Progress;
 }) {
   const rows = ladder(run).map((m, i) => ({ m, i })).reverse();
+  // On a short phone the tree scrolls: open it at the bottom — you and the rung you face —
+  // and again whenever the org changes; the rest of the climb is a scroll up.
+  const list = useRef<HTMLOListElement>(null);
+  useLayoutEffect(() => {
+    if (list.current) list.current.scrollTop = list.current.scrollHeight;
+  }, [run.org]);
   return (
-    <ol className="orgchart" data-orgchart aria-label="Org chart">
+    <ol className="orgchart" data-orgchart aria-label="Org chart" ref={list}>
       {rows.map(({ m, i }) => {
         const state = i < beaten ? 'beaten' : i === beaten ? 'next' : 'above';
         return (
@@ -61,6 +87,11 @@ export function OrgChart({
                 {state === 'beaten' ? `beaten in the ${m.name}` : state === 'next' ? `next: ${m.name}` : m.name}
               </small>
               {state !== 'beaten' && <small className="threat">{threat(run, i)}</small>}
+              {state !== 'beaten' && unlockText(run, i, progress) && (
+                <small className="unlock" data-unlock>
+                  {unlockText(run, i, progress)}
+                </small>
+              )}
             </span>
             {state === 'beaten' && (
               <span className="tick" aria-label="beaten">

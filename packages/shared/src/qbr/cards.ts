@@ -169,7 +169,7 @@ export interface Special {
 export const SPECIALS: readonly Special[] = [
   { id: 'coffeerun', replaces: 'memo', unlock: { kind: 'rung', rungsBeaten: 1 }, how: 'Beat the Intern', flavor: 'Everyone wants a latte. Everyone owes you one.' },
   { id: 'perfreview', replaces: 'slidedeck', unlock: { kind: 'rung', rungsBeaten: 2 }, how: 'Beat the Manager', flavor: 'Exceeds expectations. Barely fits the form.' },
-  { id: 'budgetcut', replaces: 'coldcall', unlock: { kind: 'rung', rungsBeaten: 3 }, how: 'Beat Finance', flavor: 'Their line item, your headcount.' },
+  { id: 'budgetcut', replaces: 'coldcall', unlock: { kind: 'rung', rungsBeaten: 3 }, how: 'Beat the Controller', flavor: 'Their line item, your headcount.' },
   { id: 'takeover', replaces: 'vision', unlock: { kind: 'rung', rungsBeaten: 4 }, how: 'Beat the VP', flavor: 'It was never really their department.' },
   { id: 'parachute', replaces: 'headcount', unlock: { kind: 'rung', rungsBeaten: 5 }, how: 'Get promoted (beat the CEO)', flavor: 'Land softly. Land expensively.' },
   { id: 'gossip', replaces: 'standup', unlock: { kind: 'careers', count: 3 }, how: 'Finish 3 careers', flavor: 'Heard it from someone in R&D.' },

@@ -9,7 +9,6 @@ import {
   unlockedCards,
   type Player,
   type QuarterResult,
-  orgUnlocked,
 } from '@qbr/shared';
 import { loadDeck, saveDeck } from './deck.js';
 import { CoworkerView } from './CoworkerView.js';
@@ -44,8 +43,6 @@ interface Session {
   readonly deck: readonly string[];
   /** A career's stake (1 = Standard); fixed when it starts. */
   readonly stake: number;
-  /** A career's org (ORGS id); fixed when it starts. */
-  readonly org?: string;
   /** The daily career's day (`YYYY-MM-DD`), when this career is the daily. */
   readonly daily?: string;
 }
@@ -98,9 +95,6 @@ export function App({
   const maxStake = Math.min(STAKES.length, record.stakeCleared + 1);
   const [stake, setStake] = useState(1);
   const chosenStake = Math.min(stake, maxStake);
-  // Orgs (item 15): which org the next career climbs. Locked ones can be browsed, not started.
-  const [org, setOrg] = useState('finance');
-  const orgOpen = orgUnlocked(org, progressOf(record));
 
   const start = (kind: Session['kind']) => {
     setSession((s) => ({
@@ -108,7 +102,6 @@ export function App({
       id: (s?.id ?? 0) + 1,
       deck: resolveDeck(builtDeck, progressOf(record)),
       stake: kind === 'run' ? chosenStake : 1,
-      org: kind === 'run' && orgOpen ? org : 'finance',
     }));
     setScreen('play');
   };
@@ -141,7 +134,7 @@ export function App({
   const yearEnded = (winner: Player | null, results: readonly QuarterResult[]) =>
     finish(recordYear(record, winner, results));
   const runEnded = (r: RunResult) => {
-    const next = recordRun(record, r.promoted, r.meetingsWon, session?.stake ?? 1, session?.org ?? 'finance');
+    const next = recordRun(record, r.promoted, r.meetingsWon, session?.stake ?? 1, r.org);
     finish(session?.daily ? recordDailyEnd(next, session.daily, r.meetingsWon, r.promoted) : next);
   };
 
@@ -168,8 +161,6 @@ export function App({
           stake={chosenStake}
           maxStake={maxStake}
           onStake={setStake}
-          org={org}
-          onOrg={setOrg}
         />
       )}
       {screen === 'deck' && (
@@ -212,7 +203,6 @@ export function App({
               seed={session.daily ? dailySeed(session.daily) : sessionSeed(session.id)}
               deck={session.daily ? session.deck : resolveDeck(builtDeck, progressOf(record))}
               stake={session.stake}
-              org={session.org ?? 'finance'}
               daily={session.daily !== undefined}
               {...(session.daily || unlockedCards(progressOf(record)).length === 0
                 ? {}

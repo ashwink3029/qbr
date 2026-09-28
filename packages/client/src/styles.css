@@ -523,6 +523,10 @@
 
 /* ── Org chart: CEO at the top, you at the bottom ─────────────────────── */
 .chart-window { max-width: 380px; }
+/* The org tree scrolls inside the window; the org picker above it and the start button
+   below stay on screen (item 15: five rungs + unlock lines outgrew an iPhone SE). */
+.chart-window .start-body { flex: 1 1 auto; min-height: 0; }
+.chart-window .orgchart { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
 /* First career: the Coffee Mug that replaces the closet, as a desk note. */
 .starter-joker {
   margin: 6px 0; padding: 6px 8px; font-size: 13px; line-height: 1.35;
@@ -855,3 +859,6 @@
 
 /* The org picker (item 15): a locked org is browsable but greyed. */
 .org-picker.locked .stake-text { color: var(--lo); }
+
+/* What beating a rung unlocks (item 15, the org tree). */
+.rung-text .unlock { color: #8a5a00; font-weight: 700; }
