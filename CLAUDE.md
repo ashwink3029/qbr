@@ -783,8 +783,8 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    choice, but a tuned deck still beats the starter-deck ladder ~84%. Counterweight options:
    VP/CEO or stakes play built decks; or measure "the ceiling" against a strong reference deck
    rather than the starter.
-14. **Replace stars with caps on the existing currencies (user request 2026-09-27) — NOT
-   STARTED.** User tried the ★ ceiling on a real build: "too much cognitive load". Ask: remove
+14. **Replace stars with caps on the existing currencies (user request 2026-09-27) — MEASURED;
+   awaiting a user decision (currency caps fail Q2).** User tried the ★ ceiling on a real build: "too much cognitive load". Ask: remove
    stars entirely and cap decks on things the player already reads on every card — a limit on
    **total card strength** (sum of values) and on **aggregate dollars** (sum of costs, $=1,
    $$=2, $$$=3). Notes for when it is picked up: supersedes item 13's `STARS` / `STAR_CAP`
@@ -795,6 +795,82 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    lesson), measure both caps' levels with `collectionbars.ts`, and make sure the starter
    deck and the default deck are legal. Keep the rendering as simple as the ask: two meters
    the card faces already explain.
+   **Measured (/explore, 2026-09-27).** Bars pre-registered before the first run: Q1 starter
+   + every default deck legal; **Q2 best buildable deck <= 84.0%** (the star cap's result the
+   user accepted); Q3 best >= default + 3pp. `collectionbars.ts` gained `VCAP` (most total
+   value), `DCAP` (most total $) and uses `FLOOR` (least total $); any of them replaces the
+   star cap. Starter deck = value 41, $26. Hill climbs at 300 seeds, re-measured at 2000:
+   | rule | climb found | default |
+   |---|---|---|
+   | stars <= 49 (control) | 84.0% (reproduces) | 68.8% |
+   | $ <= 26 | 88.4% (= uncapped) | 71.9% |
+   | value <= 46 / 44 / 43 / 42 / 41 | 88.4 / 85.4 / 85.4 / 81.7 / 81.7% | 66-71% |
+   | $ >= 26 | 80.0% | 69.0% |
+   | value <= 44, $ >= 25 | 80.7% | 70.0% |
+   | value <= 41 / 42 / 43, $ >= 26 | 85.1 / 84.6 / 88.2% | 58-63% |
+   **Honest read: single climbs are lower bounds, so compare the best KNOWN legal deck.** The
+   88.2% deck (cc coffeerun corneroffice deadline gossip hackathon highfive memo pip pivot
+   stakeholder x2 summerintern teambuilding vision) has **value 41, $26, exactly the starter's
+   totals**, so it is legal under EVERY currency rule that keeps the starter legal. Best known:
+   **no cap 88.4%, any currency cap 88.2%, stars 84.0%. Q2 FAILS for every currency rule;**
+   Q1/Q3 pass. Why: item 13's finding (1) again: power is shape and cost, not printed value,
+   so a deck can match the starter's totals and still be far stronger. A $ MAXIMUM never bites
+   (strong decks are cheap); a $ minimum or value cap only bites at the starter's own totals.
+   **Options for the user:** (a) ship the currency caps anyway: simple, but nearly no ceiling
+   (88.2%); (b) drop the ceiling entirely, the simplest UI, 88.4%, and counter strong decks
+   another way (item 16's takeover change moves the whole meta; or VP/CEO play built decks);
+   (c) keep stars (84.0%) with a lighter presentation.
+15. **Orgs: choose which org to tackle, most locked at first (user request 2026-09-27) — NOT
+   STARTED.** Ask: the app should feel more EXPANSIVE to a new player. The CEO may be hard to
+   beat, but it doesn't look like much is locked away. Borrow Balatro's deck choice: before a
+   career you pick an **org** to climb, most shown locked from day one. The first is
+   **Finance**, then **Tech**, then **HR**, and so on. Each org brings more diverse characters,
+   more places to unlock cards, and a sense of a bigger universe.
+   Notes for when it is picked up:
+   - **Shape.** An org = a ladder of rungs with its own cast (names, 16x16 avatars
+     — placeholder-in-code per the IP guardrails), its own VP boss pool, and at least one rule
+     twist of its own (like a Balatro deck's), so orgs differ in play, not only in skin.
+     Clearing an org (promotion) unlocks the next. Locked orgs show greyed on the picker with
+     how to open them, like locked cards in the builder (item 13).
+   - **Naming clash.** Today's ladder has a rung called "Finance" (Budget review), and Finance
+     is also the default opponent's name in one-year games. If Finance becomes the first org,
+     rename that rung or make the org's cast Finance-themed throughout.
+   - **Relation to existing systems.** Stakes (10d) are Balatro's per-deck stakes, so decide
+     whether stakes are tracked per org. Collectible unlocks (item 13) could move partly onto
+     org milestones ("promoted in Tech"), which gives each org its own card rewards. The daily
+     career (10h) would pick an org per day.
+   - **Keep the first session fast (10f).** A brand-new player must still go Home -> chart ->
+     Intern in two taps. With one org open, skip the picker (or pre-select Finance) until a
+     second org unlocks.
+   - **Bars.** Each org needs the ladder bars re-run for its own cast and twist (L1 difficulty
+     climbs, L2 promotion in 10-40%, L3 first rung >= 75%), and later orgs should be harder
+     but still winnable, like stakes S1/S2.
+16. **Takeover only from special "purple" cells (user request 2026-09-27) — NOT STARTED.**
+   Ask: an ordinary card shouldn't overpower an adjacent square that holds an enemy card. A
+   card adds value to its own cell (blue on the card's shape glyph) and gives strength to the
+   cells it reaches (green). Flipping a filled enemy square should be something only
+   **special cards** do, and the cells of their shape that can flip are drawn in **purple**.
+   Notes for when it is picked up:
+   - **Today's rule.** Matches run `takeover: true`: ANY spread that reaches an enemy card of
+     strictly lower value flips it (`spreadEffects` in `shared/src/qbr/game.ts`, the `flip`
+     list; previewed as orange stripes, animated as a card turning over, with the `takeover`
+     Bindy tip and a swish cue). The change: ordinary (green) reach claims empty cells only,
+     and a card flips only through reach cells marked as takeover (purple) in its shape. That
+     is probably a per-reach-cell flag on `CardDef.spread`, so one card can mix green and
+     purple cells. Decide whether a purple flip still needs "strictly lower value".
+   - **Content.** Hostile Takeover (special) is the obvious first purple card. A few
+     collectibles (item 13) could become the takeover family, which gives the builder a clear
+     archetype. Price them by the house rule: cheap reach is king, so a cheap purple card can
+     be broken.
+   - **Client.** Purple cells on `CardFace` glyphs (hand, builder, unlocks). The flip preview
+     and fx stay, but only fire for purple reach. Update `spreadWords` / `cardLabel` ("takes
+     over 1 ahead"), the `takeover` tip text, and keep a non-colour cue for purple cells
+     (e.g. a dot or ring) per the colour-blind rule.
+   - **Bars.** This is a core-rules change that both seats feel. Re-run everything: matchbars
+     M1-M4 (takeover was worth ~8pp of headroom in the single-quarter sweep, so check M3),
+     runbars, stakebars, firstcareer, unlockbars, collectionbars (and item 14's caps), then
+     re-vet the daily. Mirror (`mirror.ts`) and coworker lockstep tests must still pass.
+     Bosses that touch takeovers (Change Freeze) need a look.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

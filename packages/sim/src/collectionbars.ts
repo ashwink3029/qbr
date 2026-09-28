@@ -58,17 +58,30 @@ for (const [id, p] of Object.entries(JSON.parse(process.env.PATCH ?? '{}') as Re
   Object.assign(CARDS[id] as object, p);
 // Minimum total $ cost of a built deck (0 = no floor), for trying the budget rule.
 const FLOOR = Number(process.env.FLOOR ?? 0);
+const deckCost = (d: readonly string[]): number => d.reduce((s, id) => s + CARDS[id]!.cost, 0);
 // The star ceiling is on unless NOCAP=1 (to reproduce the uncapped C3 run).
 const CAPPED = process.env.NOCAP !== '1';
 // Try another cap without editing collection.ts: CAP=48.
 const CAP = Number(process.env.CAP ?? STAR_CAP);
 const VETERAN = { bestRung: 5, careers: 999, stakeCleared: 99, promotions: 999, meetings: 9999 };
+// Backlog item 14 exploration: caps in the currencies on the card faces instead of stars.
+// VCAP = most total value, DCAP = most total $, FLOOR (above) = least total $. Setting any
+// of them replaces the star cap.
+const VCAP = Number(process.env.VCAP ?? 999);
+const DCAP = Number(process.env.DCAP ?? 999);
+const CURRENCY = process.env.VCAP !== undefined || process.env.DCAP !== undefined || FLOOR > 0;
+const deckValue = (d: readonly string[]): number => d.reduce((s, id) => s + CARDS[id]!.value, 0);
+const fitsCurrency = (d: readonly string[]): boolean => deckValue(d) <= VCAP && deckCost(d) <= DCAP && deckCost(d) >= FLOOR;
 // The default deck a veteran gets: every special that fits under the cap.
-const DEFAULT = CAPPED ? defaultDeck(VETERAN, CAP) : deckWith(SPECIALS.map((s) => s.id));
+function currencyDefault(): string[] {
+  let taken: string[] = [];
+  for (const sp of SPECIALS) if (fitsCurrency(deckWith([...taken, sp.id]))) taken = [...taken, sp.id];
+  return deckWith(taken);
+}
+const DEFAULT = CURRENCY ? currencyDefault() : CAPPED ? defaultDeck(VETERAN, CAP) : deckWith(SPECIALS.map((s) => s.id));
 // Exploration: cap the $ cards / floor the $$$ cards in a built deck.
 const MAXCHEAP = Number(process.env.MAXCHEAP ?? 99);
 const MINSENIOR = Number(process.env.MINSENIOR ?? 0);
-const deckCost = (d: readonly string[]): number => d.reduce((s, id) => s + CARDS[id]!.cost, 0);
 
 function share(player: readonly string[], n: number, mods: Mods = NO_MODS): number {
   const deck = { player, opponent: STARTER_DECK };
@@ -129,7 +142,7 @@ if (ONLY !== 'c1c2') {
         if (deckCost(deck) - CARDS[out]!.cost + CARDS[inn]!.cost < FLOOR) continue;
         const d = deck.slice();
         d[d.indexOf(out)] = inn;
-        if (CAPPED && deckStars(d) > CAP) continue;
+        if (CURRENCY ? !fitsCurrency(d) : CAPPED && deckStars(d) > CAP) continue;
         if (d.filter((id) => CARDS[id]!.cost === 1).length > MAXCHEAP) continue;
         if (d.filter((id) => CARDS[id]!.cost === 3).length < MINSENIOR) continue;
         const v = share(d, SCREEN);
@@ -145,8 +158,10 @@ if (ONLY !== 'c1c2') {
   const allIn = share(DEFAULT, N);
   c3 = final <= 0.75;
   p2 = final >= allIn + 0.03;
-  console.log(`\n  best found (${deckStars(deck)}★ / cap ${CAP}${CAPPED ? '' : ', cap OFF'}): ${[...deck].sort().join(' ')}`);
-  console.log(`  best found at ${N}: ${pct(final)}   (default deck ${pct(allIn)}, ${deckStars(DEFAULT)}★)`);
+  const tot = (d: readonly string[]) => `${deckStars(d)}★ v${deckValue(d)} $${deckCost(d)}`;
+  const rule = CURRENCY ? `value<=${VCAP} $<=${DCAP} $>=${FLOOR}` : `cap ${CAP}${CAPPED ? '' : ', cap OFF'}`;
+  console.log(`\n  best found (${tot(deck)} / ${rule}): ${[...deck].sort().join(' ')}`);
+  console.log(`  best found at ${N}: ${pct(final)}   (default deck ${pct(allIn)}, ${tot(DEFAULT)})`);
   const cheapest = [...owned.entries()]
     .flatMap(([id, n]) => Array<string>(n).fill(id))
     .sort((a, b) => CARDS[a]!.cost - CARDS[b]!.cost || CARDS[b]!.value - CARDS[a]!.value)
