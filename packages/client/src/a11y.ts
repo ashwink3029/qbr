@@ -65,6 +65,12 @@ export function cellLabel(
 }
 
 export function laneLabel(lane: number, you: number, them: number, who: string): string {
-  const lead = you > them ? 'you lead' : them > you ? `${who} leads` : 'tied';
-  return `${UNITS[lane]}: you ${you}, ${who} ${them}, ${lead}`;
+  // Only a lane's leader banks it; say so, so the trailing total isn't read as points.
+  const what =
+    you > them
+      ? `you lead, banking ${you}; ${who} ${them}, banks nothing`
+      : them > you
+        ? `${who} leads, banking ${them}; you ${you}, bank nothing`
+        : `tied ${you} to ${them}, nobody banks`;
+  return `${UNITS[lane]}: ${what}`;
 }

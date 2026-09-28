@@ -70,7 +70,7 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
   if (ctx.humanTurn && ctx.myCardsOnBoard >= 1 && !ctx.selected) {
     candidates.push({
       id: 'lanes',
-      text: 'Nice — the cells your card reached are yours now. Each column is a lane: when the quarter closes, each lane’s leader banks its total.',
+      text: 'Nice — the cells your card reached are yours now. Each column is a lane: when the quarter closes, each lane’s leader banks its total — only the leader scores the lane.',
       mood: 'talk',
     });
   }

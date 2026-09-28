@@ -216,8 +216,6 @@
 }
 .cell[data-owner='you']::before { bottom: 2px; border-bottom: 6px solid var(--mine-ink); }
 .cell[data-owner='them']::before { top: 2px; border-top: 6px solid var(--theirs-ink); }
-.sum.win .you::after { content: ' ▲'; font-size: 9px; }
-.sum.lose .them::after { content: ' ▼'; font-size: 9px; }
 
 .cell.mine { background: var(--mine); color: var(--mine-ink); }
 .cell.theirs { background: var(--theirs); color: var(--theirs-ink); }
@@ -243,19 +241,28 @@
 
 .sum {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   font-family: ui-monospace, Menlo, monospace;
   font-size: 15px;
   border-right: 1px solid #d4d4d4;
   border-top: 2px double var(--ink);
+  padding-top: 2px;
 }
-.sum .vs { font-size: 10px; color: var(--lo); }
-.sum .you { color: var(--mine-ink); }
-.sum .them { color: var(--theirs-ink); }
-.sum.win { background: var(--mine); font-weight: 700; }
-.sum.lose { background: var(--theirs); font-weight: 700; }
+/* A lane is banked only by its leader: the banked value big, in the leader's SOLID
+   colour with white ink; the trailing total small and struck (it scores nothing);
+   a tie stays plain grey. The arrows repeat the owner without colour. */
+.sum .bank { font-size: 20px; font-weight: 700; line-height: 1.1; }
+.sum .lost { font-size: 11px; opacity: 0.75; }
+.sum.win { background: var(--mine-ink); color: #fff; }
+.sum.lose { background: var(--theirs-ink); color: #fff; }
+.sum.win .bank::after { content: ' ▲'; font-size: 10px; }
+.sum.lose .bank::after { content: ' ▼'; font-size: 10px; }
+.sum.tie { background: #ececec; color: var(--lo); align-items: center; }
+.sum .even { font-size: 13px; }
+.rev .you { color: var(--mine-ink); }
+.rev .them { color: var(--theirs-ink); }
 .hd.sumlabel { border-top: 2px double var(--ink); font-size: 11px; }
 
 /* A match hand holds 8-10 cards: cards keep a readable minimum width and the

@@ -60,9 +60,9 @@ describe('the board without colour', () => {
     expect(grey.getAttribute('aria-label')).toMatch(/ — can't play: needs a \$\$+ cell$/);
     const sums = Array.from(document.querySelectorAll<HTMLElement>('[data-lane-total]'));
     expect(sums.map((s) => s.getAttribute('aria-label'))).toEqual([
-      'Sales: you 0, Finance 0, tied',
-      'Ops: you 0, Finance 0, tied',
-      'R&D: you 0, Finance 0, tied',
+      'Sales: tied 0 to 0, nobody banks',
+      'Ops: tied 0 to 0, nobody banks',
+      'R&D: tied 0 to 0, nobody banks',
     ]);
   });
 });

@@ -527,22 +527,40 @@ export function Game({
             }),
           ])}
           <div className="hd num sumlabel">=SUM</div>
-          {rows.map((row, sc) => (
-            <div
-              key={`s${sc}`}
-              // While a quarter's result shows, the lanes that were banked pulse.
-              className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : ''} ${
-                summary && row.winner !== null ? 'banked' : ''
-              }`}
-              style={summary ? { animationDelay: `${sc * 120}ms` } : undefined}
-              data-lane-total={sc}
-              aria-label={laneLabel(sc, row.totals[0], row.totals[1], who)}
-            >
-              <span className="you">{row.totals[0]}</span>
-              <span className="vs">vs</span>
-              <span className="them">{row.totals[1]}</span>
-            </div>
-          ))}
+          {rows.map((row, sc) => {
+            // Only the leader banks a lane: show that value big in the leader's solid
+            // colour, the trailing total small and struck through; a tie is plain.
+            const [you, them] = row.totals;
+            const lead = row.winner === 0 ? 'you' : row.winner === 1 ? 'them' : 'none';
+            return (
+              <div
+                key={`s${sc}`}
+                // While a quarter's result shows, the lanes that were banked pulse.
+                className={`sum ${row.winner === 0 ? 'win' : row.winner === 1 ? 'lose' : 'tie'} ${
+                  summary && row.winner !== null ? 'banked' : ''
+                }`}
+                style={summary ? { animationDelay: `${sc * 120}ms` } : undefined}
+                data-lane-total={sc}
+                data-lead={lead}
+                aria-label={laneLabel(sc, you, them, who)}
+              >
+                {row.winner === null ? (
+                  <span className="even" aria-hidden>
+                    {you === 0 ? '–' : `${you} = ${them}`}
+                  </span>
+                ) : (
+                  <>
+                    <b className="bank" data-bank aria-hidden>
+                      {row.winner === 0 ? you : them}
+                    </b>
+                    <s className="lost" data-lost aria-hidden>
+                      {row.winner === 0 ? them : you}
+                    </s>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="hand">
@@ -582,7 +600,7 @@ export function Game({
           </button>
           <span className="rev">
             <span>
-              <b data-mine>{mine}</b> you · <b>{theirs}</b> {who}
+              Q{qNo}: <b className="you" data-mine>{mine}</b>–<b className="them" data-theirs>{theirs}</b>
             </span>
             <span className="you-lives">
               <Lives n={match.lives[0]} max={maxLives} label="You" />
