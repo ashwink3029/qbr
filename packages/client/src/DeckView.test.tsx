@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render } from '@testing-library/react';
-import { STARTER_DECK, STAR_CAP, UNLOCKABLES, deckStars, defaultDeck, playerDeck, stars } from '@qbr/shared';
+import { STARTER_DECK, UNLOCKABLES, defaultDeck, playerDeck } from '@qbr/shared';
 import { App } from './App.js';
 import { DeckView } from './DeckView.js';
 
@@ -78,39 +78,27 @@ describe('deck builder: building', () => {
   });
 });
 
-describe('deck builder: the star limit', () => {
+describe('deck builder: no power ceiling (user decision 2026-09-27)', () => {
   const veteran = { bestRung: 5, careers: 40, stakeCleared: 4, promotions: 10, meetings: 100 };
 
-  it('shows every card’s stars and the deck’s total against the limit', () => {
+  it('shows no star ratings, meter or star tip — only the 15-card rule', () => {
     render(<DeckView progress={{ bestRung: 0, careers: 0 }} saved={null} onSave={() => {}} onClose={() => {}} />);
-    expect(q('[data-star-meter]')!.textContent).toMatch(new RegExp(`${deckStars(STARTER_DECK)}\\s*/\\s*${STAR_CAP}`));
-    expect(q('[data-deck-card="memo"] [data-stars]')!.getAttribute('data-stars')).toBe(String(stars('memo')));
-    expect(q('[data-locked-card="takeover"] [data-stars]')).toBeTruthy(); // locked cards show theirs too
+    expect(q('[data-star-meter]')).toBeNull();
+    expect(q('[data-stars]')).toBeNull();
+    expect(q('[data-tip]')).toBeNull();
+    expect(q('[data-deck-view]')!.textContent).not.toMatch(/★/);
   });
 
-  it('a card that would break the limit is refused, with the reason', () => {
+  it('any owned cards make a legal deck: swapping a weak card for a strong one is saved', () => {
     const saves: (string[] | null)[] = [];
     render(<DeckView progress={veteran} saved={null} onSave={(d) => saves.push(d)} onClose={() => {}} />);
-    // Take out the cheapest-rated card, then try to add the strongest until over the cap.
-    const low = [...new Set(defaultDeck(veteran))].sort((a, b) => stars(a) - stars(b))[0]!;
-    fireEvent.click(q(`[data-deck-card="${low}"]`)!);
-    const room = STAR_CAP - deckStars(defaultDeck(veteran)) + stars(low);
-    const tooBig = UNLOCKABLES.map((u) => u.id).find((id) => stars(id) > room && !defaultDeck(veteran).includes(id));
-    if (!tooBig) return; // every card fits: nothing to refuse
-    fireEvent.click(q(`[data-coll-card="${tooBig}"]`)!);
-    expect(q('[data-deck-view] .titlebar')!.textContent).toMatch(/14\/15/);
-    expect(q('[data-deck-status]')!.textContent).toMatch(/★/);
-    expect(saves).toEqual([]);
-  });
-
-  it('Bindy explains stars the first time, once', () => {
-    render(<DeckView progress={{ bestRung: 0, careers: 0 }} saved={null} onSave={() => {}} onClose={() => {}} />);
-    expect(q('[data-tip]')!.textContent).toMatch(/★/);
-    fireEvent.click(q('[data-tip]')!);
-    expect(q('[data-tip]')).toBeNull();
-    cleanup();
-    render(<DeckView progress={{ bestRung: 0, careers: 0 }} saved={null} onSave={() => {}} onClose={() => {}} />);
-    expect(q('[data-tip]')).toBeNull();
+    const deck = defaultDeck(veteran);
+    fireEvent.click(q('[data-deck-card="offsite"]')!);
+    expect(deck).not.toContain('ooo');
+    const strong = 'ooo';
+    fireEvent.click(q(`[data-coll-card="${strong}"]`)!);
+    expect(saves.at(-1)).toContain('ooo');
+    expect(saves.at(-1)).toHaveLength(15);
   });
 });
 

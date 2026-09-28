@@ -293,8 +293,7 @@ Player-facing words: a full run is a **career** ("Start career", "Resume career"
 "Resume year", "Years NW · NL"). Code keeps the older names — `run.ts`,
 `RunState`, `Run.tsx`, `record.runs`, session kind `'run'` / `'quick'` — so a
 "run" in code is a "career" on screen, and a "quick year" in code is "one year".
-**Stars (2026-09-27):** a card's ★ rating is its measured power; a deck may hold at most
-`STAR_CAP` ★ — the player-facing power ceiling.
+**Stars:** retired 2026-09-27 (item 14). There is no deck power ceiling and no ★ on screen.
 **Joker draft = "desk upgrade" on screen (user decision 2026-09-27):** the chart's button
 reads "Pick a desk upgrade" and the draft screen is titled "Desk upgrade — before the …".
 "Stop by the supply closet" was too cute to read as the action that starts the career.
@@ -744,7 +743,7 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    **while it fits the cap**), `resolveDeck`. Client `DeckView` is a builder (tap out / tap in;
    saved only when full and legal; locked cards shown greyed with how + progress); `deck.ts`
    (`qbr.deck.v1`) replaced the bench.
-   **The ceiling = ★ stars.** Every card has a 1-5★ rating (`STARS`) and a deck holds at most
+   **The ceiling = ★ stars — RETIRED 2026-09-27 (item 14: no ceiling now).** Every card has a 1-5★ rating (`STARS`) and a deck holds at most
    `STAR_CAP` = 49★ (starter 48★). Shown on every card in the builder, a "★ n / 49" meter with
    a standing one-line rule, a refusal naming the numbers ("Keynote is 1★ — that makes 50★,
    over the 49★ limit…"), and a one-time Bindy tip. Ratings are MEASURED: `sim/src/starfit.ts`
@@ -783,8 +782,21 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    choice, but a tuned deck still beats the starter-deck ladder ~84%. Counterweight options:
    VP/CEO or stakes play built decks; or measure "the ceiling" against a strong reference deck
    rather than the starter.
-14. **Replace stars with caps on the existing currencies (user request 2026-09-27) — MEASURED;
-   awaiting a user decision (currency caps fail Q2).** User tried the ★ ceiling on a real build: "too much cognitive load". Ask: remove
+14. ~~Replace stars with caps on the existing currencies (user request 2026-09-27)~~ **DONE
+   2026-09-27 as "no ceiling" (user decision after the measurement below: drop the limit).**
+   Stars are gone: `STARS` / `STAR_CAP` / `stars` / `deckStars` removed from shared, the star
+   check out of `deckProblem`, and `defaultDeck(p)` is now `playerDeck(p)` (starter + every
+   unlocked special, the deck U3 measured at 71.9%). Client: no ★ on `CardFace`, no star meter,
+   hint, refusal or `stars` Bindy tip in `DeckView` (only "your deck is full" remains). Sim:
+   `starfit.ts` deleted; `collectionbars.ts` keeps VCAP / DCAP / FLOOR as exploration flags,
+   default no cap. Tests first (shared red then green: "no power ceiling: the strongest
+   measured build is legal", "default deck = starter + every unlocked special"; DeckView
+   "shows no star ratings…", "any owned cards make a legal deck"; **not confirmed red:** the
+   two DeckView tests, since the shared failure stopped the run first). Verified at 375x667
+   and 402x874: no ★ on the page, no tip, no sideways scroll. Consequence, accepted: the best
+   known build is 88.4% vs the starter-deck ladder (was 84.0% with stars). The counterweight
+   is still open (item 16's takeover change moves the meta; or VP/CEO play built decks).
+   Original ask and measurement follow. User tried the ★ ceiling on a real build: "too much cognitive load". Ask: remove
    stars entirely and cap decks on things the player already reads on every card — a limit on
    **total card strength** (sum of values) and on **aggregate dollars** (sum of costs, $=1,
    $$=2, $$$=3). Notes for when it is picked up: supersedes item 13's `STARS` / `STAR_CAP`

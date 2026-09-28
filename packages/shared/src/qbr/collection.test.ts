@@ -1,16 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { CARDS, SPECIALS, STARTER_DECK, deckWith } from './cards.js';
+import { CARDS, SPECIALS, STARTER_DECK, deckWith, playerDeck } from './cards.js';
+import * as shared from '../index.js';
 import {
   COLLECTIBLES,
-  STAR_CAP,
   UNLOCKABLES,
   collectionOf,
   defaultDeck,
-  deckStars,
   deckProblem,
   newlyUnlockedCards,
   resolveDeck,
-  stars,
   unlockProgress,
   unlockedCards,
 } from './collection.js';
@@ -66,39 +64,23 @@ describe('the card collection', () => {
     expect(deckProblem(swap, veteran)).toBeNull();
   });
 
-  it('every card has a 1-5 star rating; the starter deck and every default deck fit the cap', () => {
-    for (const id of [...new Set(STARTER_DECK), ...UNLOCKABLES.map((u) => u.id)]) {
-      expect(stars(id)).toBeGreaterThanOrEqual(1);
-      expect(stars(id)).toBeLessThanOrEqual(5);
-    }
-    expect(deckStars(STARTER_DECK)).toBeLessThanOrEqual(STAR_CAP);
+  it('there is no power ceiling (user decision 2026-09-27): the strongest measured build is legal', () => {
+    // The best deck the item-14 climbs found (88.2% vs the starter-deck ladder).
+    const strongest = ['cc', 'coffeerun', 'corneroffice', 'deadline', 'gossip', 'hackathon', 'highfive', 'memo', 'pip', 'pivot', 'stakeholder', 'stakeholder', 'summerintern', 'teambuilding', 'vision'];
+    expect(deckProblem(strongest, veteran)).toBeNull();
+    expect('STAR_CAP' in shared).toBe(false);
+    expect('stars' in shared).toBe(false);
+  });
+
+  it('the default deck is the starter deck with every unlocked special swapped in', () => {
+    expect(defaultDeck(veteran)).toEqual(deckWith(SPECIALS.map((s) => s.id)));
     for (let rung = 0; rung <= 5; rung++)
       for (const careers of [0, 3, 40])
         for (const stakeCleared of [0, 2, 3, 4]) {
-          const d = defaultDeck({ bestRung: rung, careers, stakeCleared });
-          expect(deckStars(d)).toBeLessThanOrEqual(STAR_CAP);
-          expect(deckProblem(d, veteran)).toBeNull();
+          const p = { bestRung: rung, careers, stakeCleared };
+          expect(defaultDeck(p)).toEqual(playerDeck(p));
+          expect(deckProblem(defaultDeck(p), veteran)).toBeNull();
         }
-  });
-
-  it('the default deck takes specials in unlock order while they fit, and skips the rest', () => {
-    const d = defaultDeck(veteran);
-    const taken = SPECIALS.filter((s) => d.includes(s.id)).map((s) => s.id);
-    expect(taken.length).toBeGreaterThan(0);
-    expect(deckWith(taken)).toEqual(d);
-  });
-
-  it('a deck over the star cap is not a legal deck, and says so', () => {
-    // Swap the lowest-rated starter cards for the highest-rated collectibles until over.
-    const deck: string[] = [...STARTER_DECK];
-    const strong = [...UNLOCKABLES.map((u) => u.id)].sort((a, b) => stars(b) - stars(a));
-    for (const inn of strong) {
-      if (deckStars(deck) > STAR_CAP) break;
-      const out = [...deck].sort((a, b) => stars(a) - stars(b))[0]!;
-      deck[deck.indexOf(out)] = inn;
-    }
-    expect(deckStars(deck)).toBeGreaterThan(STAR_CAP);
-    expect(deckProblem(deck, veteran)).toMatch(/★/);
   });
 
   it('resolves the saved deck, else the default upgraded deck', () => {
