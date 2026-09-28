@@ -137,7 +137,7 @@ export const ORGS: readonly Org[] = [
       { role: 'The VP of Sales', initials: 'VPS', name: 'Deal desk', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
       { role: 'The CRO', initials: 'CRO', name: 'Sales kickoff', opponent: 'lookahead', boss: 'quota', edge: 1, homeBoost: 0 },
     ],
-    bosses: ['auditor', 'freeze'],
+    bosses: ['outreach', 'freeze'],
     opponentDeck: SALES_DECK,
   },
   {

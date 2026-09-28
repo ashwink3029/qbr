@@ -71,6 +71,7 @@ export const BOSSES: Readonly<Record<string, ModDef>> = {
   teamsync: { id: 'teamsync', name: 'Synergy Offsite', blurb: 'Their cards next to another of theirs are worth +1', glyph: 'SO' },
   scope: { id: 'scope', name: 'Scope Creep', blurb: 'Their spreads reach one cell further forward', glyph: 'SC' },
   redtape: { id: 'redtape', name: 'Red Tape', blurb: 'You can only place in your home row and the row in front', glyph: 'RT' },
+  outreach: { id: 'outreach', name: 'Cold Outreach', blurb: 'They start each quarter with the cell in front of each home claimed', glyph: 'OR' },
   politics: { id: 'politics', name: 'Office Politics', blurb: 'Every card they place lowers your cards in its lane by 2', glyph: 'OP' },
 };
 

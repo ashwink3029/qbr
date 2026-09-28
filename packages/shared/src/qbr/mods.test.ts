@@ -4,6 +4,7 @@ import {
   DEFAULT_RULES,
   blockedCells,
   canPlay,
+  freshBoard,
   cellValue,
   idx,
   newGame,
@@ -278,6 +279,15 @@ describe('new jokers and a boss (iteration 13)', () => {
     expect(cellValue(s, idx(1, 1))).toBe(2);
     expect(cellValue(s, idx(2, 1))).toBe(1);
     expect(cellValue(s, idx(1, 3))).toBe(1);
+  });
+
+  it('Cold Outreach (exec modifier, item 25): they start each quarter with the cell in front of each home claimed', () => {
+    const b = freshBoard(mods({ jokers: [], boss: 'outreach' }));
+    for (let r = 0; r < 3; r++) {
+      expect(b[idx(r, 3)]).toEqual({ owner: 1, budget: 1, card: null }); // claimed, empty, $
+      expect(b[idx(r, 1)]!.owner).toBeNull(); // yours are not
+    }
+    expect(freshBoard(NO_MODS)[idx(0, 3)]!.owner).toBeNull();
   });
 
   it('Label Maker (desk upgrade, item 25): your cards in your home row are worth +1', () => {

@@ -1144,7 +1144,7 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    | Budget Cuts | Your spreads add no $ to the cells they claim | spreadEffects budget | Finance |
    | Office Politics ✓ | Every card they place lowers your cards in its lane by 2 | spreadEffects weaken | HR (built) |
    | Synergy Offsite ✓ | Their cards next to another of theirs are worth +1 | cellValue | Marketing (built) |
-   | Cold Outreach | They start each quarter with the cell in front of each home claimed | freshBoard | Sales |
+   | Cold Outreach ✓ | They start each quarter with the cell in front of each home claimed | freshBoard | Sales (built) |
    | Tech Debt | Your $$$ cards can't be played in Q1 | canPlay | Tech |
    | Fine Print | Their purple reach also covers their diagonals | takeTargets (seat 1) | Legal |
    Rejected up front: anything face-down / hidden (information denial), "player draws fewer" (measured
@@ -1253,9 +1253,14 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    stakes S1/S2 (16.3 > 10.3 > 6.5 > 3.3%; S3 literal -> 0.163), first career F1/F2, orgbars
    O1/O2 (16.3 > 14.6 > 12.4 > 10.3 > 7.2 > 6.2% — **Tech->HR exactly 1.0pp, thin**; Marketing CMO
    2 $$ cells + Director 1; Legal's Senior Counsel 1 $$ cell — +1 card broke Legal's climb),
-   daily re-vetted (D1 17.5%, D2 100%, D3 340). Menu left: Performance Calibration, Budget Cuts,
-   Cold Outreach, Tech Debt, Fine Print; desk ideas Standing Desk, Noise-Cancelling Headphones,
-   Red-Eye Flight. **Standing lesson for new desk upgrades:** land them near the pool's average
+   daily re-vetted (D1 17.5%, D2 100%, D3 340). **Iteration 8 DONE:** **Cold Outreach** ("They
+   start each quarter with the cell in front of each home claimed"; `freshBoard` — the client
+   draws every quarter's board from it, so the pre-claimed cells show) replaces the Auditor in
+   Sales' VP pool (with Change Freeze). Every non-Finance org now draws at least one boss of its
+   own. **Bars (2000 seeds, never moved), first try, no re-tuning:** B1 PASS (−10.6pp); orgbars
+   O1 + O2 PASS, 16.3 > 14.6 > **13.3** > 10.3 > 7.2 > 6.2%. Test red first. Menu left:
+   Performance Calibration, Budget Cuts, Tech Debt, Fine Print; desk ideas Standing Desk,
+   Noise-Cancelling Headphones, Red-Eye Flight. **Standing lesson for new desk upgrades:** land them near the pool's average
    (+13..+19pp): above 70% breaks J2, and well below the average dilutes random drafts and
    drags every ladder, stake and org with it.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design

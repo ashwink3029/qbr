@@ -213,9 +213,11 @@ export function freshBoard(mods: Mods = NO_MODS): Cell[] {
   const cells: Cell[] = [];
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const owner: Player | null = c === 0 ? 0 : c === COLS - 1 ? 1 : null;
+      // Cold Outreach (an exec modifier): they start with the cell in front of each home claimed.
+      const outreach = mods.boss === 'outreach' && c === COLS - 2;
+      const owner: Player | null = c === 0 ? 0 : c === COLS - 1 || outreach ? 1 : null;
       const boosted =
-        (owner === 1 && ((r === 1 && mods.boss === 'legacy') || r < (mods.oppHomeBoost ?? 0))) ||
+        (owner === 1 && !outreach && ((r === 1 && mods.boss === 'legacy') || r < (mods.oppHomeBoost ?? 0))) ||
         // Ergonomic Chair (a joker): the player's Ops home starts at $$.
         (owner === 0 && r === 1 && hasJoker(mods, 'chair'));
       const budget = owner === null ? 0 : boosted ? 2 : 1;
