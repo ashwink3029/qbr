@@ -910,7 +910,9 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    through the real first career (Home -> chart -> Intern): 4 cards glow -> 3 cells -> 1 cell +
    badge -> placed, lanes tip, no window scroll. The badge was then moved from the cell's
    bottom edge (it covered the ▲ owner chevron) to the top; **not re-screenshotted after that
-   one-line CSS move, and not verified on the Simulator or a device.**
+   one-line CSS move, and not verified on a device.** **Simulator-verified 2026-09-27**
+   (iPhone SE 3rd gen, fresh install, `VITE_QBR_START=year`): the playable cards carry the
+   gold glow and Bindy shows the one short line, under the real status bar.
 18. ~~Tips point at what they're about~~ **DONE (/explore 2026-09-27; lever 3, follow-on to
    item 17).** Checked in item 17's new-player walkthrough: after the first card, Bindy's
    `lanes` tip was a 31-word paragraph of rules and pointed at nothing; `cost` was 26 words.
@@ -944,8 +946,10 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    the hand, so the long words got soft hyphens like `Stake\u00ADholder` (Perfor-mance,
    Improve-ment, State-ment, Para-chute). Guards (`readability.test.ts`, both red on the old
    code then green): no `font-size` below 11px in the stylesheet; every 9+-letter word in a
-   card name has a soft hyphen. **Not verified:** Dynamic Type (sizes are still fixed px) and
-   on-device legibility.
+   card name has a soft hyphen. **Simulator-verified 2026-09-27** (iPhone SE 3rd gen): the org
+   chart (`VITE_QBR_START=career`) and a game (`=year`) render the 11px text unclipped and
+   fit under the status bar; hyphenated names break cleanly. **Not verified:** Dynamic Type
+   (sizes are still fixed px) and on-device legibility.
 20. **Opening-hand luck — MEASURED NULL, no mulligan needed (/explore 2026-09-27; research +
    balance).** Hypothesis from research: Marvel Snap's low-star reviews blame losses on a bad
    starting hand with "little recovery possible"
