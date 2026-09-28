@@ -66,6 +66,8 @@ export const BOSSES: Readonly<Record<string, ModDef>> = {
   // Exec modifiers (item 25): rules that change HOW you play, one per org to start.
   quota: { id: 'quota', name: 'Quota', blurb: 'Lead the Sales lane or you bank nothing that quarter', glyph: 'QT' },
   teamsync: { id: 'teamsync', name: 'Synergy Offsite', blurb: 'Their cards next to another of theirs are worth +1', glyph: 'SO' },
+  scope: { id: 'scope', name: 'Scope Creep', blurb: 'Their spreads reach one cell further forward', glyph: 'SC' },
+  redtape: { id: 'redtape', name: 'Red Tape', blurb: 'You can only place in your home row and the row in front', glyph: 'RT' },
 };
 
 export const hasJoker = (mods: Mods, id: string): boolean => mods.jokers.includes(id);

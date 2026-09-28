@@ -291,7 +291,19 @@ export function spreadEffects(state: GameState, cardId: string, at: number, play
   const weaken: { cell: number; destroys: boolean }[] = [];
   // Change Freeze (a boss): the player's spreads stop at the middle of the sheet.
   const frozen = player === 0 && state.mods.boss === 'freeze';
-  const targets = spreadTargets(cardId, at, player, wrap).filter(
+  // Scope Creep (an exec modifier): the boss side's forward reaches go one cell further
+  // (green: the extra cell claims, it never takes over).
+  const def = card(cardId);
+  const creep =
+    player === 1 && state.mods.boss === 'scope'
+      ? offsetTargets(
+          [...def.spread, ...(def.takes ?? [])].filter(([, dc]) => dc > 0).map(([dr, dc]) => [dr, dc + 1] as const),
+          at,
+          player,
+          wrap,
+        )
+      : [];
+  const targets = [...new Set([...spreadTargets(cardId, at, player, wrap), ...creep])].filter(
     (t) => !blocked.has(t) && !(frozen && colOf(t) > Math.floor(COLS / 2)),
   );
   // Purple cells (item 16) take over any enemy card they reach. The old rule — any
@@ -338,6 +350,8 @@ export function canPlay(state: GameState, cardId: string, at: number): boolean {
     cell.owner === p &&
     // Paste Special (a joker): the player may paste over their own card.
     (cell.card === null || state.rules.pasteOver || (p === 0 && hasJoker(state.mods, 'paste'))) &&
+    // Red Tape (an exec modifier): you may only place in your home row and the row in front.
+    !(p === 0 && state.mods.boss === 'redtape' && colOf(at) > 1) &&
     cell.budget >= card(cardId).cost
   );
 }

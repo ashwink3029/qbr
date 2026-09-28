@@ -209,6 +209,35 @@ describe('new jokers and a boss (iteration 13)', () => {
     expect(cellValue({ ...s, mods: NO_MODS }, idx(0, 3))).toBe(1);
   });
 
+  it('Scope Creep (exec modifier, item 25): their spreads reach one cell further forward', () => {
+    const m = mods({ jokers: [], boss: 'scope' });
+    // Finance (seat 1) plays a Memo (up, down, forward 1) from its home column 4.
+    const s = { ...strictBoard(m, [[idx(1, 4), { owner: 1, budget: 1, card: null }]], []), toMove: 1 as const, hands: [[], ['memo']] as [string[], string[]] };
+    const fx = spreadEffects(s, 'memo', idx(1, 4), 1);
+    expect(fx.claim).toContain(idx(1, 3)); // forward 1, as printed
+    expect(fx.claim).toContain(idx(1, 2)); // forward 2: the creep
+    expect(fx.claim).not.toContain(idx(0, 3)); // sideways reach does not creep
+    // Your spreads are untouched.
+    const yours = strictBoard(m, [[idx(1, 0), { owner: 0, budget: 1, card: null }]], ['memo']);
+    expect(spreadEffects(yours, 'memo', idx(1, 0), 0).claim).not.toContain(idx(1, 2));
+  });
+
+  it('Red Tape (exec modifier, item 25): you can only place in your home row and the row in front', () => {
+    const m = mods({ jokers: [], boss: 'redtape' });
+    const cells: [number, Cell][] = [
+      [idx(0, 0), { owner: 0, budget: 1, card: null }],
+      [idx(0, 1), { owner: 0, budget: 1, card: null }],
+      [idx(0, 2), { owner: 0, budget: 1, card: null }],
+      [idx(0, 3), { owner: 1, budget: 1, card: null }],
+    ];
+    const s = strictBoard(m, cells, ['memo']);
+    expect(canPlay(s, 'memo', idx(0, 0))).toBe(true);
+    expect(canPlay(s, 'memo', idx(0, 1))).toBe(true);
+    expect(canPlay(s, 'memo', idx(0, 2))).toBe(false); // two rows out: tied up in red tape
+    const theirs = { ...s, toMove: 1 as const, hands: [[], ['memo']] as [string[], string[]] };
+    expect(canPlay(theirs, 'memo', idx(0, 3))).toBe(true); // the boss's side is unbound
+  });
+
   it('Label Maker (desk upgrade, item 25): your cards in your home row are worth +1', () => {
     const s = strictBoard(mods({ jokers: ['label'] }), [
       [idx(0, 0), { owner: 0, budget: 1, card: 'memo' }], // home row

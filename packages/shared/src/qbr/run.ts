@@ -151,7 +151,7 @@ export const ORGS: readonly Org[] = [
       { role: 'The General Counsel', initials: 'GC', name: 'Compliance review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 0 },
       { role: 'The Managing Partner', initials: 'MP', name: 'Deposition', opponent: 'lookahead', boss: 'replyall', edge: 2, homeBoost: 2 },
     ],
-    bosses: ['auditor', 'legacy'],
+    bosses: ['auditor', 'redtape'],
     opponentDeck: LEGAL_DECK,
   },
   {
@@ -165,7 +165,7 @@ export const ORGS: readonly Org[] = [
       { role: 'The CTO', initials: 'CTO', name: 'Architecture review', opponent: 'lookahead', boss: 'drawn', edge: 0, homeBoost: 1 },
       { role: 'The Founder', initials: 'FDR', name: 'All-hands', opponent: 'lookahead', boss: 'freeze', edge: 1, homeBoost: 2 },
     ],
-    bosses: ['legacy', 'auditor'],
+    bosses: ['legacy', 'scope'],
     opponentDeck: TECH_DECK,
   },
   {

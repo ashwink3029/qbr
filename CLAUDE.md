@@ -1138,8 +1138,8 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    |---|---|---|---|
    | Quota ✓ | Lead the Sales lane or you bank nothing that quarter | revenue | Sales (built) |
    | ~~Brand Guidelines~~ | cut: both versions measured too mild (+1.9 / −1.1pp) | canPlay | — |
-   | Scope Creep | Their spreads reach one cell further forward | spreadTargets (seat 1) | Tech |
-   | Red Tape | You can only place in your home row and the row in front | canPlay | Legal |
+   | Scope Creep ✓ | Their spreads reach one cell further forward | spreadEffects (seat 1) | Tech (built) |
+   | Red Tape ✓ | You can only place in your home row and the row in front | canPlay | Legal (built) |
    | Performance Calibration | Each quarter your highest-value card loses 2 | cellValue | HR |
    | Budget Cuts | Your spreads add no $ to the cells they claim | spreadEffects budget | Finance |
    | Office Politics | Their claims next to your cards lower those cards by 1 | spreadEffects weaken | HR |
@@ -1226,7 +1226,16 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    10e's "check it LANDS" lesson again); fixed with value 5 and a lane-reach boost. Tests first:
    shared `orgcards.test.ts` 3 (red first), client `orgs.test.tsx` +2 (top rung names the card;
    career end records the org), `career.test.tsx` expectation updated for the new field.
-   (5+) the rest of the menu, one org at a time.
+   (5+) the rest of the menu, one org at a time. **Iteration 5 DONE:** **Scope Creep** ("Their
+   spreads reach one cell further forward"; `spreadEffects` adds a green cell past each forward
+   reach for the boss side — claims only, never takes over) now in Tech's CTO pool (with Legacy),
+   and **Red Tape** ("You can only place in your home row and the row in front"; `canPlay`) in
+   Legal's General Counsel pool (with Auditor) — Tech and Legal no longer share a pool. **Bars
+   (2000 seeds, never moved), first try, no re-tuning:** B1 PASS (Scope Creep −28.8pp, Red Tape
+   −26.6pp — the two hardest after Micromanager); orgbars O1 + O2 PASS, 19.7 > 17.8 > 14.9 >
+   **12.8** > **8.3** > 6.9%. Tests first (mods.test.ts 2, red first). Menu left: Performance
+   Calibration, Budget Cuts, Office Politics, Cold Outreach, Tech Debt, Fine Print; desk ideas
+   Standing Desk, Expense Account, Noise-Cancelling Headphones, Corner Office, Red-Eye Flight.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
