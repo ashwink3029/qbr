@@ -58,7 +58,7 @@ export interface Tip {
   readonly text: string;
   readonly mood: Mood;
   /** What on screen the tip is about; Game makes it glow while the tip shows. */
-  readonly points?: 'sums' | 'unaffordable' | 'lives' | 'pass' | 'purple' | 'lost';
+  readonly points?: 'sums' | 'unaffordable' | 'lives' | 'hearts' | 'backs' | 'pass' | 'purple' | 'lost';
 }
 
 /** The most relevant unseen tip for this moment, or null. Pure. */
@@ -115,10 +115,26 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
       points: 'purple',
     });
   }
+  // The two rows by the opponent's name (user, 2026-09-28: "not clear what the green and red
+  // squares mean"), taught in the first quarter once a card is down.
+  if (ctx.humanTurn && ctx.myCardsOnBoard >= 1 && !ctx.selected) {
+    candidates.push({
+      id: 'hearts',
+      text: 'Hearts are lives: lose a quarter, lose a heart. Out of hearts loses the year.',
+      mood: 'talk',
+      points: 'hearts',
+    });
+    candidates.push({
+      id: 'backs',
+      text: `The cards by ${ctx.who}'s name are ${ctx.who}'s hand — what they have left to play.`,
+      mood: 'talk',
+      points: 'backs',
+    });
+  }
   if (ctx.humanTurn && ctx.quarterNo === 2) {
     candidates.push({
       id: 'lives',
-      text: `Fresh sheet for Q2, but your hand carries over. Two lives each: lose two quarters and the year goes to ${ctx.who}.`,
+      text: `Fresh sheet for Q2, but your hand carries over. Lose two quarters — both hearts — and the year goes to ${ctx.who}.`,
       mood: 'talk',
       points: 'lives',
     });

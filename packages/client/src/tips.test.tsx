@@ -49,7 +49,7 @@ describe('pickTip', () => {
     expect(pickTip({ ...base, myCardsOnBoard: 0 }, placed)).toBeNull();
     const lives = pickTip({ ...base, quarterNo: 2 }, new Set(['place', 'lanes']));
     expect(lives?.id).toBe('lives');
-    expect(lives!.text).toMatch(/lose two quarters/);
+    expect(lives!.text).toMatch(/lose two quarters/i);
   });
 
   it('never repeats a tip that was already seen', () => {

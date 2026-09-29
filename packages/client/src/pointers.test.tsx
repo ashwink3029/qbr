@@ -43,14 +43,14 @@ describe('tips point at what they are about', () => {
 
 describe('the card inspector is discoverable in play', () => {
   it('once a couple of your cards are down, Bindy mentions holding a card — lowest priority, once', () => {
-    const quiet = seen('lanes', 'cost');
+    const quiet = seen('lanes', 'cost', 'hearts', 'backs');
     expect(pickTip({ ...base, myCardsOnBoard: 1 }, quiet)).toBeNull();
     const t = pickTip({ ...base, myCardsOnBoard: 2 }, quiet)!;
     expect(t.id).toBe('inspect');
     expect(t.text).toMatch(/hold any card/i);
-    expect(pickTip({ ...base, myCardsOnBoard: 2 }, seen('lanes', 'cost', 'inspect'))).toBeNull();
+    expect(pickTip({ ...base, myCardsOnBoard: 2 }, seen('lanes', 'cost', 'hearts', 'backs', 'inspect'))).toBeNull();
     // Anything more urgent wins.
-    expect(pickTip({ ...base, myCardsOnBoard: 2, hasUnaffordable: true }, seen('lanes'))!.id).toBe('cost');
+    expect(pickTip({ ...base, myCardsOnBoard: 2, hasUnaffordable: true }, seen('lanes', 'hearts', 'backs'))!.id).toBe('cost');
   });
 });
 

@@ -27,7 +27,7 @@ const base: TipContext = {
   quarterNo: 1,
   hasUnaffordable: false,
 };
-const seen = (...ids: string[]) => new Set(['place', 'lanes', ...ids]);
+const seen = (...ids: string[]) => new Set(['place', 'lanes', 'hearts', 'backs', ...ids]);
 
 describe('purple on the card', () => {
   afterEach(cleanup);

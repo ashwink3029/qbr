@@ -47,10 +47,20 @@ function freshSeed(): number {
   return (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0;
 }
 
-/** Life pips: losing a quarter costs one. */
+/** A heart: filled for a life left, outlined for one lost (shape, not only colour). */
+const HEART = 'M8 14 1.6 7.6A3.6 3.6 0 0 1 8 3.3a3.6 3.6 0 0 1 6.4 4.3Z';
+
+/** Life hearts: losing a quarter costs one. */
 function Lives({ n, max, label }: { n: number; max: number; label: string }) {
   const pips = [];
-  for (let k = 0; k < max; k++) pips.push(<i key={k} className={k < n ? 'on' : 'off'} />);
+  for (let k = 0; k < max; k++)
+    pips.push(
+      <i key={k} className={k < n ? 'on' : 'off'}>
+        <svg viewBox="0 0 16 16" aria-hidden>
+          <path d={HEART} />
+        </svg>
+      </i>,
+    );
   return (
     <span className="lives" aria-label={`${label}: ${n} of ${max} lives`} data-lives={label}>
       {pips}
@@ -462,11 +472,17 @@ export function Game({
               </span>
             )}
           </span>
-          <Lives n={match.lives[1]} max={maxLives} label={who} />
-          <span className="backs" aria-label={`${game.hands[1].length} cards in hand`}>
-            {game.hands[1].map((_, k) => (
-              <i key={k} />
-            ))}
+          <span className="stat stat-lives" data-guide={points === 'hearts' ? '' : undefined}>
+            <small>Lives</small>
+            <Lives n={match.lives[1]} max={maxLives} label={who} />
+          </span>
+          <span className="stat" data-guide={points === 'backs' ? '' : undefined}>
+            <small>Cards</small>
+            <span className="backs" aria-label={`${game.hands[1].length} cards in hand`}>
+              {game.hands[1].map((_, k) => (
+                <i key={k} />
+              ))}
+            </span>
           </span>
         </div>
 
@@ -661,7 +677,8 @@ export function Game({
             <span>
               Q{qNo}: <b className="you" data-mine>{mine}</b>–<b className="them" data-theirs>{theirs}</b>
             </span>
-            <span className="you-lives" data-guide={points === 'lives' ? '' : undefined}>
+            <span className="you-lives" data-guide={points === 'lives' || points === 'hearts' ? '' : undefined}>
+              <small>Lives</small>
               <Lives n={match.lives[0]} max={maxLives} label="You" />
               <small>{game.hands[HUMAN].length} cards</small>
             </span>

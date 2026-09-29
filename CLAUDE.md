@@ -1278,6 +1278,22 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    the iOS convention that a long-press "took". `@capacitor/haptics` only; real-device-only to
    verify (the Simulator has no haptics). Test first: the hold calls the feedback hook once, a
    short tap doesn't, and haptics off makes no native call.
+27. ~~Hearts + labelled opponent strip (user request 2026-09-28)~~ **DONE.** User: "I'm not clear
+   what the green and red squares mean next to the opponent's name"; then "tooltips explaining
+   those in the first couple of rounds", "the green squares as hearts", and "a small label for
+   Lives and Cards". Lives were 10px green squares on both sides with no label; the card backs
+   had none either (only VoiceOver named them). Now: **lives are hearts** (`Lives` in `Game.tsx`,
+   inline SVG; filled = a life left, outline = lost, so shape carries it without colour; theirs
+   red-orange on the dark strip, yours `--mine-ink` blue); the opponent strip shows **"Lives"** and
+   **"Cards"** labels above the hearts and the card backs (`.stat`), and yours reads "Lives ♥♥ 7
+   cards". Two new one-time Bindy tips in the first quarter, right after `lanes`: **`hearts`**
+   ("Hearts are lives: lose a quarter, lose a heart. Out of hearts loses the year." — both rows of
+   hearts glow) and **`backs`** ("The cards by Finance's name are Finance's hand — what they have
+   left to play." — the Cards group glows). The Q2 `lives` tip now says "both hearts". Tests first
+   (`hearts.test.tsx` 3, red then green); older tip tests updated for the new order (lanes ->
+   hearts -> backs -> cost). **Verified** headlessly in a real one-year game at 375x667 and 402x874:
+   no window scroll, no strip overflow, pass button on screen; the first glow ring cut through
+   the "Cards" label, so it now wraps label + backs. **Not verified:** device.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 
