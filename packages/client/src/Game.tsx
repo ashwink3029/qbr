@@ -40,6 +40,8 @@ import { loadSeenTips, markTipSeen, pickTip } from './tips.js';
 export const AI_DELAY_MS = 450;
 
 const HUMAN = 0;
+/** The card has purple (takeover) cells in its shape. */
+const isPurple = (id: string) => (card(id).takes ?? []).length > 0;
 
 function freshSeed(): number {
   return (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0;
@@ -345,13 +347,24 @@ export function Game({
             lead: mine - theirs,
             mods,
             hasUnaffordable: humanTurn && game.hands[HUMAN].some((id) => !legal.some((a) => a.card === id)),
-            hasPurple: game.hands[HUMAN].some((id) => (card(id).takes ?? []).length > 0),
+            purpleCard: (() => {
+              const id = game.hands[HUMAN].find((h) => isPurple(h) && legal.some((a) => a.card === h));
+              return id === undefined ? undefined : card(id).name.replace(/\u00AD/g, '');
+            })(),
             lostToPurple: fx !== null && fx.by !== HUMAN && fx.flip.length > 0,
             myCardsOnBoard: match.quarter.cells.filter((c) => c.owner === HUMAN && c.card !== null).length,
             quarterNo: match.quarterNo,
           },
           seenTips,
         );
+
+  // The hand scrolls sideways (8-10 cards): bring the card a tip points at into view.
+  const handRef = useRef<HTMLDivElement>(null);
+  const tipId = tip?.id;
+  useEffect(() => {
+    if (tipId !== 'purple' && tipId !== 'cost') return;
+    handRef.current?.querySelector<HTMLElement>('[data-guide]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [tipId]);
 
   // The guided first turn: until the first card is ever placed, the next thing to tap glows.
   const guiding = humanTurn && !summary && !paused && !match.over && !seenTips.has('place');
@@ -595,7 +608,7 @@ export function Game({
           })}
         </div>
 
-        <div className="hand">
+        <div className="hand" ref={handRef}>
           {game.hands[HUMAN].map((id, k) => {
             const playable = humanTurn && legal.some((a) => a.card === id);
             // On your turn a card you cannot afford stays tappable (it explains
@@ -611,7 +624,7 @@ export function Game({
                 data-guide={
                   (guiding && selected === null && playable) ||
                   (points === 'unaffordable' && short) ||
-                  (points === 'purple' && (card(id).takes ?? []).length > 0)
+                  (points === 'purple' && playable && isPurple(id))
                     ? ''
                     : undefined
                 }

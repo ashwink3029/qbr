@@ -949,6 +949,15 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    8: all pass. **Checked on screen** (375x667): the purple tip + glowing Stakeholders; the
    greyed purple was first too pale (#b89ad6) to see, now #8c55c9. **Not verified:** the
    purple-preview and purple-lost tips on screen (unit + DOM tests only), device.
+   **Fix (user report 2026-09-28: "the tooltip about purple squares came up, but there was no
+   such card in my hand"):** the `purple` tip fired for ANY purple card in the hand — and the
+   starter's purple card, Stakeholder, costs $$, so at the start of a quarter it is grey and
+   often scrolled out of the sideways hand; the old in-game test even asserted the tip at match
+   start. Now the tip needs a purple card you can PLAY now (`TipContext.purpleCard`), names it
+   ("See the purple square on Stakeholder? …"), glows only playable purple cards, and the hand
+   scrolls the pointed-at card into view (also for the `cost` tip). Tests red first
+   (`purple.test.tsx`: grey Stakeholder -> no tip; $$ cell -> tip names it, only playable purple
+   glows). **Not verified:** on device.
    Original notes follow.
    Ask: an ordinary card shouldn't overpower an adjacent square that holds an enemy card. A
    card adds value to its own cell (blue on the card's shape glyph) and gives strength to the
@@ -1263,6 +1272,12 @@ Feedback loop is now iOS via TestFlight (every push to `main` -> Xcode Cloud).
    Noise-Cancelling Headphones, Red-Eye Flight. **Standing lesson for new desk upgrades:** land them near the pool's average
    (+13..+19pp): above 70% breaks J2, and well below the average dilutes random drafts and
    drags every ladder, stake and org with it.
+26. **Haptic on the card inspector's long-press (user request 2026-09-28) — NOT STARTED.** When a
+   hold opens the inspector (item 21, `useHold` in `client/src/Inspector.tsx`, 450ms), fire a
+   light haptic (and nothing else: no sound) through `feedback.ts`, behind the Haptics setting —
+   the iOS convention that a long-press "took". `@capacitor/haptics` only; real-device-only to
+   verify (the Simulator has no haptics). Test first: the hold calls the feedback hook once, a
+   short tap doesn't, and haptics off makes no native call.
 Items 4-6 are one progression system (ladder -> unlocks -> collection); design
 them together, build in that order.
 

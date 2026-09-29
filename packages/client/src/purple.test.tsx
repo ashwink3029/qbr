@@ -56,13 +56,16 @@ describe('purple on the card', () => {
 });
 
 describe('purple is taught when it is met', () => {
-  it('the first purple card in your hand: Bindy explains purple vs green, and the card glows', () => {
-    const t = pickTip({ ...base, hasPurple: true }, seen())!;
+  it('the first PLAYABLE purple card: Bindy names it and explains purple vs green', () => {
+    const t = pickTip({ ...base, purpleCard: 'Stakeholder' }, seen())!;
     expect(t.id).toBe('purple');
+    expect(t.text).toMatch(/Stakeholder/);
     expect(t.text).toMatch(/purple/i);
     expect(t.text).toMatch(/green/i);
     expect(t.points).toBe('purple');
-    expect(pickTip({ ...base, hasPurple: true }, seen('purple'))).toBeNull();
+    expect(pickTip({ ...base, purpleCard: 'Stakeholder' }, seen('purple'))).toBeNull();
+    // No playable purple card (none in hand, or only grey ones): no purple tip.
+    expect(pickTip(base, seen())).toBeNull();
   });
 
   it('the first purple preview names the stripes', () => {
@@ -83,14 +86,32 @@ describe('in the game', () => {
   beforeEach(() => localStorage.setItem('qbr.tips.v1', JSON.stringify(['place', 'lanes', 'cost'])));
   afterEach(cleanup);
 
-  it('with a Stakeholder in hand, the purple tip shows and only purple cards glow', () => {
-    // Find a seed whose opening hand holds a Stakeholder (the starter deck has two).
+  // User report (2026-09-28): the tip came up with no usable purple card in sight. A
+  // Stakeholder costs $$, so at the start of a quarter (all home cells $) it is grey.
+  const stakeholderSeed = () => {
     let seed = 1;
-    while (!newMatch(seed, { player: STARTER_DECK, opponent: STARTER_DECK }, DEFAULT_MATCH, MATCH_RULES).quarter.hands[0].includes('stakeholder')) seed++;
-    render(<Game seed={seed} />);
-    expect(q('[data-tip]')!.textContent).toMatch(/purple/i);
+    for (;;) {
+      const m = newMatch(seed, { player: STARTER_DECK, opponent: STARTER_DECK }, DEFAULT_MATCH, MATCH_RULES);
+      if (m.quarter.hands[0].includes('stakeholder') && m.quarter.toMove === 0) return m;
+      seed++;
+    }
+  };
+
+  it('a grey (unaffordable) Stakeholder does not trigger the purple tip', () => {
+    render(<Game initialMatch={stakeholderSeed()} />);
+    expect(q('[data-tip]')?.textContent ?? '').not.toMatch(/purple/i);
+  });
+
+  it('once a Stakeholder is playable, the tip names it and only playable purple cards glow', () => {
+    const m = stakeholderSeed();
+    const rich = {
+      ...m,
+      quarter: { ...m.quarter, cells: m.quarter.cells.map((c) => (c.owner === 0 ? { ...c, budget: 2 } : c)) },
+    };
+    render(<Game initialMatch={rich} />);
+    expect(q('[data-tip]')!.textContent).toMatch(/Stakeholder/);
     const glowing = all('.hand [data-card][data-guide]');
     expect(glowing.length).toBeGreaterThan(0);
-    expect(glowing.every((c) => c.querySelector('.g.take'))).toBe(true);
+    expect(glowing.every((c) => c.querySelector('.g.take') && c.dataset.playable === 'true')).toBe(true);
   });
 });

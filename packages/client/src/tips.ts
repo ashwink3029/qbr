@@ -42,8 +42,9 @@ export interface TipContext {
   readonly mods: Mods;
   /** Some card in your hand costs more than any open cell you own. */
   readonly hasUnaffordable: boolean;
-  /** A card with purple (takeover) cells is in your hand (item 16). */
-  readonly hasPurple?: boolean;
+  /** Name of a card with purple (takeover) cells you can PLAY right now (item 16). A grey
+   *  (unaffordable) one doesn't count: a tip about a card you can't use made no sense. */
+  readonly purpleCard?: string | undefined;
   /** The opponent's last move took one of your cards over. */
   readonly lostToPurple?: boolean;
   /** Your cards currently on the sheet this quarter. */
@@ -106,10 +107,10 @@ export function pickTip(ctx: TipContext, seen: ReadonlySet<string>): Tip | null 
       points: 'lost',
     });
   }
-  if (ctx.humanTurn && ctx.hasPurple && !ctx.selected) {
+  if (ctx.humanTurn && ctx.purpleCard && !ctx.selected) {
     candidates.push({
       id: 'purple',
-      text: 'See the purple square? It takes over: an enemy card there flips to you, whatever its value. Green squares only claim empty cells.',
+      text: `See the purple square on ${ctx.purpleCard}? It takes over: an enemy card there flips to you, whatever its value. Green squares only claim empty cells.`,
       mood: 'talk',
       points: 'purple',
     });
